@@ -63,13 +63,13 @@ class CreateMigrationCommand extends Command
      *
      * @return void
      */
-    public function __construct(Filesystem $files, MigrationCreator $creator, Composer $composer)
+    public function __construct(Filesystem $files, Composer $composer)
     {
         parent::__construct();
 
         $this->files = $files;
-        $this->creator = $creator;
         $this->composer = $composer;
+        $this->creator = new MigrationCreator($files, __DIR__.'/stubs');
     }
 
     /**
