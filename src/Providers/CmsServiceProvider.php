@@ -2,21 +2,7 @@
 
 namespace Littleboy130491\Sumimasen\Providers;
 
-use Filament\Facades\Filament;
-use Filament\Navigation\UserMenuItem;
 use Illuminate\Support\Facades\Blade;
-use Littleboy130491\Sumimasen\Filament\Pages\ManageGeneralSettings;
-use Littleboy130491\Sumimasen\Filament\Resources\CategoryResource;
-use Littleboy130491\Sumimasen\Filament\Resources\CommentResource;
-use Littleboy130491\Sumimasen\Filament\Resources\ComponentResource;
-use Littleboy130491\Sumimasen\Filament\Resources\PageResource;
-use Littleboy130491\Sumimasen\Filament\Resources\PostResource;
-use Littleboy130491\Sumimasen\Filament\Resources\SubmissionResource;
-use Littleboy130491\Sumimasen\Filament\Resources\TagResource;
-use Littleboy130491\Sumimasen\Filament\Resources\UserResource;
-use Littleboy130491\Sumimasen\Livewire\LikeButton;
-use Littleboy130491\Sumimasen\Livewire\SubmissionForm;
-use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -72,32 +58,40 @@ class CmsServiceProvider extends PackageServiceProvider
     {
         parent::packageBooted();
 
-        Filament::serving(function () {
-            Filament::registerResources([
-                CategoryResource::class,
-                CommentResource::class,
-                ComponentResource::class,
-                PageResource::class,
-                PostResource::class,
-                SubmissionResource::class,
-                TagResource::class,
-                UserResource::class,
-            ]);
+        // Only register Filament resources if Filament is available
+        if (class_exists('Filament\Facades\Filament')) {
+            \Filament\Facades\Filament::serving(function () {
+                \Filament\Facades\Filament::registerResources([
+                    \Littleboy130491\Sumimasen\Filament\Resources\CategoryResource::class,
+                    \Littleboy130491\Sumimasen\Filament\Resources\CommentResource::class,
+                    \Littleboy130491\Sumimasen\Filament\Resources\ComponentResource::class,
+                    \Littleboy130491\Sumimasen\Filament\Resources\PageResource::class,
+                    \Littleboy130491\Sumimasen\Filament\Resources\PostResource::class,
+                    \Littleboy130491\Sumimasen\Filament\Resources\SubmissionResource::class,
+                    \Littleboy130491\Sumimasen\Filament\Resources\TagResource::class,
+                    \Littleboy130491\Sumimasen\Filament\Resources\UserResource::class,
+                ]);
 
-            Filament::registerPages([
-                ManageGeneralSettings::class,
-            ]);
+                \Filament\Facades\Filament::registerPages([
+                    \Littleboy130491\Sumimasen\Filament\Pages\ManageGeneralSettings::class,
+                ]);
 
-            Filament::registerUserMenuItems([
-                UserMenuItem::make()
-                    ->label('Settings')
-                    ->url(ManageGeneralSettings::getUrl())
-                    ->icon('heroicon-o-cog'),
-            ]);
-        });
+                if (class_exists('Filament\Navigation\UserMenuItem')) {
+                    \Filament\Facades\Filament::registerUserMenuItems([
+                        \Filament\Navigation\UserMenuItem::make()
+                            ->label('Settings')
+                            ->url(\Littleboy130491\Sumimasen\Filament\Pages\ManageGeneralSettings::getUrl())
+                            ->icon('heroicon-o-cog'),
+                    ]);
+                }
+            });
+        }
 
-        Livewire::component('like-button', LikeButton::class);
-        Livewire::component('submission-form', SubmissionForm::class);
+        // Only register Livewire components if Livewire is available
+        if (class_exists('Livewire\Livewire')) {
+            \Livewire\Livewire::component('like-button', \Littleboy130491\Sumimasen\Livewire\LikeButton::class);
+            \Livewire\Livewire::component('submission-form', \Littleboy130491\Sumimasen\Livewire\SubmissionForm::class);
+        }
 
         Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'cms');
     }
