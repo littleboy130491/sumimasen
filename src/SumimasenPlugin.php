@@ -102,4 +102,5 @@ class SumimasenPlugin implements Plugin
     {
         return $this->hasSettingsPage;
     }
+
 }

@@ -221,15 +221,6 @@ class SumimasenServiceProvider extends PackageServiceProvider
                     app()->instance('sumimasen-plugin-registered', true);
                 }
 
-                // Register user menu items
-                if (class_exists('Filament\Navigation\UserMenuItem')) {
-                    Filament::registerUserMenuItems([
-                        \Filament\Navigation\UserMenuItem::make()
-                            ->label('Settings')
-                            ->url(fn() => \Littleboy130491\Sumimasen\Filament\Pages\ManageGeneralSettings::getUrl())
-                            ->icon('heroicon-o-cog'),
-                    ]);
-                }
             });
         }
     }
