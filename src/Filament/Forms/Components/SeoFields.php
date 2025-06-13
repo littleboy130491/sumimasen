@@ -2,10 +2,6 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Forms\Components;
 
-use Littleboy130491\SeoSuite\Enums\MetaTypes;
-use Littleboy130491\SeoSuite\Enums\XCardTypes;
-use Littleboy130491\SeoSuite\Schemas\OpenGraphSchema;
-use Littleboy130491\SeoSuite\SeoSuite;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -14,6 +10,10 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
+use Littleboy130491\SeoSuite\Enums\MetaTypes;
+use Littleboy130491\SeoSuite\Enums\XCardTypes;
+use Littleboy130491\SeoSuite\Schemas\OpenGraphSchema;
+use Littleboy130491\SeoSuite\SeoSuite;
 
 class SeoFields extends SeoSuite
 {

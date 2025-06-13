@@ -2,10 +2,10 @@
 
 namespace Littleboy130491\Sumimasen\Console\Commands;
 
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 use Littleboy130491\Sumimasen\Mail\AdminLoggedInNotification;
-use App\Models\User;
 
 class TestLoginNotification extends Command
 {

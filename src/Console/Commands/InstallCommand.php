@@ -35,7 +35,7 @@ class InstallCommand extends Command
         $this->call('vendor:publish', ['--tag' => 'cms-views']);
 
         $this->info('Publishing required package migrations...');
-        
+
         // Publish Spatie Permission migrations
         $this->call('vendor:publish', [
             '--provider' => 'Spatie\Permission\PermissionServiceProvider',

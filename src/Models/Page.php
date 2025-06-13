@@ -2,12 +2,12 @@
 
 namespace Littleboy130491\Sumimasen\Models;
 
-use Littleboy130491\SeoSuite\Models\Traits\InteractsWithSeoSuite;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Littleboy130491\SeoSuite\Models\Traits\InteractsWithSeoSuite;
 use Spatie\Translatable\HasTranslations;
 
 class Page extends Model

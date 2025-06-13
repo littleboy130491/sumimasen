@@ -2,6 +2,7 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Imports;
 
+use App\Models\User;
 use Awcodes\Curator\Models\Media;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
@@ -10,7 +11,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Models\Page;
-use App\Models\User;
 
 class PageImporter extends Importer
 {

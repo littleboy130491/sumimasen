@@ -20,9 +20,9 @@ class SumimasenPlugin implements Plugin
     use EvaluatesClosures;
 
     protected bool $hasSettingsPage = true;
-    
+
     protected array $resources = [];
-    
+
     protected array $pages = [];
 
     public function getId(): string
@@ -102,5 +102,4 @@ class SumimasenPlugin implements Plugin
     {
         return $this->hasSettingsPage;
     }
-
 }

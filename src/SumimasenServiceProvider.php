@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\View;
 use Littleboy130491\Sumimasen\Console\Commands\InstallCommand;
 use Littleboy130491\Sumimasen\Models\Comment;
 use Littleboy130491\Sumimasen\Observers\CommentObserver;
-use Littleboy130491\Sumimasen\SumimasenPlugin;
 use SolutionForest\FilamentTranslateField\Facades\FilamentTranslateField;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -60,12 +59,12 @@ class SumimasenServiceProvider extends PackageServiceProvider
 
         // Publish migrations with custom tag
         $this->publishes([
-            __DIR__ . '/../database/migrations' => database_path('migrations'),
+            __DIR__.'/../database/migrations' => database_path('migrations'),
         ], 'cms-migrations');
 
-        // Publish views with custom tag  
+        // Publish views with custom tag
         $this->publishes([
-            __DIR__ . '/../resources/views' => resource_path('views/vendor/cms'),
+            __DIR__.'/../resources/views' => resource_path('views/vendor/cms'),
         ], 'cms-views');
     }
 
@@ -196,9 +195,9 @@ class SumimasenServiceProvider extends PackageServiceProvider
             $this->app->resolving('filament', function () {
                 if (method_exists(\Filament\Facades\Filament::class, 'getCurrentPanel')) {
                     $panels = \Filament\Facades\Filament::getPanels();
-                    
+
                     foreach ($panels as $panel) {
-                        if (!$panel->hasPlugin('sumimasen-cms')) {
+                        if (! $panel->hasPlugin('sumimasen-cms')) {
                             $panel->plugin(SumimasenPlugin::make());
                         }
                     }
@@ -207,7 +206,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
 
             Filament::serving(function () {
                 // Fallback: Register resources directly if plugin system fails
-                if (!app()->bound('sumimasen-plugin-registered')) {
+                if (! app()->bound('sumimasen-plugin-registered')) {
                     Filament::registerResources([
                         \Littleboy130491\Sumimasen\Filament\Resources\CategoryResource::class,
                         \Littleboy130491\Sumimasen\Filament\Resources\CommentResource::class,

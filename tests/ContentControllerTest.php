@@ -2,13 +2,13 @@
 
 namespace Littleboy130491\Sumimasen\Tests;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Http\Controllers\ContentController;
 use Littleboy130491\Sumimasen\Models\Page;
 use Littleboy130491\Sumimasen\Models\Post;
-use App\Models\User;
 use Tests\TestCase;
 
 class ContentControllerTest extends TestCase

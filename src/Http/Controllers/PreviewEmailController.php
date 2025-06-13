@@ -2,8 +2,8 @@
 
 namespace Littleboy130491\Sumimasen\Http\Controllers;
 
-use Littleboy130491\Sumimasen\Models\Comment;
 use App\Models\User;
+use Littleboy130491\Sumimasen\Models\Comment;
 
 class PreviewEmailController extends Controller
 {
