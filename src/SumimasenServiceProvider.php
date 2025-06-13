@@ -54,6 +54,21 @@ class SumimasenServiceProvider extends PackageServiceProvider
             ->hasCommands($this->getCommands());
     }
 
+    public function packageRegistered(): void
+    {
+        parent::packageRegistered();
+
+        // Publish migrations with custom tag
+        $this->publishes([
+            __DIR__ . '/../database/migrations' => database_path('migrations'),
+        ], 'cms-migrations');
+
+        // Publish views with custom tag  
+        $this->publishes([
+            __DIR__ . '/../resources/views' => resource_path('views/vendor/cms'),
+        ], 'cms-views');
+    }
+
     /**
      * @return array<class-string>
      */
