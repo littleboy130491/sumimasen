@@ -62,7 +62,7 @@ This is a Laravel package named "littleboy130491/cms" - a Filament-based CMS sys
 **Content Management**:
 - Hierarchical pages with parent/child relationships
 - Post categorization and tagging system
-- SEO optimization using `afatmustafa/seo-suite`
+- SEO optimization using `Littleboy130491/seo-suite`
 - Media management via `awcodes/curator`
 - Content scheduling and status management
 

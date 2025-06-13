@@ -16,15 +16,9 @@
             "role": "Developer"
         }
     ],
-    "repositories": [
-        {
-            "type": "path",
-            "url": "packages/afatmustafa/seo-suite"
-        }
-    ],
     "require": {
         "php": "^8.2",
-        "afatmustafa/seo-suite": "dev-main",
+        "littleboy130491/seo-suite": "^1.0",
         "anhskohbo/no-captcha": "^3.7",
         "awcodes/filament-curator": "*",
         "bezhansalleh/filament-language-switch": "^3.1",

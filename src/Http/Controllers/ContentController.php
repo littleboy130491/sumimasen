@@ -2,7 +2,7 @@
 
 namespace Littleboy130491\Sumimasen\Http\Controllers;
 
-use Afatmustafa\SeoSuite\Traits\SetsSeoSuite;
+use Littleboy130491\SeoSuite\Traits\SetsSeoSuite;
 use Artesaos\SEOTools\Facades\SEOTools;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

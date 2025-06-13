@@ -2,10 +2,10 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Forms\Components;
 
-use Afatmustafa\SeoSuite\Enums\MetaTypes;
-use Afatmustafa\SeoSuite\Enums\XCardTypes;
-use Afatmustafa\SeoSuite\Schemas\OpenGraphSchema;
-use Afatmustafa\SeoSuite\SeoSuite;
+use Littleboy130491\SeoSuite\Enums\MetaTypes;
+use Littleboy130491\SeoSuite\Enums\XCardTypes;
+use Littleboy130491\SeoSuite\Schemas\OpenGraphSchema;
+use Littleboy130491\SeoSuite\SeoSuite;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;

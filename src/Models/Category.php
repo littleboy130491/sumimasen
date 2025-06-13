@@ -2,7 +2,7 @@
 
 namespace Littleboy130491\Sumimasen\Models;
 
-use Afatmustafa\SeoSuite\Models\Traits\InteractsWithSeoSuite;
+use Littleboy130491\SeoSuite\Models\Traits\InteractsWithSeoSuite;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
