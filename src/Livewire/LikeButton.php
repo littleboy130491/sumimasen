@@ -2,20 +2,26 @@
 
 namespace Littleboy130491\Sumimasen\Livewire;
 
-use Livewire\Component;
 use Illuminate\Database\Eloquent\Model;
 use Littleboy130491\Sumimasen\Traits\HasPageLikes;
+use Livewire\Component;
 
 class LikeButton extends Component
 {
     public Model $content;
+
     public string $lang;
+
     public string $contentType;
+
     public bool $showCount = true;
+
     public string $size = 'md';
+
     public string $variant = 'default';
 
     public bool $hasLiked = false;
+
     public int $likesCount = 0;
 
     public function mount(Model $content, string $lang, string $contentType, bool $showCount = true, string $size = 'md', string $variant = 'default')
@@ -28,7 +34,7 @@ class LikeButton extends Component
         $this->variant = $variant;
 
         // Check if the model uses HasPageLikes trait
-        if (!in_array(HasPageLikes::class, class_uses_recursive($content))) {
+        if (! in_array(HasPageLikes::class, class_uses_recursive($content))) {
             throw new \Exception('Content model must use HasPageLikes trait');
         }
 
@@ -67,7 +73,7 @@ class LikeButton extends Component
         $this->dispatch('like-toggled', [
             'contentId' => $this->content->id,
             'liked' => $this->hasLiked,
-            'likesCount' => $this->likesCount
+            'likesCount' => $this->likesCount,
         ]);
     }
 

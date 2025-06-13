@@ -2,9 +2,9 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources\CategoryResource\Pages;
 
-use Littleboy130491\Sumimasen\Filament\Resources\CategoryResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Littleboy130491\Sumimasen\Filament\Resources\CategoryResource;
 
 class ListCategories extends ListRecords
 {

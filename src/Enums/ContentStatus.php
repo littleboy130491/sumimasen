@@ -6,7 +6,7 @@ use Filament\Support\Colors\Color;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
-enum ContentStatus: string implements HasLabel, HasColor
+enum ContentStatus: string implements HasColor, HasLabel
 {
     case Draft = 'draft';
     case Published = 'published';

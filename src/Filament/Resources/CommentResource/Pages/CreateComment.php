@@ -2,9 +2,8 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources\CommentResource\Pages;
 
-use Littleboy130491\Sumimasen\Filament\Resources\CommentResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
+use Littleboy130491\Sumimasen\Filament\Resources\CommentResource;
 
 class CreateComment extends CreateRecord
 {

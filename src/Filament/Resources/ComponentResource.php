@@ -2,23 +2,24 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources;
 
-use Littleboy130491\Sumimasen\Filament\Resources\ComponentResource\Pages;
-use Littleboy130491\Sumimasen\Models\Component;
+use Filament\Forms\Components\Builder as FormsBuilder;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\Builder as FormsBuilder;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
+use Littleboy130491\Sumimasen\Filament\Resources\ComponentResource\Pages;
 use Littleboy130491\Sumimasen\Filament\Traits\HasContentBlocks;
+use Littleboy130491\Sumimasen\Models\Component;
+use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
 
 class ComponentResource extends Resource
 {
     use HasContentBlocks;
+
     protected static ?string $model = Component::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -40,7 +41,7 @@ class ComponentResource extends Resource
                         return [
                             FormsBuilder::make('data')
                                 ->collapsed(false)
-                                ->blocks(static::getContentBlocks())
+                                ->blocks(static::getContentBlocks()),
                         ];
                     }),
             ])

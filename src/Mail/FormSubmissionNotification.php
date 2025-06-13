@@ -2,13 +2,13 @@
 
 namespace Littleboy130491\Sumimasen\Mail;
 
-use Littleboy130491\Sumimasen\Models\Submission;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Littleboy130491\Sumimasen\Models\Submission;
 
 class FormSubmissionNotification extends Mailable implements ShouldQueue
 {
@@ -33,9 +33,9 @@ class FormSubmissionNotification extends Mailable implements ShouldQueue
         $subject = $this->submission->fields['subject'] ?? 'Contact Form Submission';
 
         return new Envelope(
-            subject: 'New Contact Form Submission: ' . $subject . ' - ' . $submitterName,
+            subject: 'New Contact Form Submission: '.$subject.' - '.$submitterName,
             replyTo: [
-                $this->submission->fields['email'] ?? config('mail.from.address')
+                $this->submission->fields['email'] ?? config('mail.from.address'),
             ]
         );
     }

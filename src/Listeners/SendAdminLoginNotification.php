@@ -2,12 +2,12 @@
 
 namespace Littleboy130491\Sumimasen\Listeners;
 
-use Littleboy130491\Sumimasen\Mail\AdminLoggedInNotification;
-use Littleboy130491\Sumimasen\Models\User;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
+use Littleboy130491\Sumimasen\Mail\AdminLoggedInNotification;
+use Littleboy130491\Sumimasen\Models\User;
 
 class SendAdminLoginNotification implements ShouldQueue
 {

@@ -2,12 +2,18 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Abstracts;
 
+use Awcodes\Curator\Components\Forms\CuratorPicker;
+use CodeZero\UniqueTranslation\UniqueTranslationRule as UTR;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -15,22 +21,15 @@ use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
-use CodeZero\UniqueTranslation\UniqueTranslationRule as UTR;
-use Awcodes\Curator\Components\Forms\CuratorPicker;
-use Filament\Forms\Components\DateTimePicker;
-use Littleboy130491\Sumimasen\Filament\Forms\Components\SeoFields;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
-use Filament\Forms\Components\KeyValue;
+use Littleboy130491\Sumimasen\Filament\Forms\Components\SeoFields;
+use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
 
 abstract class BaseResource extends Resource
 {
-
     protected static ?string $recordTitleAttribute = 'title';
 
     public static function form(Form $form): Form
@@ -112,11 +111,11 @@ abstract class BaseResource extends Resource
                 ->live(onBlur: true)
                 ->afterStateUpdated(function (Set $set, Get $get, ?string $state, string $operation) use ($locale) {
 
-                    if ($operation === 'edit' && !empty($get('slug.' . $locale))) {
+                    if ($operation === 'edit' && ! empty($get('slug.'.$locale))) {
                         return;
                     }
 
-                    $set('slug.' . $locale, $state ? Str::slug($state) : null);
+                    $set('slug.'.$locale, $state ? Str::slug($state) : null);
                 })
                 ->required($locale === $defaultLocale),
             TextInput::make('slug')
@@ -156,7 +155,6 @@ abstract class BaseResource extends Resource
                 ->columns(1),
         ];
     }
-
 
     protected static function formFeaturedImageField(): array
     {
@@ -208,7 +206,7 @@ abstract class BaseResource extends Resource
                 ->required()
                 ->searchable()
                 ->preload()
-                ->default(fn() => auth()->id()),
+                ->default(fn () => auth()->id()),
         ];
     }
 
@@ -233,7 +231,7 @@ abstract class BaseResource extends Resource
     /**
      * Constructs the Filament Select component for templates.
      *
-     * @param string $subPath The subdirectory within 'resources/views/templates/'.
+     * @param  string  $subPath  The subdirectory within 'resources/views/templates/'.
      * @return array An array containing the configured Filament Select component.
      */
     protected static function getTemplateOptions(string $subPath = ''): array
@@ -250,7 +248,7 @@ abstract class BaseResource extends Resource
                 ->label('Template')
                 ->dehydrateStateUsing(function ($state) use ($subPath) {
                     // $state is the value of the 'template' field just before saving.
-        
+
                     // If the state is already null (meaning "Default System Template" was selected
                     // or it was already null), keep it as null.
                     if ($state === null) {
@@ -275,13 +273,13 @@ abstract class BaseResource extends Resource
     /**
      * Fetches only file-based template options.
      *
-     * @param string $subPath The subdirectory within 'resources/views/templates/'.
+     * @param  string  $subPath  The subdirectory within 'resources/views/templates/'.
      * @return array An array of [filename => label] for file-based templates.
      */
     protected static function fetchRawTemplateData(string $subPath = ''): array
     {
         $options = [];
-        $fullPath = 'views/templates/' . ($subPath ? ltrim($subPath, '/') : '');
+        $fullPath = 'views/templates/'.($subPath ? ltrim($subPath, '/') : '');
         $templatesPath = resource_path(rtrim($fullPath, '/'));
 
         if (File::isDirectory($templatesPath)) {
@@ -289,15 +287,14 @@ abstract class BaseResource extends Resource
             foreach ($files as $file) {
                 $filename = $file->getFilenameWithoutExtension();
                 // Ensure filename is not empty and use it as both key and value
-                if (!empty($filename)) {
+                if (! empty($filename)) {
                     $options[$filename] = $filename;
                 }
             }
         }
+
         return $options;
     }
-
-
 
     protected static function formFeaturedField(): array
     {
@@ -334,7 +331,7 @@ abstract class BaseResource extends Resource
             Section::make('SEO Settings')
                 ->schema([
                     SeoFields::make(),
-                ])
+                ]),
         ];
     }
 
@@ -360,7 +357,7 @@ abstract class BaseResource extends Resource
             )
             ->reorderable('menu_order')
             ->defaultSort('created_at', 'desc');
-        ;
+
     }
 
     protected static function tableColumns(): array
@@ -390,6 +387,7 @@ abstract class BaseResource extends Resource
             ToggleColumn::make('featured'),
         ];
     }
+
     protected static function tableStatusColumn(): array
     {
         return [
@@ -398,6 +396,7 @@ abstract class BaseResource extends Resource
                 ->sortable(),
         ];
     }
+
     protected static function tableAuthorColumn(): array
     {
         return [
@@ -406,6 +405,7 @@ abstract class BaseResource extends Resource
                 ->searchable(),
         ];
     }
+
     protected static function tableDateColumns(): array
     {
         return [
@@ -434,7 +434,6 @@ abstract class BaseResource extends Resource
         ];
     }
 
-
     protected static function tableFilters(): array
     {
 
@@ -456,7 +455,7 @@ abstract class BaseResource extends Resource
                     $originalSlugs = $newRecord->getTranslations('slug');
                     $newSlugs = [];
                     $locales = array_keys(config('cms.language_available')); // Get locales from app config
-        
+
                     foreach ($locales as $locale) {
 
                         $originalSlug = Arr::get($originalSlugs, $locale);
@@ -465,8 +464,8 @@ abstract class BaseResource extends Resource
                             $newSlug = $originalSlug;
                             // Check for uniqueness across all translations of the slug field
                             $modelClass = static::getModel();
-                            while ($modelClass::whereJsonContains('slug->' . $locale, $newSlug)->exists()) {
-                                $newSlug = $originalSlug . '-copy-' . $count++;
+                            while ($modelClass::whereJsonContains('slug->'.$locale, $newSlug)->exists()) {
+                                $newSlug = $originalSlug.'-copy-'.$count++;
                             }
                             $newSlugs[$locale] = $newSlug;
                         } else {

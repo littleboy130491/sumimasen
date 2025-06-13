@@ -3,7 +3,7 @@
 namespace Littleboy130491\Sumimasen\Filament\Abstracts;
 
 use Filament\Resources\Pages\CreateRecord;
-use Filament\Actions\CreateAction;
+
 abstract class BaseCreateResource extends CreateRecord
 {
     protected function getHeaderActions(): array
@@ -13,5 +13,4 @@ abstract class BaseCreateResource extends CreateRecord
                 ->formId('form'),
         ];
     }
-
 }

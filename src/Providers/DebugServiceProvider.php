@@ -2,14 +2,13 @@
 
 namespace Littleboy130491\Sumimasen\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
-use Littleboy130491\Sumimasen\Services\DebugCollector;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class DebugServiceProvider extends ServiceProvider
 {
@@ -33,7 +32,7 @@ class DebugServiceProvider extends ServiceProvider
         $debugConfig = config('cms.debug_mode');
 
         // Only boot if debug mode is enabled and environment is allowed
-        if (!$debugConfig['enabled'] || !in_array(app()->environment(), $debugConfig['environments'])) {
+        if (! $debugConfig['enabled'] || ! in_array(app()->environment(), $debugConfig['environments'])) {
             return;
         }
 

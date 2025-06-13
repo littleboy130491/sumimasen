@@ -2,9 +2,9 @@
 
 namespace Littleboy130491\Sumimasen\Policies;
 
-use Littleboy130491\Sumimasen\Models\User;
 use Datlechin\FilamentMenuBuilder\Models\Menu;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Littleboy130491\Sumimasen\Models\User;
 
 class MenuPolicy
 {

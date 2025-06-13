@@ -2,10 +2,15 @@
 
 namespace Littleboy130491\Sumimasen\Providers\Filament;
 
+use Awcodes\Curator\CuratorPlugin;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
+use Filament\Forms\Components\TextInput;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -16,18 +21,13 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Awcodes\Curator\CuratorPlugin;
-use Jeffgreco13\FilamentBreezy\BreezyCore;
-use Illuminate\Validation\Rules\Password;
-use Outerweb\FilamentTranslatableFields\Filament\Plugins\FilamentTranslatableFieldsPlugin;
-use Filament\Navigation\NavigationGroup;
-use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
 use Illuminate\Support\Facades\Gate;
-use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Jeffgreco13\FilamentBreezy\BreezyCore;
+use Outerweb\FilamentTranslatableFields\Filament\Plugins\FilamentTranslatableFieldsPlugin;
 use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
-use Filament\Forms\Components\TextInput;
+use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -90,7 +90,7 @@ class AdminPanelProvider extends PanelProvider
                         TextInput::make('classes'),
                     ]),
                 FilamentSpatieLaravelBackupPlugin::make()
-                    ->authorize(fn(): bool => auth()->user()->hasRole(['admin', 'super_admin'])),
+                    ->authorize(fn (): bool => auth()->user()->hasRole(['admin', 'super_admin'])),
             ])
             ->unsavedChangesAlerts()
             ->sidebarCollapsibleOnDesktop()

@@ -4,10 +4,8 @@ namespace Littleboy130491\Sumimasen\Filament\Abstracts;
 
 use Filament\Forms\Components\RichEditor;
 
-
 abstract class BaseTaxonomyResource extends BaseResource
 {
-
     protected static function formContentFields(string $locale): array
     {
 
@@ -56,16 +54,19 @@ abstract class BaseTaxonomyResource extends BaseResource
     {
         return []; // No featured column for taxonomy resources
     }
+
     protected static function tableStatusColumn(): array
     {
         return []; // No status column for taxonomy resources
 
     }
+
     protected static function tableAuthorColumn(): array
     {
         return []; // No author column for taxonomy resources
 
     }
+
     protected static function tablePublishedAtColumn(): array
     {
         return [];
@@ -75,5 +76,4 @@ abstract class BaseTaxonomyResource extends BaseResource
     {
         return []; // no bulk edit action for taxonomy resources
     }
-
 }

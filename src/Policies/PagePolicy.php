@@ -2,9 +2,9 @@
 
 namespace Littleboy130491\Sumimasen\Policies;
 
-use Littleboy130491\Sumimasen\Models\User;
-use Littleboy130491\Sumimasen\Models\Page;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Littleboy130491\Sumimasen\Models\Page;
+use Littleboy130491\Sumimasen\Models\User;
 
 class PagePolicy
 {

@@ -2,9 +2,9 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources\PostResource\Pages;
 
-use Littleboy130491\Sumimasen\Filament\Resources\PostResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Littleboy130491\Sumimasen\Filament\Resources\PostResource;
 
 class ListPosts extends ListRecords
 {

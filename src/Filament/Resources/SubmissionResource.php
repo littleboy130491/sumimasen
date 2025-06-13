@@ -2,14 +2,14 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources;
 
-use Littleboy130491\Sumimasen\Filament\Exports\SubmissionExporter;
-use Littleboy130491\Sumimasen\Filament\Resources\SubmissionResource\Pages;
-use Littleboy130491\Sumimasen\Models\Submission;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Littleboy130491\Sumimasen\Filament\Exports\SubmissionExporter;
+use Littleboy130491\Sumimasen\Filament\Resources\SubmissionResource\Pages;
+use Littleboy130491\Sumimasen\Models\Submission;
 
 class SubmissionResource extends Resource
 {
@@ -61,7 +61,7 @@ class SubmissionResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\ExportAction::make()
-                    ->exporter(SubmissionExporter::class)
+                    ->exporter(SubmissionExporter::class),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -70,7 +70,7 @@ class SubmissionResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ExportBulkAction::make()
-                        ->exporter(SubmissionExporter::class)
+                        ->exporter(SubmissionExporter::class),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

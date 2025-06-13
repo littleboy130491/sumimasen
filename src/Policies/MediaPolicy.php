@@ -2,9 +2,9 @@
 
 namespace Littleboy130491\Sumimasen\Policies;
 
-use Littleboy130491\Sumimasen\Models\User;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Littleboy130491\Sumimasen\Models\User;
 
 class MediaPolicy
 {

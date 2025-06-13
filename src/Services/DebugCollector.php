@@ -2,8 +2,8 @@
 
 namespace Littleboy130491\Sumimasen\Services;
 
-use Illuminate\Support\Str;
 use Illuminate\Routing\Route;
+use Illuminate\Support\Str;
 
 class DebugCollector
 {
@@ -14,7 +14,7 @@ class DebugCollector
         $this->data['views'][] = [
             'template' => $view,
             'variables' => $this->sanitizeVariables($data),
-            'timestamp' => microtime(true)
+            'timestamp' => microtime(true),
         ];
     }
 
@@ -25,7 +25,7 @@ class DebugCollector
             'uri' => $route->uri(),
             'methods' => $route->methods(),
             'controller' => $route->getActionName(),
-            'middleware' => $route->middleware()
+            'middleware' => $route->middleware(),
         ];
     }
 
@@ -34,7 +34,7 @@ class DebugCollector
         $this->data['cache'] = [
             'served_from_cache' => $fromCache,
             'cache_key' => $key,
-            'cache_driver' => config('cache.default')
+            'cache_driver' => config('cache.default'),
         ];
     }
 
@@ -48,7 +48,7 @@ class DebugCollector
         $this->data['components'][] = [
             'name' => $component,
             'data' => $this->sanitizeVariables($data),
-            'timestamp' => microtime(true)
+            'timestamp' => microtime(true),
         ];
     }
 
@@ -74,7 +74,7 @@ class DebugCollector
 
         if (is_array($value)) {
             if (count($value) > $maxArrayItems) {
-                return ['[LARGE_ARRAY:' . count($value) . '_items]']; // Return as an array
+                return ['[LARGE_ARRAY:'.count($value).'_items]']; // Return as an array
             }
             $sanitized = [];
             foreach ($value as $key => $item) {
@@ -84,15 +84,17 @@ class DebugCollector
                     $sanitized[$key] = $this->sanitizeRecursive($item, $redactedKeys, $maxArrayItems, $maxVariableDepth, $currentDepth + 1);
                 }
             }
+
             return $sanitized;
         } elseif (is_object($value)) {
             if (method_exists($value, 'toArray')) {
                 // If it can be converted to an array, sanitize its array representation
                 return $this->sanitizeRecursive($value->toArray(), $redactedKeys, $maxArrayItems, $maxVariableDepth, $currentDepth + 1);
             }
-            return '[OBJECT:' . get_class($value) . ']'; // Return as string for non-array-convertible objects
+
+            return '[OBJECT:'.get_class($value).']'; // Return as string for non-array-convertible objects
         } elseif (is_string($value) && Str::length($value) > 200) {
-            return '[LONG_STRING:' . Str::length($value) . '_chars]';
+            return '[LONG_STRING:'.Str::length($value).'_chars]';
         }
 
         return $value;

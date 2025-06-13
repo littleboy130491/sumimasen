@@ -4,12 +4,12 @@ namespace Littleboy130491\Sumimasen\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
-use Tests\TestCase;
+use Littleboy130491\Sumimasen\Enums\ContentStatus;
+use Littleboy130491\Sumimasen\Http\Controllers\ContentController;
 use Littleboy130491\Sumimasen\Models\Page;
 use Littleboy130491\Sumimasen\Models\Post;
 use Littleboy130491\Sumimasen\Models\User;
-use Littleboy130491\Sumimasen\Enums\ContentStatus;
-use Littleboy130491\Sumimasen\Http\Controllers\ContentController;
+use Tests\TestCase;
 
 class ContentControllerTest extends TestCase
 {
@@ -224,7 +224,7 @@ class ContentControllerTest extends TestCase
     // Tests for findContent private method
 
     /** @test */
-    public function findContent_returns_content_for_requested_locale_when_available()
+    public function find_content_returns_content_for_requested_locale_when_available()
     {
         $page = Page::create([
             'author_id' => $this->author->id,
@@ -233,7 +233,7 @@ class ContentControllerTest extends TestCase
             'slug' => ['en' => 'english-slug', 'id' => 'indonesian-slug'],
         ]);
 
-        $controller = new ContentController();
+        $controller = new ContentController;
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('findContent');
         $method->setAccessible(true);
@@ -245,7 +245,7 @@ class ContentControllerTest extends TestCase
     }
 
     /** @test */
-    public function findContent_falls_back_to_default_locale_when_requested_locale_slug_is_null()
+    public function find_content_falls_back_to_default_locale_when_requested_locale_slug_is_null()
     {
         $page = Page::create([
             'author_id' => $this->author->id,
@@ -254,7 +254,7 @@ class ContentControllerTest extends TestCase
             'slug' => ['en' => 'fallback-slug', 'id' => null],
         ]);
 
-        $controller = new ContentController();
+        $controller = new ContentController;
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('findContent');
         $method->setAccessible(true);
@@ -266,9 +266,9 @@ class ContentControllerTest extends TestCase
     }
 
     /** @test */
-    public function findContent_returns_null_when_content_not_found_in_requested_locale()
+    public function find_content_returns_null_when_content_not_found_in_requested_locale()
     {
-        $controller = new ContentController();
+        $controller = new ContentController;
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('findContent');
         $method->setAccessible(true);
@@ -279,9 +279,9 @@ class ContentControllerTest extends TestCase
     }
 
     /** @test */
-    public function findContent_returns_null_when_content_not_found_in_fallback_locale()
+    public function find_content_returns_null_when_content_not_found_in_fallback_locale()
     {
-        $controller = new ContentController();
+        $controller = new ContentController;
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('findContent');
         $method->setAccessible(true);
@@ -292,7 +292,7 @@ class ContentControllerTest extends TestCase
     }
 
     /** @test */
-    public function findContent_returns_null_for_unpublished_content()
+    public function find_content_returns_null_for_unpublished_content()
     {
         Page::create([
             'author_id' => $this->author->id,
@@ -301,7 +301,7 @@ class ContentControllerTest extends TestCase
             'slug' => ['en' => 'draft-slug'],
         ]);
 
-        $controller = new ContentController();
+        $controller = new ContentController;
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('findContent');
         $method->setAccessible(true);
@@ -312,7 +312,7 @@ class ContentControllerTest extends TestCase
     }
 
     /** @test */
-    public function findContent_works_with_default_locale_when_requested_locale_equals_default()
+    public function find_content_works_with_default_locale_when_requested_locale_equals_default()
     {
         $page = Page::create([
             'author_id' => $this->author->id,
@@ -321,7 +321,7 @@ class ContentControllerTest extends TestCase
             'slug' => ['en' => 'english-slug'],
         ]);
 
-        $controller = new ContentController();
+        $controller = new ContentController;
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('findContent');
         $method->setAccessible(true);
@@ -333,7 +333,7 @@ class ContentControllerTest extends TestCase
     }
 
     /** @test */
-    public function findContent_falls_back_to_default_locale_when_slug_missing_in_requested_locale()
+    public function find_content_falls_back_to_default_locale_when_slug_missing_in_requested_locale()
     {
         // Create content with only default locale slug
         $page = Page::create([
@@ -343,7 +343,7 @@ class ContentControllerTest extends TestCase
             'slug' => ['en' => 'only-english-slug'],
         ]);
 
-        $controller = new ContentController();
+        $controller = new ContentController;
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('findContent');
         $method->setAccessible(true);
@@ -360,11 +360,11 @@ class ContentControllerTest extends TestCase
     protected function createTestTemplate(string $template, string $content): void
     {
         // Use test-specific directory to avoid conflicts
-        $templatePath = resource_path('views/test-templates/' . str_replace('.', '/', str_replace('templates.', '', $template)) . '.blade.php');
+        $templatePath = resource_path('views/test-templates/'.str_replace('.', '/', str_replace('templates.', '', $template)).'.blade.php');
 
         // Create directory if it doesn't exist
         $directory = dirname($templatePath);
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             mkdir($directory, 0755, true);
         }
 
@@ -392,13 +392,13 @@ class ContentControllerTest extends TestCase
 
     private function removeDirectory(string $directory): void
     {
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             return;
         }
 
         $files = array_diff(scandir($directory), ['.', '..']);
         foreach ($files as $file) {
-            $path = $directory . '/' . $file;
+            $path = $directory.'/'.$file;
             if (is_dir($path)) {
                 $this->removeDirectory($path);
             } else {

@@ -2,13 +2,13 @@
 
 namespace Littleboy130491\Sumimasen\Mail;
 
-use Littleboy130491\Sumimasen\Models\Comment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Littleboy130491\Sumimasen\Models\Comment;
 
 class NewCommentNotification extends Mailable implements ShouldQueue
 {
@@ -30,7 +30,7 @@ class NewCommentNotification extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Comment Posted: ' . $this->comment->commentable->title, // Assuming commentable has a title
+            subject: 'New Comment Posted: '.$this->comment->commentable->title, // Assuming commentable has a title
         );
     }
 

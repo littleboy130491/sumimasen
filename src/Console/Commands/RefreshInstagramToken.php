@@ -3,12 +3,13 @@
 namespace Littleboy130491\Sumimasen\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 class RefreshInstagramToken extends Command
 {
     protected $signature = 'instagram:refresh-token';
+
     protected $description = 'Refresh Instagram long-lived access token and update .env file';
 
     public function handle()
@@ -28,14 +29,14 @@ class RefreshInstagramToken extends Command
             $envContent = File::get($envPath);
             $envContent = preg_replace(
                 '/INSTAGRAM_ACCESS_TOKEN=.*/',
-                'INSTAGRAM_ACCESS_TOKEN=' . $newToken,
+                'INSTAGRAM_ACCESS_TOKEN='.$newToken,
                 $envContent
             );
             File::put($envPath, $envContent);
 
             $this->info("Token refreshed! Expires in: {$expiresIn} seconds.");
         } else {
-            $this->error("Failed to refresh token: " . $response->body());
+            $this->error('Failed to refresh token: '.$response->body());
         }
     }
 }

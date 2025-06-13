@@ -2,6 +2,4 @@
 
 namespace Littleboy130491\Sumimasen;
 
-class Cms
-{
-}
+class Cms {}

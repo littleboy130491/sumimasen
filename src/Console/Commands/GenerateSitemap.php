@@ -3,9 +3,10 @@
 namespace Littleboy130491\Sumimasen\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
-use Illuminate\Support\Facades\Schema;
+
 class GenerateSitemap extends Command
 {
     /**
@@ -39,8 +40,9 @@ class GenerateSitemap extends Command
             $slugField = 'slug'; // assuming 'slug' is the field used for all
             if ($key === 'pages') {
                 $routePrefix = ''; // assuming 'page_slug' is the field used for pages
-            } else
-                $routePrefix = $key . '/';
+            } else {
+                $routePrefix = $key.'/';
+            }
 
             $instance = new $modelClass;
             $query = $modelClass::query();

@@ -15,15 +15,16 @@ use Illuminate\View\Component;
  *     :description="$post->excerpt ?? null"
  * />
  *
- * @property string $url         The URL to share.
- * @property string $title       The title of the page/content.
+ * @property string $url The URL to share.
+ * @property string $title The title of the page/content.
  * @property string|null $description Optional description (for some platforms).
  */
-
 class SocialShare extends Component
 {
     public string $url;
+
     public string $title;
+
     public ?string $description;
 
     public function __construct(string $url, string $title, ?string $description = null)
@@ -46,24 +47,24 @@ class SocialShare extends Component
 
         return [
             'facebook' => [
-                'enabled' => !empty($site['facebook']),
+                'enabled' => ! empty($site['facebook']),
                 'share_url' => "https://www.facebook.com/sharer/sharer.php?u={$url}",
-                'profile_url' => $site['facebook'] ?? '#'
+                'profile_url' => $site['facebook'] ?? '#',
             ],
             'twitter' => [
-                'enabled' => !empty($site['twitter']),
+                'enabled' => ! empty($site['twitter']),
                 'share_url' => "https://twitter.com/intent/tweet?url={$url}&text={$title}",
-                'profile_url' => $site['twitter'] ?? '#'
+                'profile_url' => $site['twitter'] ?? '#',
             ],
             'linkedin' => [
-                'enabled' => !empty($site['linkedin']),
+                'enabled' => ! empty($site['linkedin']),
                 'share_url' => "https://www.linkedin.com/shareArticle?url={$url}&title={$title}",
-                'profile_url' => $site['linkedin'] ?? '#'
+                'profile_url' => $site['linkedin'] ?? '#',
             ],
             'whatsapp' => [
-                'enabled' => !empty($site['whatsapp']),
+                'enabled' => ! empty($site['whatsapp']),
                 'share_url' => "https://wa.me/?text={$title}%20{$url}",
-                'profile_url' => null
+                'profile_url' => null,
             ],
 
         ];

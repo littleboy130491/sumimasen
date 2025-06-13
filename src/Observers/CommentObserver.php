@@ -2,13 +2,13 @@
 
 namespace Littleboy130491\Sumimasen\Observers;
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Littleboy130491\Sumimasen\Enums\CommentStatus;
+use Littleboy130491\Sumimasen\Mail\CommentReplyNotification;
+use Littleboy130491\Sumimasen\Mail\NewCommentNotification;
 use Littleboy130491\Sumimasen\Models\Comment;
 use Littleboy130491\Sumimasen\Models\User;
-use Littleboy130491\Sumimasen\Mail\NewCommentNotification;
-use Littleboy130491\Sumimasen\Mail\CommentReplyNotification;
-use Littleboy130491\Sumimasen\Enums\CommentStatus;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use Spatie\ResponseCache\Facades\ResponseCache;
 
 class CommentObserver
@@ -27,7 +27,7 @@ class CommentObserver
             }
 
         } catch (\Exception $e) {
-            Log::error('Error in CommentObserver created method for comment ID: ' . $comment->id . '. Error: ' . $e->getMessage());
+            Log::error('Error in CommentObserver created method for comment ID: '.$comment->id.'. Error: '.$e->getMessage());
 
         }
 
@@ -48,7 +48,6 @@ class CommentObserver
             $this->clearCacheForCommentable($comment);
         }
     }
-
 
     /**
      * Handle the Comment "deleted" event.
@@ -85,7 +84,8 @@ class CommentObserver
             $adminUsers = User::role(['admin', 'super_admin'])->get();
 
             if ($adminUsers->isEmpty()) {
-                Log::warning('No admin users found to send new comment notification for comment ID: ' . $comment->id);
+                Log::warning('No admin users found to send new comment notification for comment ID: '.$comment->id);
+
                 return;
             }
 
@@ -93,7 +93,7 @@ class CommentObserver
                 Mail::to($admin->email)->send(new NewCommentNotification($comment));
             }
         } catch (\Exception $e) {
-            Log::error('Failed to send admin new comment notification for comment ID: ' . $comment->id . '. Error: ' . $e->getMessage());
+            Log::error('Failed to send admin new comment notification for comment ID: '.$comment->id.'. Error: '.$e->getMessage());
         }
     }
 
@@ -102,30 +102,31 @@ class CommentObserver
      */
     private function sendReplyNotification(Comment $comment): void
     {
-        if (!$comment->parent_id) {
+        if (! $comment->parent_id) {
             return;
         }
 
         try {
             $parentComment = $comment->parent; // Eloquent relationship
 
-            if ($parentComment && !empty($parentComment->email)) {
+            if ($parentComment && ! empty($parentComment->email)) {
                 Mail::to($parentComment->email)->send(new CommentReplyNotification($comment, $parentComment));
                 // Log::info('Comment reply notification sent to ' . $parentComment->email . ' for reply ID: ' . $comment->id);
             } elseif ($parentComment && empty($parentComment->email)) {
                 // Log::info('Parent comment (ID: ' . $parentComment->id . ') for reply (ID: ' . $comment->id . ') does not have an email address. No notification sent.');
-            } elseif (!$parentComment) {
+            } elseif (! $parentComment) {
                 // Log::warning('Parent comment not found for reply ID: ' . $comment->id . '. No notification sent.');
             }
         } catch (\Exception $e) {
-            Log::error('Failed to send comment reply notification for reply ID: ' . $comment->id . '. Error: ' . $e->getMessage());
+            Log::error('Failed to send comment reply notification for reply ID: '.$comment->id.'. Error: '.$e->getMessage());
         }
     }
+
     protected function getCommentableUrl(Comment $comment): ?string
     {
         $commentable = $comment->commentable;
 
-        if (!$commentable) {
+        if (! $commentable) {
             return null;
         }
 
@@ -148,7 +149,7 @@ class CommentObserver
                     'content_slug' => $commentable->slug,
                 ]);
             } catch (\Exception $e) {
-                \Log::warning('Failed to generate commentable URL via route: ' . $e->getMessage());
+                \Log::warning('Failed to generate commentable URL via route: '.$e->getMessage());
             }
         }
 
@@ -162,5 +163,4 @@ class CommentObserver
             ResponseCache::forget($url);
         }
     }
-
 }

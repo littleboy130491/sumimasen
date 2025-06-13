@@ -24,21 +24,21 @@ class MediaFactory extends Factory
      */
     public function definition(): array
     {
-        $filename = fake()->word() . '.' . fake()->randomElement(['jpg', 'png', 'gif', 'webp']);
-        
+        $filename = fake()->word().'.'.fake()->randomElement(['jpg', 'png', 'gif', 'webp']);
+
         return [
             'disk' => 'public',
             'directory' => 'media',
             'filename' => $filename,
             'extension' => pathinfo($filename, PATHINFO_EXTENSION),
-            'mime_type' => 'image/' . pathinfo($filename, PATHINFO_EXTENSION),
+            'mime_type' => 'image/'.pathinfo($filename, PATHINFO_EXTENSION),
             'size' => fake()->numberBetween(1000, 1000000),
             'alt' => fake()->sentence(3),
             'title' => fake()->sentence(2),
             'description' => fake()->optional()->paragraph(),
             'caption' => fake()->optional()->sentence(),
             'exif' => [],
-            'path' => 'media/' . $filename,
+            'path' => 'media/'.$filename,
             'width' => fake()->numberBetween(100, 2000),
             'height' => fake()->numberBetween(100, 2000),
             'created_at' => now(),
@@ -53,7 +53,7 @@ class MediaFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'extension' => fake()->randomElement(['jpg', 'png', 'gif', 'webp']),
-            'mime_type' => 'image/' . fake()->randomElement(['jpeg', 'png', 'gif', 'webp']),
+            'mime_type' => 'image/'.fake()->randomElement(['jpeg', 'png', 'gif', 'webp']),
             'width' => fake()->numberBetween(100, 2000),
             'height' => fake()->numberBetween(100, 2000),
         ]);
@@ -66,7 +66,7 @@ class MediaFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'extension' => fake()->randomElement(['pdf', 'doc', 'docx', 'txt']),
-            'mime_type' => 'application/' . fake()->randomElement(['pdf', 'msword', 'vnd.openxmlformats-officedocument.wordprocessingml.document', 'plain']),
+            'mime_type' => 'application/'.fake()->randomElement(['pdf', 'msword', 'vnd.openxmlformats-officedocument.wordprocessingml.document', 'plain']),
             'width' => null,
             'height' => null,
         ]);

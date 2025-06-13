@@ -2,12 +2,12 @@
 
 namespace Littleboy130491\Sumimasen\Livewire;
 
-use Littleboy130491\Sumimasen\Models\Submission;
-use Littleboy130491\Sumimasen\Mail\FormSubmissionNotification;
-use Livewire\Attributes\Validate;
-use Livewire\Component;
 use Anhskohbo\NoCaptcha\Facades\NoCaptcha;
 use Illuminate\Support\Facades\Mail;
+use Littleboy130491\Sumimasen\Mail\FormSubmissionNotification;
+use Littleboy130491\Sumimasen\Models\Submission;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
 
 class SubmissionForm extends Component
 {
@@ -27,7 +27,9 @@ class SubmissionForm extends Component
     public $phone = '';
 
     public $captcha = '';
+
     public $showSuccess = false;
+
     public $formSubmitted = false;
 
     public function submit()
@@ -41,8 +43,9 @@ class SubmissionForm extends Component
 
         // Validate CAPTCHA only if enabled
         if ($this->isCaptchaEnabled()) {
-            if (!NoCaptcha::verifyResponse($this->captcha, request()->ip())) {
+            if (! NoCaptcha::verifyResponse($this->captcha, request()->ip())) {
                 $this->addError('captcha', __('submission-form.captcha_error'));
+
                 return;
             }
         }
@@ -59,7 +62,7 @@ class SubmissionForm extends Component
                     'submitted_at' => now()->toISOString(),
                     'ip_address' => request()->ip(),
                     'user_agent' => request()->userAgent(),
-                ]
+                ],
             ]);
 
             // Send email notification to admin
@@ -90,7 +93,7 @@ class SubmissionForm extends Component
 
     public function isCaptchaEnabled()
     {
-        return !empty(config('captcha.sitekey')) && !empty(config('captcha.secret'));
+        return ! empty(config('captcha.sitekey')) && ! empty(config('captcha.secret'));
     }
 
     public function hideSuccess()

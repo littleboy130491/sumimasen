@@ -2,7 +2,6 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Exports;
 
-use Littleboy130491\Sumimasen\Models\Tag;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
@@ -21,7 +20,7 @@ class TagExporter extends Exporter
             ExportColumn::make('featured_image'),
             ExportColumn::make('menu_order'),
             ExportColumn::make('template'),
-            ExportColumn::make('posts')->formatStateUsing(fn($state) => $state->pluck('id')->join(', ')), // Related Post IDs
+            ExportColumn::make('posts')->formatStateUsing(fn ($state) => $state->pluck('id')->join(', ')), // Related Post IDs
             ExportColumn::make('created_at'),
             ExportColumn::make('updated_at'),
         ];
@@ -29,10 +28,10 @@ class TagExporter extends Exporter
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your Tag export has completed and ' . number_format($export->successful_rows) . ' ' . Str::plural('row', $export->successful_rows) . ' exported.';
+        $body = 'Your Tag export has completed and '.number_format($export->successful_rows).' '.Str::plural('row', $export->successful_rows).' exported.';
 
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . Str::plural('row', $failedRowsCount) . ' failed to export.';
+            $body .= ' '.number_format($failedRowsCount).' '.Str::plural('row', $failedRowsCount).' failed to export.';
         }
 
         return $body;

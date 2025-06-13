@@ -2,10 +2,11 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Traits;
 
-use Filament\Forms\Components\Builder as FormsBuilder;
-use Filament\Forms\Components\TextInput;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
+use Filament\Forms\Components\Builder as FormsBuilder;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\TextInput;
+
 trait HasContentBlocks
 {
     private static function getCompleteBlock(): FormsBuilder\Block

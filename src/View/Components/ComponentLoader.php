@@ -19,8 +19,6 @@ use Littleboy130491\Sumimasen\Models\Component as ComponentModel;
  * - Retrieve the associated data
  * - Pass the data to a dynamic component for rendering (e.g., <x-dynamic.slide :componentData="$componentData" />)
  * - In the blade view, you can access the data using $componentData->blocks, see Littleboy130491\Sumimasen\Models\Component getBlocksAttribute method.
- *
- * @package Littleboy130491\Sumimasen\View\Components
  */
 class ComponentLoader extends Component
 {
@@ -41,7 +39,7 @@ class ComponentLoader extends Component
     /**
      * Create a new component instance.
      *
-     * @param string $name The slug of the component to load.
+     * @param  string  $name  The slug of the component to load.
      */
     public function __construct($name)
     {

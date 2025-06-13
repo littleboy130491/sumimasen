@@ -2,9 +2,9 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources\TagResource\Pages;
 
-use Littleboy130491\Sumimasen\Filament\Resources\TagResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Littleboy130491\Sumimasen\Filament\Resources\TagResource;
 
 class ListTags extends ListRecords
 {

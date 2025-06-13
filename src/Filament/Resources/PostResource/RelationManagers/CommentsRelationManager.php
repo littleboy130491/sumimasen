@@ -6,10 +6,6 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Illuminate\Database\Eloquent\Builder;
 use Littleboy130491\Sumimasen\Enums\CommentStatus;
 use Littleboy130491\Sumimasen\Filament\Traits\CommentTrait;
 
@@ -58,9 +54,8 @@ class CommentsRelationManager extends RelationManager
             ])
             ->emptyStateHeading('No comments for this record')
             ->emptyStateDescription('');
-        ;
-    }
 
+    }
 
     public static function tableColumns(): array
     {
@@ -87,5 +82,4 @@ class CommentsRelationManager extends RelationManager
             Tables\Columns\TextColumn::make('created_at')->sortable(),
         ];
     }
-
 }

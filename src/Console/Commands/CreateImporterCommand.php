@@ -5,8 +5,8 @@ namespace Littleboy130491\Sumimasen\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
-use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 class CreateImporterCommand extends Command
 {
@@ -37,7 +37,6 @@ class CreateImporterCommand extends Command
     /**
      * Create a new command instance.
      *
-     * @param \Illuminate\Filesystem\Filesystem $files
      * @return void
      */
     public function __construct(Filesystem $files)
@@ -57,8 +56,9 @@ class CreateImporterCommand extends Command
         $specificModel = $this->option('model');
         $force = $this->option('force');
 
-        if (!$this->files->exists($yamlFilePath)) {
+        if (! $this->files->exists($yamlFilePath)) {
             $this->error("YAML file not found at: {$yamlFilePath}");
+
             return 1;
         }
 
@@ -67,11 +67,13 @@ class CreateImporterCommand extends Command
             $schema = Yaml::parse($yamlContent);
         } catch (ParseException $exception) {
             $this->error("Error parsing YAML file: {$exception->getMessage()}");
+
             return 1;
         }
 
-        if (!isset($schema['models']) || !is_array($schema['models'])) {
+        if (! isset($schema['models']) || ! is_array($schema['models'])) {
             $this->error("Invalid YAML structure. Missing 'models' key or it's not an array.");
+
             return 1;
         }
 
@@ -79,8 +81,9 @@ class CreateImporterCommand extends Command
 
         // Filter for a specific model if the option is provided
         if ($specificModel) {
-            if (!isset($modelsToProcess[$specificModel])) {
+            if (! isset($modelsToProcess[$specificModel])) {
                 $this->error("Model '{$specificModel}' not found in the YAML file.");
+
                 return 1;
             }
             $modelsToProcess = [$specificModel => $modelsToProcess[$specificModel]];
@@ -95,33 +98,32 @@ class CreateImporterCommand extends Command
         }
 
         $this->info('Importer generation process completed.');
+
         return 0;
     }
 
     /**
      * Generate the Filament Importer file.
      *
-     * @param string $modelName
-     * @param array $definition
-     * @param bool $force
      * @return bool Returns true if the file was generated, false otherwise.
      */
     protected function generateImporterFile(string $modelName, array $definition, bool $force): bool
     {
-        $className = Str::studly($modelName) . 'Importer';
+        $className = Str::studly($modelName).'Importer';
         $filePath = app_path("Filament/Imports/{$className}.php"); // Assumes app/Filament/Imports path
 
         // Check if file exists and prompt for overwrite unless --force is used
-        if ($this->files->exists($filePath) && !$force) {
-            if (!$this->confirm("Importer file [{$filePath}] already exists. Overwrite?", false)) {
+        if ($this->files->exists($filePath) && ! $force) {
+            if (! $this->confirm("Importer file [{$filePath}] already exists. Overwrite?", false)) {
                 $this->line("Skipping generation for importer: {$className}");
+
                 return false;
             }
         }
 
         // Ensure the directory exists
         $directoryPath = dirname($filePath);
-        if (!$this->files->isDirectory($directoryPath)) {
+        if (! $this->files->isDirectory($directoryPath)) {
             $this->files->makeDirectory($directoryPath, 0755, true);
         }
 
@@ -131,42 +133,38 @@ class CreateImporterCommand extends Command
         // Write the file
         if ($this->files->put($filePath, $content) !== false) {
             $this->line("<info>Created Importer:</info> {$filePath}");
+
             return true;
         } else {
             $this->error("Failed to write importer file: {$filePath}");
+
             return false;
         }
     }
 
     /**
      * Build the full content of the Importer file.
-     *
-     * @param string $modelName
-     * @param string $className
-     * @param array $definition
-     * @return string
      */
     protected function buildImporterContent(string $modelName, string $className, array $definition): string
     {
-        $modelClass = 'Littleboy130491\Sumimasen\\Models\\' . Str::studly($modelName);
+        $modelClass = 'Littleboy130491\Sumimasen\\Models\\'.Str::studly($modelName);
         $modelVariableName = Str::camel($modelName);
         $fields = $definition['fields'] ?? [];
 
         $importColumns = collect($fields)
-            ->map(fn($fieldDef, $fieldName) => "            ImportColumn::make('{$fieldName}'),")
+            ->map(fn ($fieldDef, $fieldName) => "            ImportColumn::make('{$fieldName}'),")
             ->implode("\n");
 
         // Add relationships to import columns if needed (basic example)
-        if (!empty($definition['relationships'])) {
+        if (! empty($definition['relationships'])) {
             $relationshipColumns = collect($definition['relationships'])
-                ->filter(fn($relDef) => in_array(strtolower($relDef['type'] ?? ''), ['belongsto', 'hasone'])) // Only include simple relationships for now
-                ->map(fn($relDef, $relName) => "            ImportColumn::make('{$relName}_id'), // Example: Import related model ID") // Basic example
+                ->filter(fn ($relDef) => in_array(strtolower($relDef['type'] ?? ''), ['belongsto', 'hasone'])) // Only include simple relationships for now
+                ->map(fn ($relDef, $relName) => "            ImportColumn::make('{$relName}_id'), // Example: Import related model ID") // Basic example
                 ->implode("\n");
-            if (!empty($relationshipColumns)) {
-                $importColumns .= "\n" . $relationshipColumns;
+            if (! empty($relationshipColumns)) {
+                $importColumns .= "\n".$relationshipColumns;
             }
         }
-
 
         return <<<PHP
 <?php

@@ -2,12 +2,13 @@
 
 namespace Littleboy130491\Sumimasen\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Database\Migrations\MigrationCreator;
-use SolutionForest\FilamentTranslateField\Facades\FilamentTranslateField;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
+use Illuminate\Database\Migrations\MigrationCreator;
+use Illuminate\Support\ServiceProvider;
 use Littleboy130491\Sumimasen\Models\Comment;
 use Littleboy130491\Sumimasen\Observers\CommentObserver;
+use SolutionForest\FilamentTranslateField\Facades\FilamentTranslateField;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**

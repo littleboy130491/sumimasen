@@ -2,9 +2,9 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources\ComponentResource\Pages;
 
-use Littleboy130491\Sumimasen\Filament\Resources\ComponentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Littleboy130491\Sumimasen\Filament\Resources\ComponentResource;
 
 class EditComponent extends EditRecord
 {

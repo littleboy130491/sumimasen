@@ -2,20 +2,20 @@
 
 namespace Littleboy130491\Sumimasen\Mail;
 
-use Littleboy130491\Sumimasen\Models\Comment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
+use Littleboy130491\Sumimasen\Models\Comment;
 
 class CommentReplyNotification extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
     public Comment $reply;
+
     public Comment $parentComment;
 
     /**
@@ -33,9 +33,9 @@ class CommentReplyNotification extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Someone replied to your comment on "' . (
+            subject: 'Someone replied to your comment on "'.(
                 optional($this->parentComment->commentable)->title ?? 'a post'
-            ) . '"',
+            ).'"',
         );
     }
 
@@ -66,9 +66,9 @@ class CommentReplyNotification extends Mailable implements ShouldQueue
                         'lang' => app()->getLocale(),
                         'content_type_key' => $contentTypeKey,
                         'content_slug' => $commentable->slug,
-                    ]) . '#comment-' . $this->reply->id;
+                    ]).'#comment-'.$this->reply->id;
                 } catch (\Exception $e) {
-                    \Log::warning('Failed to generate commentable URL via route: ' . $e->getMessage());
+                    \Log::warning('Failed to generate commentable URL via route: '.$e->getMessage());
                 }
             }
         }

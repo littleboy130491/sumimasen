@@ -5,8 +5,8 @@ namespace Littleboy130491\Sumimasen\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
-use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 class CreateExporterCommand extends Command
 {
@@ -37,7 +37,6 @@ class CreateExporterCommand extends Command
     /**
      * Create a new command instance.
      *
-     * @param \Illuminate\Filesystem\Filesystem $files
      * @return void
      */
     public function __construct(Filesystem $files)
@@ -57,8 +56,9 @@ class CreateExporterCommand extends Command
         $specificModel = $this->option('model');
         $force = $this->option('force');
 
-        if (!$this->files->exists($yamlFilePath)) {
+        if (! $this->files->exists($yamlFilePath)) {
             $this->error("YAML file not found at: {$yamlFilePath}");
+
             return 1;
         }
 
@@ -67,11 +67,13 @@ class CreateExporterCommand extends Command
             $schema = Yaml::parse($yamlContent);
         } catch (ParseException $exception) {
             $this->error("Error parsing YAML file: {$exception->getMessage()}");
+
             return 1;
         }
 
-        if (!isset($schema['models']) || !is_array($schema['models'])) {
+        if (! isset($schema['models']) || ! is_array($schema['models'])) {
             $this->error("Invalid YAML structure. Missing 'models' key or it's not an array.");
+
             return 1;
         }
 
@@ -79,8 +81,9 @@ class CreateExporterCommand extends Command
 
         // Filter for a specific model if the option is provided
         if ($specificModel) {
-            if (!isset($modelsToProcess[$specificModel])) {
+            if (! isset($modelsToProcess[$specificModel])) {
                 $this->error("Model '{$specificModel}' not found in the YAML file.");
+
                 return 1;
             }
             $modelsToProcess = [$specificModel => $modelsToProcess[$specificModel]];
@@ -95,34 +98,32 @@ class CreateExporterCommand extends Command
         }
 
         $this->info('Exporter generation process completed.');
+
         return 0;
     }
 
     /**
      * Generate the Filament Exporter file.
      *
-     * @param string $modelName
-     * @param array $definition
-     * @param bool $force
      * @return bool Returns true if the file was generated, false otherwise.
      */
     protected function generateExporterFile(string $modelName, array $definition, bool $force): bool
     {
-        $className = Str::studly($modelName) . 'Exporter';
+        $className = Str::studly($modelName).'Exporter';
         $filePath = app_path("Filament/Exports/{$className}.php"); // Assumes app/Filament/Exports path
 
-
         // Check if file exists and prompt for overwrite unless --force is used
-        if ($this->files->exists($filePath) && !$force) {
-            if (!$this->confirm("Exporter file [{$filePath}] already exists. Overwrite?", false)) {
+        if ($this->files->exists($filePath) && ! $force) {
+            if (! $this->confirm("Exporter file [{$filePath}] already exists. Overwrite?", false)) {
                 $this->line("Skipping generation for exporter: {$className}");
+
                 return false;
             }
         }
 
         // Ensure the directory exists
         $directoryPath = dirname($filePath);
-        if (!$this->files->isDirectory($directoryPath)) {
+        if (! $this->files->isDirectory($directoryPath)) {
             $this->files->makeDirectory($directoryPath, 0755, true);
         }
 
@@ -132,24 +133,21 @@ class CreateExporterCommand extends Command
         // Write the file
         if ($this->files->put($filePath, $content) !== false) {
             $this->line("<info>Created Exporter:</info> {$filePath}");
+
             return true;
         } else {
             $this->error("Failed to write exporter file: {$filePath}");
+
             return false;
         }
     }
 
     /**
      * Build the full content of the Exporter file.
-     *
-     * @param string $modelName
-     * @param string $className
-     * @param array $definition
-     * @return string
      */
     protected function buildExporterContent(string $modelName, string $className, array $definition): string
     {
-        $modelClass = 'Littleboy130491\Sumimasen\\Models\\' . Str::studly($modelName);
+        $modelClass = 'Littleboy130491\Sumimasen\\Models\\'.Str::studly($modelName);
         $modelVariableName = Str::camel($modelName);
         $fields = $definition['fields'] ?? [];
         $relationships = $definition['relationships'] ?? [];
@@ -159,19 +157,20 @@ class CreateExporterCommand extends Command
                 // Filter out foreign key fields if a corresponding belongsTo relationship exists
                 foreach ($relationships as $relName => $relDef) {
                     if (strtolower($relDef['type'] ?? '') === 'belongsto') {
-                        $foreignKey = $relDef['foreign_key'] ?? Str::snake($relName) . '_id';
+                        $foreignKey = $relDef['foreign_key'] ?? Str::snake($relName).'_id';
                         if ($fieldName === $foreignKey) {
                             return false; // Exclude the foreign key field if the relationship is included
                         }
                     }
                 }
+
                 return true; // Include the field otherwise
             })
-            ->map(fn($fieldDef, $fieldName) => "            ExportColumn::make('{$fieldName}'),")
+            ->map(fn ($fieldDef, $fieldName) => "            ExportColumn::make('{$fieldName}'),")
             ->implode("\n");
 
         // Add relationships to export columns
-        if (!empty($relationships)) {
+        if (! empty($relationships)) {
             $relationshipColumns = collect($relationships)
                 ->map(function ($relDef, $relName) {
                     $type = strtolower($relDef['type'] ?? '');
@@ -188,16 +187,16 @@ class CreateExporterCommand extends Command
                         // Or related IDs (requires relationship to be loaded):
                         return "            ExportColumn::make('{$relName}')->formatStateUsing(fn (\$state) => \$state->pluck('id')->join(', ')), // Related {$relDef['model']} IDs";
                     }
+
                     return null; // Ignore other relationship types for now
                 })
                 ->filter() // Remove null entries
                 ->implode("\n");
 
-            if (!empty($relationshipColumns)) {
-                $exportColumns .= "\n" . $relationshipColumns;
+            if (! empty($relationshipColumns)) {
+                $exportColumns .= "\n".$relationshipColumns;
             }
         }
-
 
         return <<<PHP
 <?php

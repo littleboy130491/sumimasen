@@ -3,7 +3,6 @@
 namespace Littleboy130491\Sumimasen\Models;
 
 use Afatmustafa\SeoSuite\Models\Traits\InteractsWithSeoSuite;
-use Littleboy130491\Sumimasen\Models\User;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,9 +12,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Page extends Model
 {
-    use HasFactory, HasTranslations, SoftDeletes, InteractsWithSeoSuite;
-
-
+    use HasFactory, HasTranslations, InteractsWithSeoSuite, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -35,9 +32,8 @@ class Page extends Model
         'slug',
         'status',
         'template',
-        'title'
+        'title',
     ];
-
 
     /**
      * The attributes that should be cast.
@@ -50,9 +46,8 @@ class Page extends Model
         'menu_order' => 'integer',
         'parent_id' => 'integer',
         'status' => \Littleboy130491\Sumimasen\Enums\ContentStatus::class,
-        'published_at' => 'datetime'
+        'published_at' => 'datetime',
     ];
-
 
     /**
      * The attributes that are translatable.
@@ -64,17 +59,13 @@ class Page extends Model
         'excerpt',
         'section',
         'slug',
-        'title'
+        'title',
     ];
-
 
     protected $appends = ['blocks'];
 
-
     /**
      * Return the raw data blocks, but with image URLs injected.
-     *
-     * @return array
      */
     public function getBlocksAttribute(): array
     {
@@ -88,9 +79,9 @@ class Page extends Model
             return $block;
         })->all();
     }
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
     // Relationships
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
     /**
      * Define the featuredImage relationship to Curator Media.
@@ -119,7 +110,4 @@ class Page extends Model
         // Add foreign key argument if specified in YAML
         return $this->belongsTo(Page::class, 'parent_id');
     }
-
-
-
 }

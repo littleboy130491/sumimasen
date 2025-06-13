@@ -2,13 +2,12 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Traits;
 
-use Filament\Tables;
-use Littleboy130491\Sumimasen\Enums\CommentStatus;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-
+use Filament\Tables;
+use Illuminate\Database\Eloquent\Builder;
+use Littleboy130491\Sumimasen\Enums\CommentStatus;
 
 trait CommentTrait
 {
@@ -33,7 +32,7 @@ trait CommentTrait
                 name: 'parent',
                 titleAttribute: 'id',
                 ignoreRecord: true,
-                modifyQueryUsing: fn(Builder $query) => $query->where('status', CommentStatus::Approved)
+                modifyQueryUsing: fn (Builder $query) => $query->where('status', CommentStatus::Approved)
             )->label('Reply to'),
             ...static::formFieldsCommentable(),
         ];
@@ -93,8 +92,10 @@ trait CommentTrait
                 ->url(function ($record): ?string {
                     $resources = self::getCommentableResources();
                     $resourceClass = $resources[$record->commentable_type] ?? null;
-                    if (!$resourceClass)
+                    if (! $resourceClass) {
                         return null;
+                    }
+
                     return $resourceClass::getUrl('edit', ['record' => $record->commentable]);
                 }),
         ];
@@ -125,6 +126,4 @@ trait CommentTrait
                 ->label('Edit selected'),
         ];
     }
-
-
 }

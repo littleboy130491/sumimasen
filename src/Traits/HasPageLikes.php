@@ -6,20 +6,18 @@ trait HasPageLikes
 {
     /**
      * Get the current page likes count for this model.
-     *
-     * @return int
      */
     public function getPageLikesAttribute(): int
     {
         $customFields = $this->custom_fields ?? [];
+
         return (int) ($customFields['page_likes'] ?? 0);
     }
 
     /**
      * Increment the page likes count for this model.
      *
-     * @param int $increment The amount to increment by (default: 1)
-     * @return bool
+     * @param  int  $increment  The amount to increment by (default: 1)
      */
     public function incrementPageLikes(int $increment = 1): bool
     {
@@ -33,8 +31,7 @@ trait HasPageLikes
     /**
      * Decrement the page likes count for this model.
      *
-     * @param int $decrement The amount to decrement by (default: 1)
-     * @return bool
+     * @param  int  $decrement  The amount to decrement by (default: 1)
      */
     public function decrementPageLikes(int $decrement = 1): bool
     {
@@ -48,8 +45,7 @@ trait HasPageLikes
     /**
      * Set the page likes count for this model.
      *
-     * @param int $likes The new page likes count
-     * @return bool
+     * @param  int  $likes  The new page likes count
      */
     public function setPageLikes(int $likes): bool
     {
@@ -61,8 +57,6 @@ trait HasPageLikes
 
     /**
      * Reset the page likes count to zero.
-     *
-     * @return bool
      */
     public function resetPageLikes(): bool
     {
@@ -72,8 +66,8 @@ trait HasPageLikes
     /**
      * Scope to order by page likes (most liked first).
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $direction
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $direction
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeOrderByPageLikes($query, $direction = 'desc')
@@ -84,8 +78,8 @@ trait HasPageLikes
     /**
      * Scope to get most liked content.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $limit
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  int  $limit
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeMostLiked($query, $limit = 10)
@@ -96,8 +90,8 @@ trait HasPageLikes
     /**
      * Scope to filter by minimum page likes.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $minLikes
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  int  $minLikes
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeWithMinLikes($query, $minLikes)

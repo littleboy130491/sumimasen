@@ -2,16 +2,18 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources;
 
+use Littleboy130491\Sumimasen\Filament\Abstracts\BaseTaxonomyResource;
 use Littleboy130491\Sumimasen\Filament\Resources\TagResource\Pages;
 use Littleboy130491\Sumimasen\Models\Tag;
-use Littleboy130491\Sumimasen\Filament\Abstracts\BaseTaxonomyResource;
 
 class TagResource extends BaseTaxonomyResource
 {
     protected static ?string $model = Tag::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
+
     protected static ?string $navigationGroup = 'Contents';
+
     protected static ?int $navigationSort = 40;
 
     public static function getRelations(): array

@@ -13,8 +13,6 @@ class Comment extends Model
 {
     use HasFactory, SoftDeletes;
 
-
-
     /**
      * The attributes that are mass assignable.
      *
@@ -27,9 +25,8 @@ class Comment extends Model
         'email',
         'name',
         'parent_id',
-        'status'
+        'status',
     ];
-
 
     /**
      * The attributes that should be cast.
@@ -39,15 +36,12 @@ class Comment extends Model
     protected $casts = [
         'status' => Littleboy130491\Sumimasen\Enums\CommentStatus::class,
         'parent_id' => 'integer',
-        'commentable_id' => 'integer'
+        'commentable_id' => 'integer',
     ];
 
-
-
-
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
     // Relationships
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
     /**
      * Define the commentable relationship.

@@ -2,31 +2,36 @@
 
 namespace Littleboy130491\Sumimasen\View\Components;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\Component;
 use Yizack\InstagramFeed as IGfeed;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * Class InstagramFeed
- * @package Littleboy130491\Sumimasen\View\Components
  */
 class InstagramFeed extends Component
 {
     public $feeds;
+
     public $type;
+
     public $columns;
+
     public $limit;
+
     public $showCaption;
+
     public $showLikes;
+
     public $showTimestamp;
 
     /**
-     * @param string $type
-     * @param int $columns
-     * @param int|null $limit
-     * @param bool $showCaption
-     * @param bool $showLikes
-     * @param bool $showTimestamp
+     * @param  string  $type
+     * @param  int  $columns
+     * @param  int|null  $limit
+     * @param  bool  $showCaption
+     * @param  bool  $showLikes
+     * @param  bool  $showTimestamp
      */
     public function __construct(
         $type = 'all',
@@ -39,8 +44,8 @@ class InstagramFeed extends Component
         $accessToken = config('cms.instagram.access_token');
         $ig = new IGfeed($accessToken);
 
-        $fields = ["id", "media_type", "media_url", "thumbnail_url", "permalink", "timestamp", "caption", "like_count"];
-        $cacheKey = 'instagram_feeds_' . md5(json_encode($fields)) . '_' . $accessToken;
+        $fields = ['id', 'media_type', 'media_url', 'thumbnail_url', 'permalink', 'timestamp', 'caption', 'like_count'];
+        $cacheKey = 'instagram_feeds_'.md5(json_encode($fields)).'_'.$accessToken;
 
         $feeds = Cache::remember($cacheKey, now()->addMinutes(15), function () use ($ig, $fields) {
             return $ig->getFeed($fields);
@@ -52,6 +57,7 @@ class InstagramFeed extends Component
                 if ($mediaType === 'REEL') {
                     return $item['media_type'] === 'VIDEO' && (isset($item['caption']) && str_contains(strtolower($item['caption']), 'reel'));
                 }
+
                 return $item['media_type'] === $mediaType;
             });
         }

@@ -2,9 +2,9 @@
 
 namespace Littleboy130491\Sumimasen\Policies;
 
+use Illuminate\Auth\Access\HandlesAuthorization;
 use Littleboy130491\Sumimasen\Models\User;
 use Spatie\Permission\Models\Role;
-use Illuminate\Auth\Access\HandlesAuthorization;
 
 class RolePolicy
 {

@@ -3,9 +3,9 @@
 namespace Littleboy130491\Sumimasen\Console\Commands;
 
 use Illuminate\Console\Command;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class GenerateRolesCommand extends Command
 {
@@ -36,7 +36,7 @@ class GenerateRolesCommand extends Command
             $this->call('shield:generate', ['--all' => true, '--minimal' => true]);
             $this->info('✅ Shield permissions generated successfully');
         } catch (\Exception $e) {
-            $this->warn('⚠️  Could not generate Shield permissions: ' . $e->getMessage());
+            $this->warn('⚠️  Could not generate Shield permissions: '.$e->getMessage());
         }
 
         // Try to get all available permissions
@@ -49,21 +49,23 @@ class GenerateRolesCommand extends Command
 
         if (empty($allPermissions)) {
             $this->error('❌ No permissions found. Please ensure permissions are seeded first.');
+
             return 1;
         }
 
-        $this->info("📊 Found {" . count($allPermissions) . "} permissions");
+        $this->info('📊 Found {'.count($allPermissions).'} permissions');
 
         // Debug: Show backup-related permissions
         $backupPermissions = collect($allPermissions)->filter(function ($permission) {
             $permissionLower = strtolower($permission);
+
             return str_contains($permissionLower, 'backup') || str_contains($permissionLower, 'Backup');
         });
 
         if ($backupPermissions->isNotEmpty()) {
-            $this->info("💾 Backup permissions found: " . $backupPermissions->implode(', '));
+            $this->info('💾 Backup permissions found: '.$backupPermissions->implode(', '));
         } else {
-            $this->info("💾 No backup permissions found");
+            $this->info('💾 No backup permissions found');
         }
 
         $roles = $this->defineRoles($allPermissions);
@@ -73,13 +75,14 @@ class GenerateRolesCommand extends Command
             if ($roleName === 'editor') {
                 $editorBackupPermissions = collect($permissions)->filter(function ($permission) {
                     $permissionLower = strtolower($permission);
+
                     return str_contains($permissionLower, 'backup');
                 });
 
                 if ($editorBackupPermissions->isNotEmpty()) {
-                    $this->warn("⚠️  Editor still has backup permissions: " . $editorBackupPermissions->implode(', '));
+                    $this->warn('⚠️  Editor still has backup permissions: '.$editorBackupPermissions->implode(', '));
                 } else {
-                    $this->info("✅ Editor correctly has no backup permissions");
+                    $this->info('✅ Editor correctly has no backup permissions');
                 }
             }
 
@@ -166,7 +169,7 @@ class GenerateRolesCommand extends Command
             $backupPermissionPatterns = [
                 'backup',           // Catches any permission containing 'backup'
                 'Backup',           // Case sensitive backup
-                'laravel-backup',   // Spatie Laravel Backup package 
+                'laravel-backup',   // Spatie Laravel Backup package
                 'spatie-backup',    // Alternative naming
                 'filament-spatie-backup', // Filament plugin naming
             ];
@@ -176,7 +179,7 @@ class GenerateRolesCommand extends Command
                 return Str::contains($permissionLower, $pattern);
             });
 
-            // Check if permission matches role patterns  
+            // Check if permission matches role patterns
             $isRolePermission = collect($rolePermissionPatterns)->some(function ($pattern) use ($permissionLower) {
                 return Str::contains($permissionLower, $pattern);
             });
@@ -187,7 +190,7 @@ class GenerateRolesCommand extends Command
             });
 
             // Include permission if it's not user, role, or backup related (this includes components)
-            return !$isUserPermission && !$isRolePermission && !$isBackupPermission;
+            return ! $isUserPermission && ! $isRolePermission && ! $isBackupPermission;
         })->toArray();
     }
 

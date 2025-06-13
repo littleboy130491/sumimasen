@@ -2,25 +2,29 @@
 
 namespace Littleboy130491\Sumimasen\Http\Controllers;
 
-use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
-use Littleboy130491\Sumimasen\Models\Page;
-use Littleboy130491\Sumimasen\Enums\ContentStatus;
-use Illuminate\Http\Request;
 use Afatmustafa\SeoSuite\Traits\SetsSeoSuite;
 use Artesaos\SEOTools\Facades\SEOTools;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
+use Littleboy130491\Sumimasen\Enums\ContentStatus;
+use Littleboy130491\Sumimasen\Models\Page;
 
 class ContentController extends Controller
 {
     use SetsSeoSuite;
 
     protected string $templateBase = 'templates';
+
     protected string $defaultLanguage;
+
     protected int $paginationLimit;
+
     protected string $staticPageClass;
+
     protected string $frontPageSlug;
 
     public function __construct()
@@ -44,13 +48,13 @@ class ContentController extends Controller
             ->first();
 
         // if not found, find the first page
-        if (!$content) {
+        if (! $content) {
             $content = $modelClass::where('status', ContentStatus::Published)
                 ->orderBy('id', 'asc')
                 ->first();
 
-            if (!$content) {
-                abort(404, "Home page content not found.");
+            if (! $content) {
+                abort(404, 'Home page content not found.');
             }
         }
 
@@ -86,7 +90,7 @@ class ContentController extends Controller
             }
         }
 
-        if (!$content) {
+        if (! $content) {
             $fallbackResult = $this->tryFallbackContentModel($lang, $page_slug, $request);
             if ($fallbackResult) {
                 return $fallbackResult;
@@ -129,7 +133,7 @@ class ContentController extends Controller
             }
         }
 
-        if (!$content) {
+        if (! $content) {
             throw (new ModelNotFoundException)->setModel(
                 $modelClass,
                 "No content found for slug '{$content_slug}'"
@@ -179,7 +183,7 @@ class ContentController extends Controller
             viewData: [
                 'post_type' => $content_type_archive_key,
                 'archive' => $archive,
-                'title' => 'Archive: ' . Str::title(str_replace('-', ' ', $content_type_archive_key)),
+                'title' => 'Archive: '.Str::title(str_replace('-', ' ', $content_type_archive_key)),
                 'posts' => $posts,
             ]
         );
@@ -199,7 +203,7 @@ class ContentController extends Controller
             }
         }
 
-        if (!$taxonomyModel) {
+        if (! $taxonomyModel) {
             throw (new ModelNotFoundException)->setModel(
                 $modelClass,
                 "Taxonomy not found for slug '{$taxonomy_slug}'"
@@ -223,7 +227,7 @@ class ContentController extends Controller
                 'taxonomy_slug' => $taxonomy_slug,
                 'taxonomy_model' => $taxonomyModel,
                 'title' => $taxonomyModel->title ??
-                    Str::title(str_replace('-', ' ', $taxonomy_key)) . ': ' .
+                    Str::title(str_replace('-', ' ', $taxonomy_key)).': '.
                     Str::title(str_replace('-', ' ', $taxonomy_slug)),
                 'posts' => $posts,
             ]
@@ -243,7 +247,7 @@ class ContentController extends Controller
             ->first();
 
         // Fallback to default locale
-        if (!$content && $requestedLocale !== $defaultLanguage) {
+        if (! $content && $requestedLocale !== $defaultLanguage) {
             $content = $modelClass::where('status', ContentStatus::Published)
                 ->whereJsonContainsLocale('slug', $defaultLanguage, $slug)
                 ->first();
@@ -257,7 +261,7 @@ class ContentController extends Controller
         $fallbackContentType = Config::get('cms.fallback_content_type', 'posts');
         $modelClass = Config::get("cms.content_models.{$fallbackContentType}.model");
 
-        if (!$modelClass || !class_exists($modelClass)) {
+        if (! $modelClass || ! class_exists($modelClass)) {
             return null;
         }
 
@@ -296,22 +300,24 @@ class ContentController extends Controller
 
     private function getValidModelClass(string $modelClass): string
     {
-        if (!$modelClass || !class_exists($modelClass)) {
+        if (! $modelClass || ! class_exists($modelClass)) {
             return Page::class;
         }
+
         return $modelClass;
     }
 
     private function getContentModelClass(string $contentTypeKey): string
     {
         $modelConfig = Config::get("cms.content_models.{$contentTypeKey}");
-        if (!$modelConfig) {
+        if (! $modelConfig) {
             abort(404, "Content type '{$contentTypeKey}' not found in configuration.");
         }
         $modelClass = $modelConfig['model'];
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             abort(404, "Model for content type '{$contentTypeKey}' not found or not configured correctly.");
         }
+
         return $modelClass;
     }
 
@@ -327,7 +333,7 @@ class ContentController extends Controller
         return (object) [
             'name' => Str::title(str_replace('-', ' ', $contentTypeKey)),
             'post_type' => $contentTypeKey,
-            'description' => 'Archive of all ' . Str::title(str_replace('-', ' ', $contentTypeKey)) . ' content.'
+            'description' => 'Archive of all '.Str::title(str_replace('-', ' ', $contentTypeKey)).' content.',
         ];
     }
 
@@ -339,20 +345,20 @@ class ContentController extends Controller
         if ($archiveTitle) {
             SEOTools::setTitle($archiveTitle);
         } else {
-            SEOTools::setTitle('Archive: ' . Str::title(str_replace('-', ' ', $contentTypeKey)));
+            SEOTools::setTitle('Archive: '.Str::title(str_replace('-', ' ', $contentTypeKey)));
         }
 
         if ($archiveDescription) {
             SEOTools::setDescription($archiveDescription);
         } else {
-            SEOTools::setDescription("Archive of all " . $contentTypeKey);
+            SEOTools::setDescription('Archive of all '.$contentTypeKey);
         }
     }
 
     private function getTaxonomyRelatedContent(Model $taxonomyModel, string $taxonomyKey)
     {
         $relationshipName = Config::get("cms.content_models.{$taxonomyKey}.display_content_from", 'posts');
-        if (!method_exists($taxonomyModel, $relationshipName)) {
+        if (! method_exists($taxonomyModel, $relationshipName)) {
             \Illuminate\Support\Facades\Log::warning("Configured relationship '{$relationshipName}' not found for taxonomy '{$taxonomyKey}'. Falling back to 'posts'.");
             $relationshipName = 'posts';
         }
@@ -365,6 +371,7 @@ class ContentController extends Controller
         }
 
         \Illuminate\Support\Facades\Log::warning("Relationship method '{$relationshipName}' ultimately not found for taxonomy '{$taxonomyKey}'. Serving empty collection.");
+
         return collect();
     }
 
@@ -414,12 +421,13 @@ class ContentController extends Controller
             "{$this->templateBase}.home",
             "{$this->templateBase}.front-page",
             "{$this->templateBase}.singles.default",
-            "{$this->templateBase}.default"
+            "{$this->templateBase}.default",
         ];
         if ($content) {
             $customTemplates = $this->getContentCustomTemplates($content);
             $templates = array_merge($customTemplates, $templates);
         }
+
         return $this->findFirstExistingTemplate($templates);
     }
 
@@ -433,14 +441,15 @@ class ContentController extends Controller
             "{$this->templateBase}.singles.page",
             "{$this->templateBase}.page",
             "{$this->templateBase}.singles.default",
-            "{$this->templateBase}.default"
+            "{$this->templateBase}.default",
         ];
         $customTemplates = $this->getContentCustomTemplates($content);
         $templates = array_merge($customTemplates, $templates);
+
         return $this->findFirstExistingTemplate($templates);
     }
 
-    private function resolveSingleTemplate(?Model $content = null, string $content_type_key, string $contentSlug): string
+    private function resolveSingleTemplate(?Model $content, string $content_type_key, string $contentSlug): string
     {
         $postType = Str::kebab(Str::singular($content_type_key));
         $defaultSlug = method_exists($content, 'getTranslation') ?
@@ -450,12 +459,13 @@ class ContentController extends Controller
             "{$this->templateBase}.singles.{$postType}",
             "{$this->templateBase}.{$postType}",
             "{$this->templateBase}.singles.default",
-            "{$this->templateBase}.default"
+            "{$this->templateBase}.default",
         ];
         if ($content) {
             $customTemplates = $this->getContentCustomTemplates($content);
             $templates = array_merge($customTemplates, $templates);
         }
+
         return $this->findFirstExistingTemplate($templates);
     }
 
@@ -471,12 +481,13 @@ class ContentController extends Controller
             "{$this->templateBase}.archives.archive",
             "{$this->templateBase}.archive",
         ];
+
         return $this->findFirstExistingTemplate($templates);
     }
 
     private function resolveTaxonomyTemplate(string $taxonomySlug, string $taxonomy_key = 'taxonomy', ?Model $taxonomyModel = null): string
     {
-        if ($taxonomyModel && !empty($taxonomyModel->template)) {
+        if ($taxonomyModel && ! empty($taxonomyModel->template)) {
             $customTemplate = "{$this->templateBase}.{$taxonomyModel->template}";
             if (View::exists($customTemplate)) {
                 return $customTemplate;
@@ -494,21 +505,23 @@ class ContentController extends Controller
             "{$this->templateBase}.archives.archive",
             "{$this->templateBase}.archive",
         ];
+
         return $this->findFirstExistingTemplate($templates);
     }
 
     private function getContentCustomTemplates(Model $content): array
     {
         $templates = [];
-        if (!empty($content->template)) {
+        if (! empty($content->template)) {
             $templates[] = "{$this->templateBase}.{$content->template}";
         }
         if (method_exists($content, 'getTranslation')) {
             $defaultSlug = $content->getTranslation('slug', $this->defaultLanguage);
-            if (!empty($defaultSlug)) {
+            if (! empty($defaultSlug)) {
                 $templates[] = "{$this->templateBase}.{$defaultSlug}";
             }
         }
+
         return $templates;
     }
 
@@ -519,6 +532,7 @@ class ContentController extends Controller
                 return $template;
             }
         }
+
         return "{$this->templateBase}.default";
     }
 
@@ -527,7 +541,7 @@ class ContentController extends Controller
         $classes = ["lang-{$lang}"];
         if ($content) {
             if ($content instanceof Model) {
-                $classes[] = 'type-' . ($contentTypeKey ?? Str::kebab(Str::singular($content->getTable())));
+                $classes[] = 'type-'.($contentTypeKey ?? Str::kebab(Str::singular($content->getTable())));
                 $slugForClass = '';
                 if (method_exists($content, 'getTranslation')) {
                     $slugForClass = $content->slug ?? $contentSlug;
@@ -535,24 +549,24 @@ class ContentController extends Controller
                     $slugForClass = $contentSlug;
                 }
                 if ($slugForClass) {
-                    $classes[] = 'slug-' . $slugForClass;
+                    $classes[] = 'slug-'.$slugForClass;
                 }
-                if (!empty($content->template)) {
-                    $classes[] = 'template-' . Str::kebab($content->template);
+                if (! empty($content->template)) {
+                    $classes[] = 'template-'.Str::kebab($content->template);
                 }
             } elseif (is_object($content)) {
                 if (isset($content->post_type)) {
-                    $classes[] = 'archive-' . $content->post_type;
+                    $classes[] = 'archive-'.$content->post_type;
                 } elseif (isset($content->taxonomy)) {
-                    $classes[] = 'taxonomy-' . $content->taxonomy;
+                    $classes[] = 'taxonomy-'.$content->taxonomy;
                     if (isset($content->taxonomy_slug)) {
-                        $classes[] = 'term-' . $content->taxonomy_slug;
+                        $classes[] = 'term-'.$content->taxonomy_slug;
                     }
                 }
             }
         } else {
             if ($contentTypeKey) {
-                $classes[] = 'page-' . $contentTypeKey;
+                $classes[] = 'page-'.$contentTypeKey;
             }
         }
         if (request()->routeIs('cms.home')) {
@@ -564,6 +578,7 @@ class ContentController extends Controller
         if (request()->routeIs('cms.taxonomy.archive')) {
             $classes[] = 'taxonomy-archive-page';
         }
+
         return implode(' ', array_unique($classes));
     }
 
@@ -572,11 +587,11 @@ class ContentController extends Controller
      * If not, returns a redirect to the correct route with the correct slug.
      * Otherwise, returns null.
      *
-     * @param string $routeName     Name of the route to redirect to
-     * @param string $lang          The requested language
-     * @param string $requestedSlug The slug used in the URL
-     * @param Model  $content       The content model (must support getTranslation)
-     * @param string $slugParamName The name of the slug parameter in the route ('page_slug', 'content_slug', etc.)
+     * @param  string  $routeName  Name of the route to redirect to
+     * @param  string  $lang  The requested language
+     * @param  string  $requestedSlug  The slug used in the URL
+     * @param  Model  $content  The content model (must support getTranslation)
+     * @param  string  $slugParamName  The name of the slug parameter in the route ('page_slug', 'content_slug', etc.)
      * @return \Illuminate\Http\RedirectResponse|null
      */
     protected function maybeRedirectToLocalizedSlug(
@@ -599,6 +614,4 @@ class ContentController extends Controller
 
         return null;
     }
-
-
 }

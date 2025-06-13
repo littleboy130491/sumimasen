@@ -3,7 +3,6 @@
 namespace Littleboy130491\Sumimasen\Models;
 
 use Afatmustafa\SeoSuite\Models\Traits\InteractsWithSeoSuite;
-use Littleboy130491\Sumimasen\Models\Post;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,9 +14,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Category extends Model
 {
-    use HasFactory, HasTranslations, SoftDeletes, InteractsWithSeoSuite;
-
-
+    use HasFactory, HasTranslations, InteractsWithSeoSuite, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -31,9 +28,8 @@ class Category extends Model
         'parent_id',
         'slug',
         'template',
-        'title'
+        'title',
     ];
-
 
     /**
      * The attributes that should be cast.
@@ -42,9 +38,8 @@ class Category extends Model
      */
     protected $casts = [
         'parent_id' => 'integer',
-        'menu_order' => 'integer'
+        'menu_order' => 'integer',
     ];
-
 
     /**
      * The attributes that are translatable.
@@ -54,14 +49,12 @@ class Category extends Model
     public $translatable = [
         'content',
         'slug',
-        'title'
+        'title',
     ];
 
-
-
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
     // Relationships
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
     /**
      * Define the featuredImage relationship to Curator Media.
@@ -100,5 +93,4 @@ class Category extends Model
         // Add foreign key argument if specified in YAML
         return $this->hasMany(Category::class, 'parent_id');
     }
-
 }

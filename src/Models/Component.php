@@ -2,15 +2,14 @@
 
 namespace Littleboy130491\Sumimasen\Models;
 
+use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Awcodes\Curator\Models\Media;
 use Spatie\Translatable\HasTranslations;
+
 class Component extends Model
 {
-    use SoftDeletes, HasTranslations;
-
-
+    use HasTranslations, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -22,7 +21,6 @@ class Component extends Model
         'data',
         'notes',
     ];
-
 
     /**
      * The attributes that should be cast.
@@ -46,8 +44,6 @@ class Component extends Model
 
     /**
      * Return the raw data blocks, but with image URLs injected.
-     *
-     * @return array
      */
     public function getBlocksAttribute(): array
     {
@@ -61,5 +57,4 @@ class Component extends Model
             return $block;
         })->all();
     }
-
 }

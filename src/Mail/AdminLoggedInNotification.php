@@ -2,13 +2,13 @@
 
 namespace Littleboy130491\Sumimasen\Mail;
 
-use Littleboy130491\Sumimasen\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Littleboy130491\Sumimasen\Models\User;
 
 class AdminLoggedInNotification extends Mailable implements ShouldQueue
 {
@@ -30,7 +30,7 @@ class AdminLoggedInNotification extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Admin User Logged In: ' . $this->user->name,
+            subject: 'Admin User Logged In: '.$this->user->name,
         );
     }
 

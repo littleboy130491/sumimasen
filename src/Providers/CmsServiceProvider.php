@@ -5,9 +5,6 @@ namespace Littleboy130491\Sumimasen\Providers;
 use Filament\Facades\Filament;
 use Filament\Navigation\UserMenuItem;
 use Illuminate\Support\Facades\Blade;
-use Livewire\Livewire;
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Littleboy130491\Sumimasen\Filament\Pages\ManageGeneralSettings;
 use Littleboy130491\Sumimasen\Filament\Resources\CategoryResource;
 use Littleboy130491\Sumimasen\Filament\Resources\CommentResource;
@@ -19,6 +16,9 @@ use Littleboy130491\Sumimasen\Filament\Resources\TagResource;
 use Littleboy130491\Sumimasen\Filament\Resources\UserResource;
 use Littleboy130491\Sumimasen\Livewire\LikeButton;
 use Littleboy130491\Sumimasen\Livewire\SubmissionForm;
+use Livewire\Livewire;
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class CmsServiceProvider extends PackageServiceProvider
 {
@@ -99,6 +99,6 @@ class CmsServiceProvider extends PackageServiceProvider
         Livewire::component('like-button', LikeButton::class);
         Livewire::component('submission-form', SubmissionForm::class);
 
-        Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components', 'cms');
+        Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'cms');
     }
 }

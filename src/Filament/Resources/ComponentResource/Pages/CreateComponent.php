@@ -2,9 +2,8 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources\ComponentResource\Pages;
 
-use Littleboy130491\Sumimasen\Filament\Resources\ComponentResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
+use Littleboy130491\Sumimasen\Filament\Resources\ComponentResource;
 
 class CreateComponent extends CreateRecord
 {

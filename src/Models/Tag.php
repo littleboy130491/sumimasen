@@ -3,7 +3,6 @@
 namespace Littleboy130491\Sumimasen\Models;
 
 use Afatmustafa\SeoSuite\Models\Traits\InteractsWithSeoSuite;
-use Littleboy130491\Sumimasen\Models\Post;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,9 +13,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Tag extends Model
 {
-    use HasFactory, HasTranslations, SoftDeletes, InteractsWithSeoSuite;
-
-
+    use HasFactory, HasTranslations, InteractsWithSeoSuite, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -29,9 +26,8 @@ class Tag extends Model
         'menu_order',
         'slug',
         'template',
-        'title'
+        'title',
     ];
-
 
     /**
      * The attributes that should be cast.
@@ -39,9 +35,8 @@ class Tag extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'menu_order' => 'integer'
+        'menu_order' => 'integer',
     ];
-
 
     /**
      * The attributes that are translatable.
@@ -51,14 +46,12 @@ class Tag extends Model
     public $translatable = [
         'content',
         'slug',
-        'title'
+        'title',
     ];
 
-
-
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
     // Relationships
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
     /**
      * Define the featuredImage relationship to Curator Media.
@@ -77,5 +70,4 @@ class Tag extends Model
         // Add foreign key argument if specified in YAML
         return $this->belongsToMany(Post::class);
     }
-
 }

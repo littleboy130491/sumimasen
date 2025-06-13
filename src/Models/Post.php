@@ -3,12 +3,6 @@
 namespace Littleboy130491\Sumimasen\Models;
 
 use Afatmustafa\SeoSuite\Models\Traits\InteractsWithSeoSuite;
-use Littleboy130491\Sumimasen\Models\Category;
-use Littleboy130491\Sumimasen\Models\Comment;
-use Littleboy130491\Sumimasen\Models\Tag;
-use Littleboy130491\Sumimasen\Models\User;
-use Littleboy130491\Sumimasen\Traits\HasPageLikes;
-use Littleboy130491\Sumimasen\Traits\HasPageViews;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,13 +10,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Littleboy130491\Sumimasen\Traits\HasPageLikes;
+use Littleboy130491\Sumimasen\Traits\HasPageViews;
 use Spatie\Translatable\HasTranslations;
 
 class Post extends Model
 {
-    use HasFactory, HasTranslations, SoftDeletes, InteractsWithSeoSuite, HasPageViews, HasPageLikes;
-
-
+    use HasFactory, HasPageLikes, HasPageViews, HasTranslations, InteractsWithSeoSuite, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -41,9 +35,8 @@ class Post extends Model
         'slug',
         'status',
         'template',
-        'title'
+        'title',
     ];
-
 
     /**
      * The attributes that should be cast.
@@ -55,9 +48,8 @@ class Post extends Model
         'menu_order' => 'integer',
         'featured' => 'boolean',
         'status' => \Littleboy130491\Sumimasen\Enums\ContentStatus::class,
-        'published_at' => 'datetime'
+        'published_at' => 'datetime',
     ];
-
 
     /**
      * The attributes that are translatable.
@@ -68,14 +60,12 @@ class Post extends Model
         'content',
         'excerpt',
         'slug',
-        'title'
+        'title',
     ];
 
-
-
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
     // Relationships
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
     /**
      * Define the featuredImage relationship to Curator Media.
@@ -124,5 +114,4 @@ class Post extends Model
         // Add foreign key argument if specified in YAML
         return $this->morphMany(Comment::class, 'commentable');
     }
-
 }

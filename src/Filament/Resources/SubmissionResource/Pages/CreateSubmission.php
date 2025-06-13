@@ -2,9 +2,8 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources\SubmissionResource\Pages;
 
-use Littleboy130491\Sumimasen\Filament\Resources\SubmissionResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
+use Littleboy130491\Sumimasen\Filament\Resources\SubmissionResource;
 
 class CreateSubmission extends CreateRecord
 {

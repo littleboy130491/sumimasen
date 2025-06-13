@@ -1,13 +1,14 @@
 <?php
+
 namespace Littleboy130491\Sumimasen\Filament\Exports;
 
-use Littleboy130491\Sumimasen\Models\Page;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Littleboy130491\Sumimasen\Models\Page;
 
 class PageExporter extends Exporter
 {
@@ -55,7 +56,7 @@ class PageExporter extends Exporter
             $translations = $record->getAttribute($attribute);
 
             // Handle case where translations might be null or not an array
-            if (!is_array($translations)) {
+            if (! is_array($translations)) {
                 $translations = [];
             }
 
@@ -92,7 +93,7 @@ class PageExporter extends Exporter
             ExportColumn::make('id')->label('ID'),
             ExportColumn::make('status')
                 ->label('Status')
-                ->formatStateUsing(fn($state) => $state instanceof \UnitEnum ? $state->value : $state),
+                ->formatStateUsing(fn ($state) => $state instanceof \UnitEnum ? $state->value : $state),
             ExportColumn::make('template')->label('Template'),
             ExportColumn::make('menu_order')->label('Menu Order'),
             ExportColumn::make('parent_id')->label('Parent ID'),
@@ -107,7 +108,7 @@ class PageExporter extends Exporter
             ExportColumn::make('deleted_at')->label('Deleted At'),
             ExportColumn::make('custom_fields')
                 ->label('Custom Fields (JSON)')
-                ->formatStateUsing(fn($state) => is_array($state) ? json_encode($state, JSON_UNESCAPED_UNICODE) : $state),
+                ->formatStateUsing(fn ($state) => is_array($state) ? json_encode($state, JSON_UNESCAPED_UNICODE) : $state),
         ];
 
         // Get translatable attributes and available locales
@@ -118,7 +119,7 @@ class PageExporter extends Exporter
         foreach ($translatableAttributes as $attribute) {
             foreach ($availableLocales as $locale) {
                 $columns[] = ExportColumn::make("{$attribute}_{$locale}")
-                    ->label(ucfirst($attribute) . ' (' . strtoupper($locale) . ')')
+                    ->label(ucfirst($attribute).' ('.strtoupper($locale).')')
                     ->formatStateUsing(function ($state) {
                         // If it's already a string, return as is
                         if (is_string($state)) {
@@ -128,6 +129,7 @@ class PageExporter extends Exporter
                         if (is_array($state)) {
                             return json_encode($state, JSON_UNESCAPED_UNICODE);
                         }
+
                         return $state ?? '';
                     });
             }
@@ -138,10 +140,10 @@ class PageExporter extends Exporter
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your Page export has completed and ' . number_format($export->successful_rows) . ' ' . Str::plural('row', $export->successful_rows) . ' exported.';
+        $body = 'Your Page export has completed and '.number_format($export->successful_rows).' '.Str::plural('row', $export->successful_rows).' exported.';
 
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . Str::plural('row', $failedRowsCount) . ' failed to export.';
+            $body .= ' '.number_format($failedRowsCount).' '.Str::plural('row', $failedRowsCount).' failed to export.';
         }
 
         return $body;

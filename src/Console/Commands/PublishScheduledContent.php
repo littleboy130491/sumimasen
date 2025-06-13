@@ -4,7 +4,7 @@ namespace Littleboy130491\Sumimasen\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log; // Added
+// Added
 use Illuminate\Support\Facades\Schema; // Added
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 
@@ -36,7 +36,7 @@ class PublishScheduledContent extends Command
                 $modelClass = $modelConfig['model'];
 
                 // Check if the model class exists and has the necessary columns (status and published_at)
-                $instance = new $modelClass();
+                $instance = new $modelClass;
                 $tableName = $instance->getTable();
 
                 // Check if the model class exists, is an Eloquent model, and has the necessary columns

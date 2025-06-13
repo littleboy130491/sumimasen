@@ -2,15 +2,15 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Imports;
 
-use Littleboy130491\Sumimasen\Enums\ContentStatus;
-use Littleboy130491\Sumimasen\Models\Page;
-use Littleboy130491\Sumimasen\Models\User;
 use Awcodes\Curator\Models\Media;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Littleboy130491\Sumimasen\Enums\ContentStatus;
+use Littleboy130491\Sumimasen\Models\Page;
+use Littleboy130491\Sumimasen\Models\User;
 
 class PageImporter extends Importer
 {
@@ -41,7 +41,7 @@ class PageImporter extends Importer
 
             ImportColumn::make('menu_order')
                 ->numeric()
-                ->castStateUsing(fn(?string $state): int => (int) ($state ?? 0)),
+                ->castStateUsing(fn (?string $state): int => (int) ($state ?? 0)),
 
             ImportColumn::make('author')
                 ->label('Author (Name or Email)')
@@ -52,7 +52,7 @@ class PageImporter extends Importer
 
                     // Try to find by email first
                     $user = User::where('email', $state)->first();
-                    if (!$user) {
+                    if (! $user) {
                         // Try to find by name
                         $user = User::where('name', $state)->first();
                     }
@@ -166,7 +166,7 @@ class PageImporter extends Importer
                     $translations = [];
 
                     // First, check if there's a JSON value in the base column
-                    if (!empty($data[$attribute])) {
+                    if (! empty($data[$attribute])) {
                         $baseValue = $data[$attribute];
                         if (str_starts_with($baseValue, '{') && str_ends_with($baseValue, '}')) {
                             $decoded = json_decode($baseValue, true);
@@ -182,7 +182,7 @@ class PageImporter extends Importer
                     // Then check for language-specific columns (e.g., title_en, title_id)
                     foreach ($availableLocales as $locale) {
                         $columnName = "{$attribute}_{$locale}";
-                        if (isset($data[$columnName]) && !empty($data[$columnName])) {
+                        if (isset($data[$columnName]) && ! empty($data[$columnName])) {
                             $value = $data[$columnName];
 
                             // Handle section JSON data
@@ -198,9 +198,9 @@ class PageImporter extends Importer
                     if ($attribute === 'slug' && empty($translations)) {
                         foreach ($availableLocales as $locale) {
                             $titleColumn = "title_{$locale}";
-                            if (!empty($data[$titleColumn])) {
+                            if (! empty($data[$titleColumn])) {
                                 $translations[$locale] = Str::slug($data[$titleColumn]);
-                            } elseif (!empty($data['title'])) {
+                            } elseif (! empty($data['title'])) {
                                 $translations[$locale] = Str::slug($data['title']);
                                 break; // Use the same slug for all if only base title is provided
                             }
@@ -208,7 +208,7 @@ class PageImporter extends Importer
                     }
 
                     // Set the translations on the record
-                    if (!empty($translations)) {
+                    if (! empty($translations)) {
                         $record->setTranslations($attribute, $translations);
                     }
                 });
@@ -218,9 +218,9 @@ class PageImporter extends Importer
         foreach ($translatableAttributes as $attribute) {
             foreach ($availableLocales as $locale) {
                 $columns[] = ImportColumn::make("{$attribute}_{$locale}")
-                    ->label(ucfirst($attribute) . ' (' . strtoupper($locale) . ')')
+                    ->label(ucfirst($attribute).' ('.strtoupper($locale).')')
                     ->ignoreBlankState()
-                    ->fillRecordUsing(fn() => null); // No-op, handled by the base column
+                    ->fillRecordUsing(fn () => null); // No-op, handled by the base column
             }
         }
 
@@ -230,7 +230,7 @@ class PageImporter extends Importer
     public function resolveRecord(): ?Page
     {
         // Try to find existing record by ID first
-        if (!empty($this->data['id'])) {
+        if (! empty($this->data['id'])) {
             $existingPage = Page::find($this->data['id']);
             if ($existingPage) {
                 return $existingPage;
@@ -243,8 +243,8 @@ class PageImporter extends Importer
         // Check language-specific slug columns
         foreach ($availableLocales as $locale) {
             $slugColumn = "slug_{$locale}";
-            if (!empty($this->data[$slugColumn])) {
-                $existingPage = Page::whereJsonContains('slug->' . $locale, $this->data[$slugColumn])->first();
+            if (! empty($this->data[$slugColumn])) {
+                $existingPage = Page::whereJsonContains('slug->'.$locale, $this->data[$slugColumn])->first();
                 if ($existingPage) {
                     return $existingPage;
                 }
@@ -252,13 +252,13 @@ class PageImporter extends Importer
         }
 
         // Check base slug column with JSON
-        if (!empty($this->data['slug'])) {
+        if (! empty($this->data['slug'])) {
             $slugData = $this->data['slug'];
             if (str_starts_with($slugData, '{')) {
                 $slugs = json_decode($slugData, true);
                 if (is_array($slugs)) {
                     foreach ($slugs as $locale => $slugValue) {
-                        $existingPage = Page::whereJsonContains('slug->' . $locale, $slugValue)->first();
+                        $existingPage = Page::whereJsonContains('slug->'.$locale, $slugValue)->first();
                         if ($existingPage) {
                             return $existingPage;
                         }
@@ -274,15 +274,15 @@ class PageImporter extends Importer
         }
 
         // Create new page if not found
-        return new Page();
+        return new Page;
     }
 
     public static function getCompletedNotificationBody(Import $import): string
     {
-        $body = 'Your Page import has completed and ' . number_format($import->successful_rows) . ' ' . Str::plural('row', $import->successful_rows) . ' imported.';
+        $body = 'Your Page import has completed and '.number_format($import->successful_rows).' '.Str::plural('row', $import->successful_rows).' imported.';
 
         if ($failedRowsCount = $import->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . Str::plural('row', $failedRowsCount) . ' failed to import.';
+            $body .= ' '.number_format($failedRowsCount).' '.Str::plural('row', $failedRowsCount).' failed to import.';
         }
 
         return $body;

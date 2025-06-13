@@ -2,10 +2,10 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Pages;
 
-use Littleboy130491\Sumimasen\Settings\GeneralSettings;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SettingsPage;
+use Littleboy130491\Sumimasen\Settings\GeneralSettings;
 
 class ManageGeneralSettings extends SettingsPage
 {

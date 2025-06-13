@@ -2,9 +2,9 @@
 
 namespace Littleboy130491\Sumimasen\Console\Commands;
 
+use Awcodes\Curator\Models\Media;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
-use Awcodes\Curator\Models\Media;
 
 class SyncCuratorMedia extends Command
 {
@@ -96,7 +96,7 @@ class SyncCuratorMedia extends Command
                     foreach ($records as $media) {
                         $path = $media->path;
 
-                        if (!Storage::disk($disk)->exists($path)) {
+                        if (! Storage::disk($disk)->exists($path)) {
                             continue;
                         }
 
@@ -140,7 +140,7 @@ class SyncCuratorMedia extends Command
                 ->where('directory', $directory)
                 ->chunk(100, function ($records) use ($disk, &$pruned) {
                     foreach ($records as $media) {
-                        if (!Storage::disk($disk)->exists($media->path)) {
+                        if (! Storage::disk($disk)->exists($media->path)) {
                             $media->delete();
                             $pruned++;
                             $this->line("[Pruned] {$media->path}");

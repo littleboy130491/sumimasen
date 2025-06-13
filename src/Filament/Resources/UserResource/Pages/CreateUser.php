@@ -2,9 +2,8 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources\UserResource\Pages;
 
-use Littleboy130491\Sumimasen\Filament\Resources\UserResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
+use Littleboy130491\Sumimasen\Filament\Resources\UserResource;
 
 class CreateUser extends CreateRecord
 {

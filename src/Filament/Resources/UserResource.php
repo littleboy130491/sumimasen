@@ -2,14 +2,14 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources;
 
-use Littleboy130491\Sumimasen\Filament\Resources\UserResource\Pages;
-use Littleboy130491\Sumimasen\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Validation\Rules\Password;
+use Littleboy130491\Sumimasen\Filament\Resources\UserResource\Pages;
+use Littleboy130491\Sumimasen\Models\User;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
 class UserResource extends Resource
@@ -17,6 +17,7 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
+
     protected static ?string $navigationGroup = 'Users';
 
     public static function form(Form $form): Form
@@ -31,8 +32,8 @@ class UserResource extends Resource
                     ->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('password')
                     ->password()
-                    ->dehydrated(fn(?string $state): bool => filled($state))
-                    ->required(fn(string $operation): bool => $operation === 'create')
+                    ->dehydrated(fn (?string $state): bool => filled($state))
+                    ->required(fn (string $operation): bool => $operation === 'create')
                     ->rule(
                         Password::default()
                             ->mixedCase()

@@ -29,7 +29,6 @@ return new class extends Migration
             $table->string('x_title')->nullable();
             $table->string('x_site')->nullable();
 
-
             $table->boolean('noindex')->default(false);
             $table->boolean('nofollow')->default(false);
 
