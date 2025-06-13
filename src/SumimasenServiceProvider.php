@@ -41,6 +41,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
         $this->bootFilamentResources();
         $this->bootLivewireComponents();
         $this->bootBladeComponents();
+        $this->bootScheduledTasks();
     }
 
     public function configurePackage(Package $package): void
@@ -245,5 +246,24 @@ class SumimasenServiceProvider extends PackageServiceProvider
     private function bootBladeComponents(): void
     {
         Blade::anonymousComponentPath(__DIR__.'/resources/views/components', 'cms');
+    }
+
+    private function bootScheduledTasks(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->app->booted(function () {
+                $schedule = $this->app->make(\Illuminate\Console\Scheduling\Schedule::class);
+
+                // Publish scheduled content every 30 minutes
+                $schedule->command('cms:publish-scheduled-content')
+                    ->everyThirtyMinutes()
+                    ->withoutOverlapping();
+
+                // Refresh Instagram token monthly
+                $schedule->command('cms:refresh-instagram-token')
+                    ->monthly()
+                    ->withoutOverlapping();
+            });
+        }
     }
 }
