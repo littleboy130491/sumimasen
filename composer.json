@@ -42,7 +42,7 @@
     "autoload-dev": {
         "psr-4": {
             "VendorName\\Skeleton\\Tests\\": "tests/",
-            "Workbench\\App\\": "workbench/app/"
+            "Workbench\\Littleboy130491\Sumimasen\\": "workbench/app/"
         }
     },
     "scripts": {
