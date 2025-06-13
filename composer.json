@@ -18,7 +18,7 @@
     ],
     "require": {
         "php": "^8.2",
-        "littleboy130491/seo-suite": "^1.0",
+        "littleboy130491/seo-suite": "*",
         "anhskohbo/no-captcha": "^3.7",
         "awcodes/filament-curator": "*",
         "bezhansalleh/filament-language-switch": "^3.1",
