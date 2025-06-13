@@ -92,7 +92,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Littleboy130491\\Sumimasen\\Providers\\CmsServiceProvider"
+                "Littleboy130491\\Sumimasen\\SumimasenServiceProvider"
             ],
             "aliases": {
                 "Cms": "Littleboy130491\\Sumimasen\\Facades\\Cms"
