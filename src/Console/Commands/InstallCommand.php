@@ -75,6 +75,11 @@ class InstallCommand extends Command
             $this->call('make:filament-user');
         }
 
+        if ($this->confirm('Do you want to install Filament Shield?', true)) {
+            $this->info('Installing Filament Shield...');
+            $this->call('shield:install');
+        }
+
         if ($this->confirm('Do you want to generate default permission roles?', true)) {
             $this->info('Generating permission roles...');
             $this->call('cms:generate-roles');
