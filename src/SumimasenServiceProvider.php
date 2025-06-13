@@ -108,6 +108,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
             'create_comments_table',
             'create_components_table',
             'update_menus_table',
+            'create_general_settings',
         ];
     }
 
