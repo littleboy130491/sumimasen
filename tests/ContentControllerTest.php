@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Littleboy130491\Sumimasen\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;

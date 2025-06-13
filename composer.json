@@ -1,17 +1,18 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "littleboy130491/cms",
+    "description": "A Filament CMS package for Laravel.",
     "keywords": [
-        ":vendor_name",
+        "littleboy130491",
         "laravel",
-        ":package_slug"
+        "cms",
+        "filament"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/littleboy130491/cms",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": ":henry",
+            "email": "littleboy_13@yahoo.com",
             "role": "Developer"
         }
     ],
@@ -35,14 +36,14 @@
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src/",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories/"
+            "Littleboy130491\\Sumimasen\\": "src/",
+            "Littleboy130491\\Sumimasen\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests/",
-            "Workbench\\Littleboy130491\Sumimasen\\": "workbench/app/"
+            "Littleboy130491\\Sumimasen\\Tests\\": "tests/",
+            "Workbench\\Littleboy130491\\Sumimasen\\": "workbench/app/"
         }
     },
     "scripts": {
@@ -63,10 +64,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "Littleboy130491\\Sumimasen\\Providers\\CmsServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "Cms": "Littleboy130491\\Sumimasen\\Facades\\Cms"
             }
         }
     },
