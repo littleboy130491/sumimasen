@@ -225,7 +225,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
                     Filament::registerUserMenuItems([
                         \Filament\Navigation\UserMenuItem::make()
                             ->label('Settings')
-                            ->url(\Littleboy130491\Sumimasen\Filament\Pages\ManageGeneralSettings::getUrl())
+                            ->url(fn() => \Littleboy130491\Sumimasen\Filament\Pages\ManageGeneralSettings::getUrl())
                             ->icon('heroicon-o-cog'),
                     ]);
                 }
