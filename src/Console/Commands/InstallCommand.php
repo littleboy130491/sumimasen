@@ -65,6 +65,16 @@ class InstallCommand extends Command
             $this->call('migrate');
         }
 
+        if ($this->confirm('Do you want to install Filament panels?', true)) {
+            $this->info('Installing Filament panels...');
+            $this->call('filament:install', ['--panels' => true]);
+        }
+
+        if ($this->confirm('Do you want to create an admin user?', true)) {
+            $this->info('Creating admin user...');
+            $this->call('make:filament-user');
+        }
+
         if ($this->confirm('Do you want to generate default permission roles?', true)) {
             $this->info('Generating permission roles...');
             $this->call('cms:generate-roles');
@@ -75,9 +85,9 @@ class InstallCommand extends Command
         $this->info('✅ The CMS plugin has been automatically registered with your Filament panels!');
         $this->line('');
         $this->info('Next steps:');
-        $this->line('1. Create your first admin user: php artisan make:filament-user');
-        $this->line('2. Visit /admin and log in to access the CMS');
-        $this->line('3. Configure your CMS settings in the admin panel');
+        $this->line('1. Visit /admin and log in to access the CMS');
+        $this->line('2. Configure your CMS settings in the admin panel');
+        $this->line('3. Create your first content (pages, posts, etc.)');
         $this->line('4. Customize views and components as needed');
         $this->line('');
         $this->info('Available commands:');
