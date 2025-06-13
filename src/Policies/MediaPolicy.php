@@ -4,7 +4,7 @@ namespace Littleboy130491\Sumimasen\Policies;
 
 use Awcodes\Curator\Models\Media;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Littleboy130491\Sumimasen\Models\User;
+use App\Models\User;;
 
 class MediaPolicy
 {

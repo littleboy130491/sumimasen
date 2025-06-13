@@ -9,7 +9,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Validation\Rules\Password;
 use Littleboy130491\Sumimasen\Filament\Resources\UserResource\Pages;
-use Littleboy130491\Sumimasen\Models\User;
+use App\Models\User;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
 class UserResource extends Resource

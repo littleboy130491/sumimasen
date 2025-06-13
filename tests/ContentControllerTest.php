@@ -8,7 +8,7 @@ use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Http\Controllers\ContentController;
 use Littleboy130491\Sumimasen\Models\Page;
 use Littleboy130491\Sumimasen\Models\Post;
-use Littleboy130491\Sumimasen\Models\User;
+use App\Models\User;
 use Tests\TestCase;
 
 class ContentControllerTest extends TestCase

@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Littleboy130491\Sumimasen\Models\User;
+use App\Models\User;
 
 class AdminLoggedInNotification extends Mailable implements ShouldQueue
 {

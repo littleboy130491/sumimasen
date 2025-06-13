@@ -4,7 +4,7 @@ namespace Littleboy130491\Sumimasen\Policies;
 
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Littleboy130491\Sumimasen\Models\Post;
-use Littleboy130491\Sumimasen\Models\User;
+use App\Models\User;;
 
 class PostPolicy
 {
