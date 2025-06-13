@@ -95,13 +95,6 @@ class SumimasenServiceProvider extends PackageServiceProvider
     protected function getMigrations(): array
     {
         return [
-            'create_users_table',
-            'create_cache_table',
-            'create_jobs_table',
-            'create_settings_table',
-            'create_media_table',
-            'add_tenant_aware_column_to_media_table',
-            'create_breezy_sessions_table',
             'create_posts_table',
             'create_pages_table',
             'create_categories_table',
@@ -113,9 +106,6 @@ class SumimasenServiceProvider extends PackageServiceProvider
             'create_imports_table',
             'create_exports_table',
             'create_failed_import_rows_table',
-            'create_permission_tables',
-            'create_seo_suite_table',
-            'create_menus_table',
             'create_comments_table',
             'create_components_table',
             'update_menus_table',
