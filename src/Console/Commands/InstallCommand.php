@@ -66,7 +66,7 @@ class InstallCommand extends Command
             '--tag' => 'filament-menu-builder-migrations',
         ]);
 
-         // Publish Spatie Laravel Settings migrations
+        // Publish Spatie Laravel Settings migrations
         $this->call('vendor:publish', [
             '--provider' => 'Spatie\LaravelSettings\LaravelSettingsServiceProvider',
             '--tag' => 'migrations',
@@ -75,41 +75,34 @@ class InstallCommand extends Command
         $this->info('Publishing CMS migrations...');
         $this->call('vendor:publish', ['--tag' => 'sumimasen-cms-migrations']);
 
-
         if ($this->confirm('Do you want to run the migrations now?', true)) {
             $this->info('Running migrations...');
             $this->call('migrate');
         }
 
+        // Filament panel installation: must be run before anything else Filament-related!
         if ($this->confirm('Do you want to install Filament panels?', true)) {
             $this->info('Installing Filament panels...');
             $this->call('filament:install', ['--panels' => true]);
+
+            // Tell the user to rerun the next phase and exit
+            $this->warn('Filament panels have been installed!');
+            $this->warn('Please run "php artisan cms:finalize" to continue setup:');
+            $this->line('- Create your admin user');
+            $this->line('- Install Filament Shield');
+            $this->line('- Generate default permission roles');
+            $this->line('');
+            $this->info('You can now visit /admin once you finish finalizing.');
+            return; // Exit the command here!
         }
 
-        if ($this->confirm('Do you want to create an admin user?', true)) {
-            $this->info('Creating admin user...');
-            $this->call('make:filament-user');
-        }
-
-        if ($this->confirm('Do you want to install Filament Shield?', true)) {
-            $this->info('Installing Filament Shield...');
-            $this->call('shield:install');
-        }
-
-        if ($this->confirm('Do you want to generate default permission roles?', true)) {
-            $this->info('Generating permission roles...');
-            $this->call('cms:generate-roles');
-        }
-
-        $this->output->success('CMS has been installed successfully! 🎉');
-        $this->line('');
-        $this->info('✅ The CMS plugin has been automatically registered with your Filament panels!');
+        // If user skips panel install, print further guidance.
+        $this->output->success('CMS core has been installed successfully! 🎉');
         $this->line('');
         $this->info('Next steps:');
-        $this->line('1. Visit /admin and log in to access the CMS');
-        $this->line('2. Configure your CMS settings in the admin panel');
-        $this->line('3. Create your first content (pages, posts, etc.)');
-        $this->line('4. Customize views and components as needed');
+        $this->line('1. If you did not install Filament panels above, do so now by running:');
+        $this->line('   php artisan filament:install --panels');
+        $this->line('2. Then run: php artisan cms:finalize');
         $this->line('');
         $this->info('Available commands:');
         $this->line('- php artisan cms:create-model');
