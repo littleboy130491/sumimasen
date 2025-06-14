@@ -34,6 +34,9 @@ class CmsFinalizeCommand extends Command
 
         $this->info('=== Finalizing CMS Setup ===');
 
+        // 0. Register the plugin
+        $this->registerSumimasenPlugin($panelPath);
+
         // 1. Create admin user
         if ($this->confirm('Do you want to create an admin user?', true)) {
             $this->info('Creating admin user...');
@@ -52,8 +55,6 @@ class CmsFinalizeCommand extends Command
             $this->call('cms:generate-roles');
         }
 
-        // 4. Register the plugin
-        $this->registerSumimasenPlugin($panelPath);
 
         $this->output->success('CMS finalization complete! 🎉');
         $this->line('');

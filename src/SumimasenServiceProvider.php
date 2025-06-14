@@ -50,7 +50,8 @@ class SumimasenServiceProvider extends PackageServiceProvider
             ->hasViews()
             ->hasTranslations()
             ->hasMigrations($this->getMigrations())
-            ->hasCommands($this->getCommands());
+            ->hasCommands($this->getCommands())
+            ->hasRoute('web');
     }
 
     public function packageRegistered(): void
