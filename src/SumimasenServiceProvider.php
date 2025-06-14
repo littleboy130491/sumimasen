@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
-use Littleboy130491\Sumimasen\Console\Commands\InstallCommand;
 use Littleboy130491\Sumimasen\Models\Comment;
 use Littleboy130491\Sumimasen\Observers\CommentObserver;
 use SolutionForest\FilamentTranslateField\Facades\FilamentTranslateField;
@@ -66,7 +65,8 @@ class SumimasenServiceProvider extends PackageServiceProvider
     protected function getCommands(): array
     {
         return [
-            InstallCommand::class,
+            \Littleboy130491\Sumimasen\Console\Commands\InstallCommand::class,
+            \Littleboy130491\Sumimasen\Console\Commands\CmsFinalizeCommand::class,
             \Littleboy130491\Sumimasen\Console\Commands\CreateExporterCommand::class,
             \Littleboy130491\Sumimasen\Console\Commands\CreateImporterCommand::class,
             \Littleboy130491\Sumimasen\Console\Commands\CreateMigrationCommand::class,
