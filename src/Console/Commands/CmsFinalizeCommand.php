@@ -63,35 +63,50 @@ class CmsFinalizeCommand extends Command
 
     private function registerSumimasenPlugin(string $panelPath): void
     {
+        $pluginImport = 'use Littleboy130491\Sumimasen\SumimasenPlugin;';
         $pluginCall = 'SumimasenPlugin::make(),';
 
         $file = file_get_contents($panelPath);
 
-        // If already present, do nothing
-        if (strpos($file, $pluginCall) !== false) {
-            $this->info('SumimasenPlugin is already registered in AdminPanelProvider.php');
-            return;
+        // 1. Add import if missing
+        if (strpos($file, $pluginImport) === false) {
+            // Insert after the last existing use statement
+            $file = preg_replace(
+                '/^(use [^\n]+;\n)+/m',
+                "$0$pluginImport\n",
+                $file,
+                1,
+            );
+
+            // If no use statements exist, add after namespace
+            if (strpos($file, $pluginImport) === false) {
+                $file = preg_replace(
+                    '/(namespace [^\n]+;)/',
+                    "$1\n\n$pluginImport",
+                    $file,
+                    1,
+                );
+            }
         }
 
-        // Add to plugins([]) call
-        $file = preg_replace_callback(
-            '/->plugins\(\s*\[\s*((?:[^\]]|\](?!\)))*?)\s*\]\s*\)/s',
-            function ($matches) use ($pluginCall) {
-                $existing = rtrim($matches[1]);
-                // Add a comma if needed
-                if ($existing !== '' && !str_ends_with($existing, ',')) {
-                    $existing .= ',';
-                }
-                // Ensure proper indentation
-                return "->plugins([\n                $existing\n                $pluginCall\n            ])";
-            },
-            $file,
-            1
-        );
+        // 2. Add plugin to plugins([]) call if missing
+        if (strpos($file, $pluginCall) === false) {
+            $file = preg_replace_callback(
+                '/->plugins\(\s*\[\s*((?:[^\]]|\](?!\)))*?)\s*\]\s*\)/s',
+                function ($matches) use ($pluginCall) {
+                    $existing = rtrim($matches[1]);
+                    if ($existing !== '' && !str_ends_with(trim($existing), ',')) {
+                        $existing .= ',';
+                    }
+                    return "->plugins([\n                $existing\n                $pluginCall\n            ])";
+                },
+                $file,
+                1
+            );
+        }
 
         file_put_contents($panelPath, $file);
         $this->info('SumimasenPlugin registered in AdminPanelProvider.php');
     }
-
 
 }
