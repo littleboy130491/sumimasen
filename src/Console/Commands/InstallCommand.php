@@ -26,13 +26,13 @@ class InstallCommand extends Command
     public function handle(): void
     {
         $this->info('Publishing CMS configuration...');
-        $this->call('vendor:publish', ['--tag' => 'cms-config']);
+        $this->call('vendor:publish', ['--tag' => 'sumimasen-cms-config']);
 
         $this->info('Publishing CMS views...');
-        $this->call('vendor:publish', ['--tag' => 'cms-views']);
+        $this->call('vendor:publish', ['--tag' => 'sumimasen-cms-views']);
 
         $this->info('Publishing CMS language files...');
-        $this->call('vendor:publish', ['--tag' => 'cms-lang']);
+        $this->call('vendor:publish', ['--tag' => 'sumimasen-cms-lang']);
 
         $this->info('Publishing required package migrations...');
 
@@ -67,7 +67,7 @@ class InstallCommand extends Command
         ]);
 
         $this->info('Publishing CMS migrations...');
-        $this->call('vendor:publish', ['--tag' => 'cms-migrations']);
+        $this->call('vendor:publish', ['--tag' => 'sumimasen-cms-migrations']);
 
 
         if ($this->confirm('Do you want to run the migrations now?', true)) {

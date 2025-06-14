@@ -49,6 +49,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
             ->name(static::$name)
             ->hasConfigFile('cms')
             ->hasViews()
+            ->hasTranslations()
             ->hasMigrations($this->getMigrations())
             ->hasCommands($this->getCommands());
     }
@@ -56,21 +57,6 @@ class SumimasenServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         parent::packageRegistered();
-
-        // Publish migrations with custom tag
-        $this->publishes([
-            __DIR__.'/../database/migrations' => database_path('migrations'),
-        ], 'cms-migrations');
-
-        // Publish views with custom tag
-        $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/cms'),
-        ], 'cms-views');
-
-        // Publish language files with custom tag
-        $this->publishes([
-            __DIR__.'/../resources/lang' => resource_path('lang/vendor/cms'),
-        ], 'cms-lang');
 
     }
 
