@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Littleboy130491\Sumimasen\Console\Commands;
 
 use Illuminate\Console\Command;
 
@@ -29,7 +29,7 @@ class CmsFinalizeCommand extends Command
             $this->error('Filament Admin Panel is not installed yet. Please run "php artisan cms:install" first.');
             return;
         }
-        
+
         $this->info('=== Finalizing CMS Setup ===');
 
         // 1. Create admin user
