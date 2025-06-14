@@ -28,9 +28,6 @@ class InstallCommand extends Command
         $this->info('Publishing CMS configuration...');
         $this->call('vendor:publish', ['--tag' => 'cms-config']);
 
-        $this->info('Publishing CMS migrations...');
-        $this->call('vendor:publish', ['--tag' => 'cms-migrations']);
-
         $this->info('Publishing CMS views...');
         $this->call('vendor:publish', ['--tag' => 'cms-views']);
 
@@ -68,6 +65,10 @@ class InstallCommand extends Command
             '--tag' => 'filament-menu-builder-migrations',
             '--existing' => true,
         ]);
+
+        $this->info('Publishing CMS migrations...');
+        $this->call('vendor:publish', ['--tag' => 'cms-migrations']);
+
 
         if ($this->confirm('Do you want to run the migrations now?', true)) {
             $this->info('Running migrations...');
