@@ -66,6 +66,12 @@ class InstallCommand extends Command
             '--tag' => 'filament-menu-builder-migrations',
         ]);
 
+         // Publish Spatie Laravel Settings migrations
+        $this->call('vendor:publish', [
+            '--provider' => 'Spatie\LaravelSettings\LaravelSettingsServiceProvider',
+            '--tag' => 'migrations',
+        ]);
+
         $this->info('Publishing CMS migrations...');
         $this->call('vendor:publish', ['--tag' => 'sumimasen-cms-migrations']);
 
