@@ -62,6 +62,7 @@ class InstallCommand extends Command
 
         // Publish Filament Menu Builder migrations
         $this->call('vendor:publish', [
+            '--provider' => 'Datlechin\FilamentMenuBuilder\FilamentMenuBuilderServiceProvider',
             '--tag' => 'filament-menu-builder-migrations',
         ]);
 
