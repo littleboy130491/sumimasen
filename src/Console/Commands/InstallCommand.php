@@ -66,6 +66,7 @@ class InstallCommand extends Command
         // Publish Filament Menu Builder migrations
         $this->call('vendor:publish', [
             '--tag' => 'filament-menu-builder-migrations',
+            '--existing' => true,
         ]);
 
         if ($this->confirm('Do you want to run the migrations now?', true)) {
