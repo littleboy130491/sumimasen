@@ -25,7 +25,9 @@ class CmsFinalizeCommand extends Command
      */
     public function handle(): void
     {
-        if (!file_exists(app_path('Providers/Filament/AdminPanelProvider.php'))) {
+        $panelPath = app_path('Providers/Filament/AdminPanelProvider.php');
+
+        if (!file_exists($panelPath)) {
             $this->error('Filament Admin Panel is not installed yet. Please run "php artisan cms:install" first.');
             return;
         }
@@ -50,9 +52,53 @@ class CmsFinalizeCommand extends Command
             $this->call('cms:generate-roles');
         }
 
+        // 4. Register the plugin
+        $this->registerSumimasenPlugin($panelPath);
+
         $this->output->success('CMS finalization complete! 🎉');
         $this->line('');
         $this->info('✅ You can now log in at /admin with your admin account.');
         $this->line('Visit your Filament panel and configure your CMS as needed.');
     }
+
+    private function registerSumimasenPlugin(string $panelPath): void
+    {
+        $pluginImport = "use Littleboy130491\\Sumimasen\\SumimasenPlugin;";
+        $pluginCall = "SumimasenPlugin::make(),";
+
+        $file = file_get_contents($panelPath);
+
+        // 1. Add import if missing
+        if (strpos($file, $pluginImport) === false) {
+            $file = preg_replace('/(<\?php.*?namespace\s+[^\n]+;)/s', "$1\n\n$pluginImport", $file, 1);
+        }
+
+        // 2. Add plugin to plugins() array if missing
+        if (strpos($file, $pluginCall) === false) {
+            $file = preg_replace_callback(
+                '/function\s+plugins\(\)\s*:\s*array\s*\{(.*?return\s*\[)(.*?)(\];)/s',
+                function ($matches) use ($pluginCall) {
+                    // Insert plugin just before the closing bracket of the return array
+                    $before = $matches[1];
+                    $inside = $matches[2];
+                    $after = $matches[3];
+
+                    // Clean up, add comma if needed
+                    $inside = rtrim($inside);
+                    if ($inside && !str_ends_with(trim($inside), ',')) {
+                        $inside .= ',';
+                    }
+                    $inside .= "\n            $pluginCall";
+
+                    return $before . $inside . $after;
+                },
+                $file,
+                1
+            );
+        }
+
+        file_put_contents($panelPath, $file);
+        $this->info('SumimasenPlugin registered in AdminPanelProvider.php');
+    }
+
 }
