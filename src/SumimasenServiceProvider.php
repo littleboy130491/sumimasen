@@ -66,6 +66,12 @@ class SumimasenServiceProvider extends PackageServiceProvider
         $this->publishes([
             __DIR__.'/../resources/views' => resource_path('views/vendor/cms'),
         ], 'cms-views');
+
+        // Publish language files with custom tag
+        $this->publishes([
+            __DIR__.'/../resources/lang' => resource_path('lang/vendor/cms'),
+        ], 'cms-lang');
+
     }
 
     /**

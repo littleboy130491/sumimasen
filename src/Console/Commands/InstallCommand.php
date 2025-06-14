@@ -34,6 +34,9 @@ class InstallCommand extends Command
         $this->info('Publishing CMS views...');
         $this->call('vendor:publish', ['--tag' => 'cms-views']);
 
+        $this->info('Publishing CMS language files...');
+        $this->call('vendor:publish', ['--tag' => 'cms-lang']);
+
         $this->info('Publishing required package migrations...');
 
         // Publish Spatie Permission migrations
@@ -58,6 +61,11 @@ class InstallCommand extends Command
         $this->call('vendor:publish', [
             '--provider' => 'Jeffgreco13\FilamentBreezy\BreezyServiceProvider',
             '--tag' => 'filament-breezy-migrations',
+        ]);
+
+        // Publish Filament Menu Builder migrations
+        $this->call('vendor:publish', [
+            '--tag' => 'filament-menu-builder-migrations',
         ]);
 
         if ($this->confirm('Do you want to run the migrations now?', true)) {
