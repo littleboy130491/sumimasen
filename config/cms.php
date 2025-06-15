@@ -100,7 +100,7 @@ return [
     ],
 
     'debug_mode' => [
-        'enabled' => env('CMS_DEBUG_MODE_ENABLED', true),
+        'enabled' => env('CMS_DEBUG_MODE_ENABLED', false),
         'environments' => ['local', 'development'],
         'max_variable_depth' => 20,
         'max_array_items' => 50,

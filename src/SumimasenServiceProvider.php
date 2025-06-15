@@ -41,7 +41,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
         $this->app->booted(function () {
             $router = $this->app['router'];
             $router->aliasMiddleware('setLocale', \Littleboy130491\Sumimasen\Http\Middleware\SetLocale::class);
-            $router->aliasMiddleware('doNotCacheResponse', \Spatie\ResponseCache\Middlewares\DoNotCacheResponse::class::class);
+            $router->aliasMiddleware('doNotCacheResponse', \Spatie\ResponseCache\Middlewares\DoNotCacheResponse::class);
         });
     }
 
