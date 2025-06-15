@@ -15,7 +15,7 @@
             </div>
 
             <!--Main Menu - Using the navigation-menu component-->
-            <x-partials.navigation-menu location="header" />
+            <x-sumimasen-cms::partials.navigation-menu location="header" />
 
             <!--Button-->
             <div class="self-center hidden lg:block sm:block">
@@ -58,7 +58,7 @@
                         </div>
 
                         <!--Mobile Menu - Using the mobile-menu component-->
-                        <x-partials.mobile-menu location="header" />
+                        <x-sumimasen-cms::partials.mobile-menu location="header" />
 
                         <!--Button-->
                         <div class="flex items-center lg:block sm:block mt-7">

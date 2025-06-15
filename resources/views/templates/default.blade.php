@@ -1,5 +1,5 @@
-<x-layouts.app :title="$content->title ?? 'Default Page'" :body-classes="$bodyClasses">
-    <x-partials.header />
+<x-sumimasen-cms::layouts.app :title="$content->title ?? 'Default Page'" :body-classes="$bodyClasses">
+    <x-sumimasen-cms::partials.header />
     <main>
         test
         <h1>{{ $content->title ?? 'Default Page' }}</h1>
@@ -10,5 +10,5 @@
         </div>
 
     </main>
-    <x-partials.footer />
-</x-layouts.app>
+    <x-sumimasen-cms::partials.footer />
+</x-sumimasen-cms::layouts.app>

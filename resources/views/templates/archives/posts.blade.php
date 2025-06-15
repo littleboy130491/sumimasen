@@ -1,5 +1,5 @@
-<x-layouts.app :title="$title ?? 'Posts Archive'" :body-classes="$bodyClasses">
-    <x-partials.header />
+<x-sumimasen-cms::layouts.app :title="$title ?? 'Posts Archive'" :body-classes="$bodyClasses">
+    <x-sumimasen-cms::partials.header />
     <main>
         <div class="archive-header">
             <h1>{{ $title ?? 'Posts Archive' }}</h1>
@@ -49,7 +49,7 @@
                                     </span>
                                 @endif
 
-                                <x-ui.page-views :count="$post->page_views" format="short" class="post-card-views" />
+                                <x-sumimasen-cms::ui.page-views :count="$post->page_views" format="short" class="post-card-views" />
 
                                 <livewire:like-button :content="$post" :lang="$lang" :content-type="$post_type"
                                     size="sm" variant="minimal" :key="'like-button-' . $post->id" />
@@ -79,5 +79,5 @@
             </div>
         @endif
     </main>
-    <x-partials.footer />
-</x-layouts.app>
+    <x-sumimasen-cms::partials.footer />
+</x-sumimasen-cms::layouts.app>

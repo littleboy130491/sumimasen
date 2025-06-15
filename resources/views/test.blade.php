@@ -1,1 +1,1 @@
-<x-instagram-feed :type="request('type', 'all')" />
+<x-sumimasen-cms::instagram-feed :type="request('type', 'all')" />

@@ -1,8 +1,8 @@
 @php
     use Illuminate\Support\Str;
 @endphp
-<x-layouts.app :title="$content->title ?? 'Post'" :body-classes="$bodyClasses">
-    <x-partials.header />
+<x-sumimasen-cms::layouts.app :title="$content->title ?? 'Post'" :body-classes="$bodyClasses">
+    <x-sumimasen-cms::partials.header />
     <main>
         <article class="post-single">
             <header class="post-header">
@@ -20,7 +20,7 @@
                             by {{ $content->author->name }}
                         </span>
                     @endif
-                    <x-ui.page-views :count="$content->custom_fields['page_views']" format="long" class="post-views" />
+                    <x-sumimasen-cms::ui.page-views :count="$content->custom_fields['page_views']" format="long" class="post-views" />
 
                     <span class="post-likes">
                         {{ $content->page_likes }} {{ Str::plural('like', $content->page_likes) }}
@@ -44,7 +44,7 @@
             <div class="post-content">
                 {!! $content->content !!}
             </div>
-            <x-ui.behold-ig-feed />
+            <x-sumimasen-cms::ui.behold-ig-feed />
 
             {{-- Like button section --}}
             <div class="post-actions">
@@ -95,5 +95,5 @@
             </section>
         @endif
     </main>
-    <x-partials.footer />
-</x-layouts.app>
+    <x-sumimasen-cms::partials.footer />
+</x-sumimasen-cms::layouts.app>

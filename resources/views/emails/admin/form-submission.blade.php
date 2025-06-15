@@ -1,4 +1,4 @@
-<x-mail::message>
+<x-sumimasen-cms::mail::message>
 # New Contact Form Submission
 
 A new contact form submission has been received on your website.
@@ -17,18 +17,18 @@ A new contact form submission has been received on your website.
 
 ## Message Content
 
-<x-mail::panel>
+<x-sumimasen-cms::mail::panel>
     {{ $message }}
-</x-mail::panel>
+</x-sumimasen-cms::mail::panel>
 
 ## Technical Information
 
 - **IP Address:** {{ $ipAddress }}
 - **User Agent:** {{ $userAgent }}
 
-<x-mail::button :url="config('app.url') . '/admin/submissions/' . $submissionId">
+<x-sumimasen-cms::mail::button :url="config('app.url') . '/admin/submissions/' . $submissionId">
     View in Admin Panel
-</x-mail::button>
+</x-sumimasen-cms::mail::button>
 
 ---
 
@@ -37,4 +37,4 @@ You can reply directly to this email to respond to {{ $submitterName }} at {{ $s
 
 Thanks,<br>
 {{ config('app.name') }} Contact Form System
-</x-mail::message>
+</x-sumimasen-cms::mail::message>
