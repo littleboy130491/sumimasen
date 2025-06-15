@@ -18,7 +18,7 @@ class ContentController extends Controller
     use SetsSeoSuite;
 
     protected string $templateBase = 'templates';
-    protected string $packageNamespace = 'sumimasen';
+    protected string $packageNamespace = 'sumimasen-cms';
 
     protected string $defaultLanguage;
 
@@ -35,7 +35,7 @@ class ContentController extends Controller
         $this->staticPageClass = Config::get('cms.static_page_model', Page::class);
         $this->frontPageSlug = Config::get('cms.front_page_slug', 'home');
         $this->templateBase = Config::get('cms.template_base', 'templates');
-        $this->packageNamespace = Config::get('cms.package_namespace', 'sumimasen');
+        $this->packageNamespace = Config::get('cms.package_namespace', 'sumimasen-cms');
     }
 
     /**
