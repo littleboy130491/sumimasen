@@ -39,7 +39,7 @@ class SumimasenPlugin implements Plugin
 
     public function boot(Panel $panel): void
     {
-        return $panel
+        $panel
             ->unsavedChangesAlerts()
             ->sidebarCollapsibleOnDesktop()
             ->databaseNotifications();
