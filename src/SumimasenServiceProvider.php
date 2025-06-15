@@ -38,6 +38,11 @@ class SumimasenServiceProvider extends PackageServiceProvider
         $this->bootLivewireComponents();
         $this->bootBladeComponents();
         $this->bootScheduledTasks();
+        $this->app->booted(function () {
+            $router = $this->app['router'];
+            $router->aliasMiddleware('setLocale', \Littleboy130491\Sumimasen\Http\Middleware\SetLocale::class);
+            $router->aliasMiddleware('doNotCacheResponse', \Spatie\ResponseCache\Middlewares\DoNotCacheResponse::class::class);
+        });
     }
 
     public function configurePackage(Package $package): void
