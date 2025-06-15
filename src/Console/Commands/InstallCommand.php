@@ -93,6 +93,7 @@ class InstallCommand extends Command
             $this->line('- Generate default permission roles');
             $this->line('');
             $this->info('You can now visit /admin once you finish finalizing.');
+
             return; // Exit the command here!
         }
 

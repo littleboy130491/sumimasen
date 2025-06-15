@@ -15,19 +15,6 @@ use Littleboy130491\Sumimasen\Filament\Resources\SubmissionResource;
 use Littleboy130491\Sumimasen\Filament\Resources\TagResource;
 use Littleboy130491\Sumimasen\Filament\Resources\UserResource;
 
-
-use Awcodes\Curator\CuratorPlugin;
-use Jeffgreco13\FilamentBreezy\BreezyCore;
-use Illuminate\Validation\Rules\Password;
-use Outerweb\FilamentTranslatableFields\Filament\Plugins\FilamentTranslatableFieldsPlugin;
-use Filament\Navigation\NavigationGroup;
-use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use Datlechin\FilamentMenuBuilder\FilamentMenuBuilderPlugin;
-use Illuminate\Support\Facades\Gate;
-use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
-use ShuvroRoy\FilamentSpatieLaravelBackup\FilamentSpatieLaravelBackupPlugin;
-use Filament\Forms\Components\TextInput;
-
 class SumimasenPlugin implements Plugin
 {
     use EvaluatesClosures;
@@ -50,10 +37,7 @@ class SumimasenPlugin implements Plugin
             ->pages($this->getPages());
     }
 
-    public function boot(Panel $panel): void
-    {
-     
-    }
+    public function boot(Panel $panel): void {}
 
     public static function make(): static
     {
@@ -115,5 +99,4 @@ class SumimasenPlugin implements Plugin
     {
         return $this->hasSettingsPage;
     }
-
 }

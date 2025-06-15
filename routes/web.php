@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use Filament\Http\Middleware\Authenticate;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Route;
 use Littleboy130491\Sumimasen\Http\Controllers\ContentController;
 use Littleboy130491\Sumimasen\Http\Controllers\PreviewEmailController;
-use Filament\Http\Middleware\Authenticate;
 
 // Routes for previewing emails and components
 Route::prefix('/{lang}/preview')
@@ -35,6 +35,7 @@ Route::prefix('/{lang}/preview')
 // Redirect root to default language
 Route::get('/', function () {
     $defaultLang = Config::get('cms.default_language', 'en');
+
     return redirect()->to($defaultLang);
 });
 
@@ -46,8 +47,9 @@ Route::get('/{path}', function (Illuminate\Http\Request $request, $path) {
     if ($queryString) {
         $redirectUrl .= "?{$queryString}";
     }
+
     return redirect()->to($redirectUrl);
-})->where('path', '^(?!' . implode('|', array_keys(Config::get('cms.language_available', ['en' => 'English']))) . '/).*');
+})->where('path', '^(?!'.implode('|', array_keys(Config::get('cms.language_available', ['en' => 'English']))).'/).*');
 
 Route::prefix('{lang}')
     ->whereIn('lang', array_keys(Config::get('cms.language_available', ['en' => 'English'])))
@@ -86,10 +88,10 @@ Route::prefix('{lang}')
 
         // Regex for matching valid keys from your config.
         // preg_quote is important for special characters in keys.
-        $contentArchiveKeysRegex = !empty($contentArchiveKeys) ? implode('|', array_map('preg_quote', $contentArchiveKeys)) : '^\b$'; // Matches nothing if empty
-        $contentSingleKeysRegex = !empty($contentSingleKeys) ? implode('|', array_map('preg_quote', $contentSingleKeys)) : '^\b$'; // Matches nothing if empty
-        $taxonomyArchiveKeysRegex = !empty($taxonomyArchiveKeys) ? implode('|', array_map('preg_quote', $taxonomyArchiveKeys)) : '^\b$'; // Matches nothing if empty
-    
+        $contentArchiveKeysRegex = ! empty($contentArchiveKeys) ? implode('|', array_map('preg_quote', $contentArchiveKeys)) : '^\b$'; // Matches nothing if empty
+        $contentSingleKeysRegex = ! empty($contentSingleKeys) ? implode('|', array_map('preg_quote', $contentSingleKeys)) : '^\b$'; // Matches nothing if empty
+        $taxonomyArchiveKeysRegex = ! empty($taxonomyArchiveKeys) ? implode('|', array_map('preg_quote', $taxonomyArchiveKeys)) : '^\b$'; // Matches nothing if empty
+
         // General slug regex
         $slugRegex = '[a-zA-Z0-9-_]+';
 
@@ -120,4 +122,3 @@ Route::prefix('{lang}')
             ->where('page_slug', $slugRegex)
             ->name('cms.static.page');
     });
-    

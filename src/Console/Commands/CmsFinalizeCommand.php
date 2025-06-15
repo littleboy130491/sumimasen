@@ -27,8 +27,9 @@ class CmsFinalizeCommand extends Command
     {
         $panelPath = app_path('Providers/Filament/AdminPanelProvider.php');
 
-        if (!file_exists($panelPath)) {
+        if (! file_exists($panelPath)) {
             $this->error('Filament Admin Panel is not installed yet. Please run "php artisan cms:install" first.');
+
             return;
         }
 
@@ -54,7 +55,6 @@ class CmsFinalizeCommand extends Command
             $this->info('Generating permission roles...');
             $this->call('cms:generate-roles');
         }
-
 
         $this->output->success('CMS finalization complete! 🎉');
         $this->line('');
@@ -96,9 +96,10 @@ class CmsFinalizeCommand extends Command
                 '/->plugins\(\s*\[\s*((?:[^\]]|\](?!\)))*?)\s*\]\s*\)/s',
                 function ($matches) use ($pluginCall) {
                     $existing = rtrim($matches[1]);
-                    if ($existing !== '' && !str_ends_with(trim($existing), ',')) {
+                    if ($existing !== '' && ! str_ends_with(trim($existing), ',')) {
                         $existing .= ',';
                     }
+
                     return "->plugins([\n                $existing\n                $pluginCall\n            ])";
                 },
                 $file,
@@ -109,5 +110,4 @@ class CmsFinalizeCommand extends Command
         file_put_contents($panelPath, $file);
         $this->info('SumimasenPlugin registered in AdminPanelProvider.php');
     }
-
 }

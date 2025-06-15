@@ -18,6 +18,7 @@ class ContentController extends Controller
     use SetsSeoSuite;
 
     protected string $templateBase = 'templates';
+
     protected string $packageNamespace = 'sumimasen-cms';
 
     protected string $defaultLanguage;
@@ -535,7 +536,7 @@ class ContentController extends Controller
             if (View::exists($template)) {
                 return $template;
             }
-            
+
             // Then check in package namespace
             $namespacedTemplate = "{$this->packageNamespace}::{$template}";
             if (View::exists($namespacedTemplate)) {
