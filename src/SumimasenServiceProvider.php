@@ -3,7 +3,6 @@
 namespace Littleboy130491\Sumimasen;
 
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
-use Filament\Facades\Filament;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Database\Migrations\MigrationCreator;
@@ -36,7 +35,6 @@ class SumimasenServiceProvider extends PackageServiceProvider
         $this->bootMultilanguageSupport();
         $this->bootObservers();
         $this->bootDebugMode();
-        $this->bootFilamentResources();
         $this->bootLivewireComponents();
         $this->bootBladeComponents();
         $this->bootScheduledTasks();
@@ -57,7 +55,6 @@ class SumimasenServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         parent::packageRegistered();
-
     }
 
     /**
@@ -177,48 +174,6 @@ class SumimasenServiceProvider extends PackageServiceProvider
                 if (app()->bound('debug.collector')) {
                     app('debug.collector')->addCacheData(false, $event->key);
                 }
-            });
-        }
-    }
-
-    private function bootFilamentResources(): void
-    {
-        // Automatically register the plugin with all Filament panels
-        if (class_exists('Filament\Facades\Filament')) {
-            // Register plugin with all panels automatically
-            $this->app->resolving('filament', function () {
-                if (method_exists(\Filament\Facades\Filament::class, 'getCurrentPanel')) {
-                    $panels = \Filament\Facades\Filament::getPanels();
-
-                    foreach ($panels as $panel) {
-                        if (! $panel->hasPlugin('sumimasen-cms')) {
-                            $panel->plugin(SumimasenPlugin::make());
-                        }
-                    }
-                }
-            });
-
-            Filament::serving(function () {
-                // Fallback: Register resources directly if plugin system fails
-                if (! app()->bound('sumimasen-plugin-registered')) {
-                    Filament::registerResources([
-                        \Littleboy130491\Sumimasen\Filament\Resources\CategoryResource::class,
-                        \Littleboy130491\Sumimasen\Filament\Resources\CommentResource::class,
-                        \Littleboy130491\Sumimasen\Filament\Resources\ComponentResource::class,
-                        \Littleboy130491\Sumimasen\Filament\Resources\PageResource::class,
-                        \Littleboy130491\Sumimasen\Filament\Resources\PostResource::class,
-                        \Littleboy130491\Sumimasen\Filament\Resources\SubmissionResource::class,
-                        \Littleboy130491\Sumimasen\Filament\Resources\TagResource::class,
-                        \Littleboy130491\Sumimasen\Filament\Resources\UserResource::class,
-                    ]);
-
-                    Filament::registerPages([
-                        \Littleboy130491\Sumimasen\Filament\Pages\ManageGeneralSettings::class,
-                    ]);
-
-                    app()->instance('sumimasen-plugin-registered', true);
-                }
-
             });
         }
     }
