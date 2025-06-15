@@ -18,6 +18,7 @@ class ContentController extends Controller
     use SetsSeoSuite;
 
     protected string $templateBase = 'templates';
+    protected string $packageNamespace = 'sumimasen';
 
     protected string $defaultLanguage;
 
@@ -33,6 +34,8 @@ class ContentController extends Controller
         $this->paginationLimit = Config::get('cms.pagination_limit', 12);
         $this->staticPageClass = Config::get('cms.static_page_model', Page::class);
         $this->frontPageSlug = Config::get('cms.front_page_slug', 'home');
+        $this->templateBase = Config::get('cms.template_base', 'templates');
+        $this->packageNamespace = Config::get('cms.package_namespace', 'sumimasen');
     }
 
     /**
@@ -528,9 +531,22 @@ class ContentController extends Controller
     private function findFirstExistingTemplate(array $templates): string
     {
         foreach ($templates as $template) {
+            // First check in application views (published/customized views)
             if (View::exists($template)) {
                 return $template;
             }
+            
+            // Then check in package namespace
+            $namespacedTemplate = "{$this->packageNamespace}::{$template}";
+            if (View::exists($namespacedTemplate)) {
+                return $namespacedTemplate;
+            }
+        }
+
+        // Final fallback - try package namespace default, then application default
+        $packageDefault = "{$this->packageNamespace}::{$this->templateBase}.default";
+        if (View::exists($packageDefault)) {
+            return $packageDefault;
         }
 
         return "{$this->templateBase}.default";
