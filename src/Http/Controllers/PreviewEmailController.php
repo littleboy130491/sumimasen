@@ -51,16 +51,11 @@ class PreviewEmailController extends Controller
                     ]);
                 }
 
-                try {
-                    return response(view('sumimasen-cms::emails.admin.loggedin', [
-                        'userName' => $user->name,
-                        'userEmail' => $user->email,
-                        'loginTime' => now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-                    ])->render())->header('Content-Type', 'text/html');
-                } catch (\Exception $e) {
-                    return response('<h1>Email Preview Error</h1><p>Unable to render email: ' . e($e->getMessage()) . '</p>')
-                        ->header('Content-Type', 'text/html');
-                }
+                return view('sumimasen-cms::emails.previews.admin-login', [
+                    'userName' => $user->name,
+                    'userEmail' => $user->email,
+                    'loginTime' => now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                ]);
 
             case 'preview-comment-notification':
                 $comment = Comment::first();
@@ -75,20 +70,15 @@ class PreviewEmailController extends Controller
                     ]);
                 }
 
-                try {
-                    return response(view('sumimasen-cms::emails.admin.new_comment', [
-                        'commentAuthorName' => $comment->name,
-                        'commentAuthorEmail' => $comment->email,
-                        'commentContent' => $comment->content,
-                        'commentUrl' => '#',
-                        'commentableTitle' => 'Sample Post Title',
-                        'commentableType' => 'Post',
-                        'postedAt' => $comment->created_at ? $comment->created_at->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s') : now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-                    ])->render())->header('Content-Type', 'text/html');
-                } catch (\Exception $e) {
-                    return response('<h1>Email Preview Error</h1><p>Unable to render email: ' . e($e->getMessage()) . '</p>')
-                        ->header('Content-Type', 'text/html');
-                }
+                return view('sumimasen-cms::emails.previews.new-comment', [
+                    'commentAuthorName' => $comment->name,
+                    'commentAuthorEmail' => $comment->email,
+                    'commentContent' => $comment->content,
+                    'commentUrl' => '#',
+                    'commentableTitle' => 'Sample Post Title',
+                    'commentableType' => 'Post',
+                    'postedAt' => $comment->created_at ? $comment->created_at->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s') : now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                ]);
 
             case 'preview-comment-reply-notification':
                 $comment = Comment::first();
@@ -133,19 +123,14 @@ class PreviewEmailController extends Controller
                     }
                 }
 
-                try {
-                    return response(view('sumimasen-cms::emails.comment.reply_notification', [
-                        'parentCommentAuthorName' => $comment->parent->name,
-                        'replyAuthorName' => $comment->name,
-                        'replyContent' => $comment->content,
-                        'commentableTitle' => 'Sample Post Title',
-                        'commentableUrl' => '#',
-                        'replyDate' => $comment->created_at ? $comment->created_at->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s') : now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-                    ])->render())->header('Content-Type', 'text/html');
-                } catch (\Exception $e) {
-                    return response('<h1>Email Preview Error</h1><p>Unable to render email: ' . e($e->getMessage()) . '</p>')
-                        ->header('Content-Type', 'text/html');
-                }
+                return view('sumimasen-cms::emails.previews.comment-reply', [
+                    'parentCommentAuthorName' => $comment->parent->name,
+                    'replyAuthorName' => $comment->name,
+                    'replyContent' => $comment->content,
+                    'commentableTitle' => 'Sample Post Title',
+                    'commentableUrl' => '#',
+                    'replyDate' => $comment->created_at ? $comment->created_at->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s') : now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                ]);
 
             default:
                 abort(404, 'Email preview not found for slug: '.e($slug));
