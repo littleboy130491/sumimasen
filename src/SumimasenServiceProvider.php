@@ -38,6 +38,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
         $this->bootLivewireComponents();
         $this->bootBladeComponents();
         $this->bootScheduledTasks();
+        $this->bootPolicies();
         $this->app->booted(function () {
             $router = $this->app['router'];
             $router->aliasMiddleware('setLocale', \Littleboy130491\Sumimasen\Http\Middleware\SetLocale::class);
@@ -213,6 +214,23 @@ class SumimasenServiceProvider extends PackageServiceProvider
                     ->monthly()
                     ->withoutOverlapping();
             });
+        }
+    }
+
+    private function bootPolicies(): void
+    {
+        if (class_exists(\Awcodes\Curator\Models\Media::class)) {
+            \Illuminate\Support\Facades\Gate::policy(
+                \Awcodes\Curator\Models\Media::class,
+                \App\Policies\MediaPolicy::class
+            );
+        }
+
+        if (class_exists(\Datlechin\FilamentMenuBuilder\Models\Menu::class)) {
+            \Illuminate\Support\Facades\Gate::policy(
+                \Datlechin\FilamentMenuBuilder\Models\Menu::class,
+                \App\Policies\MenuPolicy::class
+            );
         }
     }
 }
