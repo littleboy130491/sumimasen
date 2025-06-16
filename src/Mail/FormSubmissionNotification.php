@@ -8,11 +8,12 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Littleboy130491\Sumimasen\Mail\Concerns\HasViewFallback;
 use Littleboy130491\Sumimasen\Models\Submission;
 
 class FormSubmissionNotification extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, HasViewFallback;
 
     public Submission $submission;
 
@@ -46,7 +47,7 @@ class FormSubmissionNotification extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.admin.form-submission',
+            markdown: $this->getViewWithFallback('emails.admin.form-submission'),
             with: [
                 'submitterName' => $this->submission->fields['name'] ?? 'Not provided',
                 'submitterEmail' => $this->submission->fields['email'] ?? 'Not provided',

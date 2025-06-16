@@ -8,11 +8,12 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Littleboy130491\Sumimasen\Mail\Concerns\HasViewFallback;
 use Littleboy130491\Sumimasen\Models\Comment;
 
 class NewCommentNotification extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, HasViewFallback;
 
     public Comment $comment;
 
@@ -54,7 +55,7 @@ class NewCommentNotification extends Mailable implements ShouldQueue
         }
 
         return new Content(
-            markdown: 'emails.admin.new_comment',
+            markdown: $this->getViewWithFallback('emails.admin.new_comment'),
             with: [
                 'commentAuthorName' => $this->comment->name,
                 'commentAuthorEmail' => $this->comment->email,

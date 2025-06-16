@@ -8,11 +8,12 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Littleboy130491\Sumimasen\Mail\Concerns\HasViewFallback;
 use Littleboy130491\Sumimasen\Models\Comment;
 
 class CommentReplyNotification extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, HasViewFallback;
 
     public Comment $reply;
 
@@ -74,7 +75,7 @@ class CommentReplyNotification extends Mailable implements ShouldQueue
         }
 
         return new Content(
-            markdown: 'emails.comment.reply_notification',
+            markdown: $this->getViewWithFallback('emails.comment.reply_notification'),
             with: [
                 'parentCommentAuthorName' => $this->parentComment->name,
                 'replyAuthorName' => $this->reply->name,

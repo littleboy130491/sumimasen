@@ -9,10 +9,11 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Littleboy130491\Sumimasen\Mail\Concerns\HasViewFallback;
 
 class AdminLoggedInNotification extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, HasViewFallback;
 
     public User $user;
 
@@ -40,7 +41,7 @@ class AdminLoggedInNotification extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.admin.loggedin',
+            markdown: $this->getViewWithFallback('emails.admin.loggedin'),
             with: [
                 'userName' => $this->user->name,
                 'userEmail' => $this->user->email,
