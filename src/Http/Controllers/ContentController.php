@@ -531,26 +531,35 @@ class ContentController extends Controller
 
     private function findFirstExistingTemplate(array $templates): string
     {
+        // First pass: check all templates in application views (published/customized views)
         foreach ($templates as $template) {
-            // First check in application views (published/customized views)
             if (View::exists($template)) {
                 return $template;
             }
-
-            // Then check in package namespace
+        }
+    
+        // Check application default before package templates
+        $applicationDefault = "{$this->templateBase}.default";
+        if (View::exists($applicationDefault)) {
+            return $applicationDefault;
+        }
+    
+        // Second pass: check all templates in package namespace
+        foreach ($templates as $template) {
             $namespacedTemplate = "{$this->packageNamespace}::{$template}";
             if (View::exists($namespacedTemplate)) {
                 return $namespacedTemplate;
             }
         }
-
-        // Final fallback - try package namespace default, then application default
+    
+        // Final fallback - package namespace default
         $packageDefault = "{$this->packageNamespace}::{$this->templateBase}.default";
         if (View::exists($packageDefault)) {
             return $packageDefault;
         }
-
-        return "{$this->templateBase}.default";
+    
+        // If absolutely nothing exists
+        throw new \Exception("No template found for base: {$this->templateBase}");
     }
 
     private function generateBodyClasses(string $lang, $content = null, ?string $contentTypeKey = null, ?string $contentSlug = null): string
