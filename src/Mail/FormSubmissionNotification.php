@@ -13,7 +13,7 @@ use Littleboy130491\Sumimasen\Models\Submission;
 
 class FormSubmissionNotification extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels, HasViewFallback;
+    use HasViewFallback, Queueable, SerializesModels;
 
     public Submission $submission;
 

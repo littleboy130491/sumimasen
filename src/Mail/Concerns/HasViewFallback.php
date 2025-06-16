@@ -18,6 +18,6 @@ trait HasViewFallback
         }
 
         // Fallback to the package view
-        return 'sumimasen-cms::' . $view;
+        return 'sumimasen-cms::'.$view;
     }
 }

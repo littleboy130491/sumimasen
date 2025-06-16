@@ -537,13 +537,13 @@ class ContentController extends Controller
                 return $template;
             }
         }
-    
+
         // Check application default before package templates
         $applicationDefault = "{$this->templateBase}.default";
         if (View::exists($applicationDefault)) {
             return $applicationDefault;
         }
-    
+
         // Second pass: check all templates in package namespace
         foreach ($templates as $template) {
             $namespacedTemplate = "{$this->packageNamespace}::{$template}";
@@ -551,13 +551,13 @@ class ContentController extends Controller
                 return $namespacedTemplate;
             }
         }
-    
+
         // Final fallback - package namespace default
         $packageDefault = "{$this->packageNamespace}::{$this->templateBase}.default";
         if (View::exists($packageDefault)) {
             return $packageDefault;
         }
-    
+
         // If absolutely nothing exists
         throw new \Exception("No template found for base: {$this->templateBase}");
     }

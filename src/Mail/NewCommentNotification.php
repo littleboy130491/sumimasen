@@ -13,7 +13,7 @@ use Littleboy130491\Sumimasen\Models\Comment;
 
 class NewCommentNotification extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels, HasViewFallback;
+    use HasViewFallback, Queueable, SerializesModels;
 
     public Comment $comment;
 
