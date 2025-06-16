@@ -18,18 +18,18 @@
 </head>
 <body>
     <div class="email-container">
-        <h1 class="header">New Comment Posted: {{ $commentableTitle }}</h1>
-        <p class="content">A new comment has been posted on your {{ $commentableType }} titled "{{ $commentableTitle }}".</p>
+        <h1 class="header">{{ __('emails.new_comment_subject', ['commentable_title' => $commentableTitle]) }}</h1>
+        <p class="content">{{ __('emails.new_comment_body_line1', ['commentable_type' => $commentableType, 'commentable_title' => $commentableTitle]) }}</p>
         
         <div class="details">
-            <h3>Comment Details</h3>
+            <h3>{{ __('emails.new_comment_details') }}</h3>
             <ul>
-                <li><strong>Author:</strong> {{ $commentAuthorName }} ({{ $commentAuthorEmail }})</li>
-                <li><strong>Posted at:</strong> {{ $postedAt }} GMT+7</li>
+                <li><strong>{{ __('emails.new_comment_author') }}</strong> {{ $commentAuthorName }} ({{ $commentAuthorEmail }})</li>
+                <li><strong>{{ __('emails.new_comment_posted_at') }}</strong> {{ $postedAt }} GMT+7</li>
             </ul>
             
             <div class="comment-content">
-                <strong>Comment:</strong><br>
+                <strong>{{ __('emails.new_comment_content') }}</strong><br>
                 {{ $commentContent }}
             </div>
         </div>
@@ -37,13 +37,15 @@
         @if($commentUrl !== '#')
         <div style="text-align: center; margin: 30px 0;">
             <a href="{{ $commentUrl }}" style="display: inline-block; padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 4px;">
-                View Comment
+                {{ __('emails.new_comment_view_button') }}
             </a>
         </div>
+        @else
+        <p class="content">{{ __('emails.new_comment_view_text') }}</p>
         @endif
         
         <div class="footer">
-            <p>Thanks,<br>{{ config('app.name', 'Application') }}</p>
+            <p>{{ __('emails.thanks') }}<br>{{ config('app.name', 'Application') }}</p>
         </div>
     </div>
 </body>

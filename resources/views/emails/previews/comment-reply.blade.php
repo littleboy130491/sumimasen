@@ -18,27 +18,27 @@
 </head>
 <body>
     <div class="email-container">
-        <h1 class="header">Someone replied to your comment on "{{ $commentableTitle }}"</h1>
-        <p class="content">Hello {{ $parentCommentAuthorName }},</p>
-        <p class="content">{{ $replyAuthorName }} replied to your comment on "{{ $commentableTitle }}".</p>
+        <h1 class="header">{{ __('emails.reply_notification_subject', ['name' => $parentCommentAuthorName]) }}</h1>
+        <p class="content">{!! __('emails.reply_notification_body_line1', ['reply_author_name' => $replyAuthorName, 'commentable_title' => $commentableTitle]) !!}</p>
         
         <div class="details">
-            <p style="margin: 0 0 10px 0;"><strong>Reply posted on:</strong> {{ $replyDate }} GMT+7</p>
+            <p style="margin: 0 0 10px 0;">{!! __('emails.reply_notification_reply_details', ['reply_date' => $replyDate]) !!}</p>
             
             <div class="reply-content">
-                <strong>Reply:</strong><br>
                 {{ $replyContent }}
             </div>
         </div>
         
         @if($commentableUrl !== '#')
         <div class="button">
-            <a href="{{ $commentableUrl }}">View Conversation</a>
+            <a href="{{ $commentableUrl }}">{{ __('emails.reply_notification_view_conversation_button') }}</a>
         </div>
+        @else
+        <p class="content">{{ __('emails.reply_notification_view_conversation_text') }}</p>
         @endif
         
         <div class="footer">
-            <p>Thanks,<br>{{ config('app.name', 'Application') }}</p>
+            <p>{{ __('emails.thanks') }}<br>{{ config('app.name', 'Application') }}</p>
         </div>
     </div>
 </body>

@@ -17,20 +17,20 @@
 </head>
 <body>
     <div class="email-container">
-        <h1 class="header">Admin User Logged In</h1>
-        <p class="content">An admin user has logged into the system.</p>
+        <h1 class="header">{{ __('emails.admin_loggedin_subject') }}</h1>
+        <p class="content">{{ __('emails.admin_loggedin_body_line1') }}</p>
         
         <div class="details">
-            <h3>User Details</h3>
+            <h3>{{ __('emails.admin_loggedin_user_details') }}</h3>
             <ul>
-                <li><strong>Name:</strong> {{ $userName }}</li>
-                <li><strong>Email:</strong> {{ $userEmail }}</li>
-                <li><strong>Login Time:</strong> {{ $loginTime }} GMT+7</li>
+                <li><strong>{{ __('emails.admin_loggedin_name') }}</strong> {{ $userName }}</li>
+                <li><strong>{{ __('emails.admin_loggedin_email') }}</strong> {{ $userEmail }}</li>
+                <li><strong>{{ __('emails.admin_loggedin_login_time') }}</strong> {{ $loginTime }} GMT+7</li>
             </ul>
         </div>
         
         <div class="footer">
-            <p>Thanks,<br>{{ config('app.name', 'Application') }}</p>
+            <p>{{ __('emails.thanks') }}<br>{{ config('app.name', 'Application') }}</p>
         </div>
     </div>
 </body>
