@@ -38,41 +38,83 @@ class PreviewEmailController extends Controller
 
     public function emailTemplate($lang, $slug)
     {
-
         switch ($slug) {
             case 'preview-login-notification':
                 $user = User::first();
                 if (! $user) {
-                    abort(404, 'No users found in the database to preview the Admin Login Notification email.');
+                    // Create mockup user data
+                    $user = new User([
+                        'name' => 'John Doe',
+                        'email' => 'john.doe@example.com',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
                 }
 
-                return new \Littleboy130491\Sumimasen\Mail\AdminLoggedInNotification($user);
+                $mail = new \Littleboy130491\Sumimasen\Mail\AdminLoggedInNotification($user);
+                return $mail->render();
 
             case 'preview-comment-notification':
                 $comment = Comment::first();
                 if (! $comment) {
-                    abort(404, 'No comments found in the database to preview the New Comment Notification email.');
+                    // Create mockup comment data
+                    $comment = new Comment([
+                        'name' => 'Jane Smith',
+                        'email' => 'jane.smith@example.com',
+                        'content' => 'This is a sample comment for email preview purposes. It demonstrates how the comment notification email will look.',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
                 }
 
-                return new \Littleboy130491\Sumimasen\Mail\NewCommentNotification($comment);
+                $mail = new \Littleboy130491\Sumimasen\Mail\NewCommentNotification($comment);
+                return $mail->render();
 
             case 'preview-comment-reply-notification':
                 $comment = Comment::first();
                 if (! $comment) {
-                    abort(404, 'No comments found to preview the Comment Reply Notification email.');
-                }
-                // Ensure the comment has a parent for this specific notification
-                if (! $comment->parent) {
-                    // Attempt to find a comment that has a parent for demonstration purposes
-                    $commentWithParent = Comment::whereNotNull('parent_id')->first();
-                    if ($commentWithParent) {
-                        $comment = $commentWithParent;
-                    } else {
-                        abort(404, 'No comment with a parent reply found to preview the Comment Reply Notification email. Please create one.');
+                    // Create mockup parent comment
+                    $parentComment = new Comment([
+                        'name' => 'Original Commenter',
+                        'email' => 'original@example.com',
+                        'content' => 'This is the original comment that was replied to.',
+                        'created_at' => now()->subHour(),
+                        'updated_at' => now()->subHour(),
+                    ]);
+
+                    // Create mockup reply comment
+                    $comment = new Comment([
+                        'name' => 'Reply Author',
+                        'email' => 'reply@example.com',
+                        'content' => 'This is a reply to the original comment for email preview purposes.',
+                        'parent_id' => 1,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $comment->setRelation('parent', $parentComment);
+                } else {
+                    // Ensure the comment has a parent for this specific notification
+                    if (! $comment->parent) {
+                        // Attempt to find a comment that has a parent for demonstration purposes
+                        $commentWithParent = Comment::whereNotNull('parent_id')->first();
+                        if ($commentWithParent) {
+                            $comment = $commentWithParent;
+                        } else {
+                            // Create mockup parent comment
+                            $parentComment = new Comment([
+                                'name' => 'Original Commenter',
+                                'email' => 'original@example.com',
+                                'content' => 'This is the original comment that was replied to.',
+                                'created_at' => now()->subHour(),
+                                'updated_at' => now()->subHour(),
+                            ]);
+                            $comment->setRelation('parent', $parentComment);
+                        }
                     }
                 }
 
-                return new \Littleboy130491\Sumimasen\Mail\CommentReplyNotification($comment, $comment->parent);
+                $mail = new \Littleboy130491\Sumimasen\Mail\CommentReplyNotification($comment, $comment->parent);
+                return $mail->render();
 
             default:
                 abort(404, 'Email preview not found for slug: '.e($slug));
