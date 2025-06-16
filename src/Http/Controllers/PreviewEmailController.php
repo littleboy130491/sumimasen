@@ -38,6 +38,9 @@ class PreviewEmailController extends Controller
 
     public function emailTemplate($lang, $slug)
     {
+        // Set the application locale for translations
+        app()->setLocale($lang);
+        
         switch ($slug) {
             case 'preview-login-notification':
                 $user = User::first();
