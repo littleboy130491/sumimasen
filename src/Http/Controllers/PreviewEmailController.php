@@ -51,8 +51,17 @@ class PreviewEmailController extends Controller
                     ]);
                 }
 
-                $mail = new \Littleboy130491\Sumimasen\Mail\AdminLoggedInNotification($user);
-                return $mail->render();
+                try {
+                    $mail = new \Littleboy130491\Sumimasen\Mail\AdminLoggedInNotification($user);
+                    return response(view('emails.admin.loggedin', [
+                        'userName' => $user->name,
+                        'userEmail' => $user->email,
+                        'loginTime' => now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                    ])->render())->header('Content-Type', 'text/html');
+                } catch (\Exception $e) {
+                    return response('<h1>Email Preview Error</h1><p>Unable to render email: ' . e($e->getMessage()) . '</p>')
+                        ->header('Content-Type', 'text/html');
+                }
 
             case 'preview-comment-notification':
                 $comment = Comment::first();
@@ -67,8 +76,20 @@ class PreviewEmailController extends Controller
                     ]);
                 }
 
-                $mail = new \Littleboy130491\Sumimasen\Mail\NewCommentNotification($comment);
-                return $mail->render();
+                try {
+                    return response(view('emails.admin.new_comment', [
+                        'commentAuthorName' => $comment->name,
+                        'commentAuthorEmail' => $comment->email,
+                        'commentContent' => $comment->content,
+                        'commentUrl' => '#',
+                        'commentableTitle' => 'Sample Post Title',
+                        'commentableType' => 'Post',
+                        'postedAt' => $comment->created_at ? $comment->created_at->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s') : now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                    ])->render())->header('Content-Type', 'text/html');
+                } catch (\Exception $e) {
+                    return response('<h1>Email Preview Error</h1><p>Unable to render email: ' . e($e->getMessage()) . '</p>')
+                        ->header('Content-Type', 'text/html');
+                }
 
             case 'preview-comment-reply-notification':
                 $comment = Comment::first();
@@ -113,8 +134,19 @@ class PreviewEmailController extends Controller
                     }
                 }
 
-                $mail = new \Littleboy130491\Sumimasen\Mail\CommentReplyNotification($comment, $comment->parent);
-                return $mail->render();
+                try {
+                    return response(view('emails.comment.reply_notification', [
+                        'parentCommentAuthorName' => $comment->parent->name,
+                        'replyAuthorName' => $comment->name,
+                        'replyContent' => $comment->content,
+                        'commentableTitle' => 'Sample Post Title',
+                        'commentableUrl' => '#',
+                        'replyDate' => $comment->created_at ? $comment->created_at->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s') : now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                    ])->render())->header('Content-Type', 'text/html');
+                } catch (\Exception $e) {
+                    return response('<h1>Email Preview Error</h1><p>Unable to render email: ' . e($e->getMessage()) . '</p>')
+                        ->header('Content-Type', 'text/html');
+                }
 
             default:
                 abort(404, 'Email preview not found for slug: '.e($slug));
