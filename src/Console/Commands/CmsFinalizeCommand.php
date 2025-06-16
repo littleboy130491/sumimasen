@@ -48,6 +48,8 @@ class CmsFinalizeCommand extends Command
         if ($this->confirm('Do you want to install Filament Shield?', true)) {
             $this->info('Installing Filament Shield...');
             $this->call('shield:install');
+            $this->call('shield:super-admin');
+            $this->call('shield:publish');
         }
 
         // 3. Generate default permission roles
