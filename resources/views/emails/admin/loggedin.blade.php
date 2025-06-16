@@ -1,4 +1,4 @@
-<x-sumimasen-cms::mail::message>
+@component('mail::message')
 # {{ __('emails.admin_loggedin_subject') }}
 
 {{ __('emails.admin_loggedin_body_line1') }}
@@ -10,4 +10,4 @@
 
 {{ __('emails.thanks') }}<br>
 {{ config('app.name') }}
-</x-sumimasen-cms::mail::message>
+@endcomponent

@@ -56,6 +56,6 @@ class ComponentLoader extends Component
     public function render()
     {
         // Render the dynamic component loader Blade view.
-        return view('components.component-loader');
+        return view('sumimasen-cms::components.component-loader');
     }
 }
