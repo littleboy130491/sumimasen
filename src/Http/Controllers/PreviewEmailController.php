@@ -52,8 +52,7 @@ class PreviewEmailController extends Controller
                 }
 
                 try {
-                    $mail = new \Littleboy130491\Sumimasen\Mail\AdminLoggedInNotification($user);
-                    return response(view('emails.admin.loggedin', [
+                    return response(view('sumimasen-cms::emails.admin.loggedin', [
                         'userName' => $user->name,
                         'userEmail' => $user->email,
                         'loginTime' => now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
@@ -77,7 +76,7 @@ class PreviewEmailController extends Controller
                 }
 
                 try {
-                    return response(view('emails.admin.new_comment', [
+                    return response(view('sumimasen-cms::emails.admin.new_comment', [
                         'commentAuthorName' => $comment->name,
                         'commentAuthorEmail' => $comment->email,
                         'commentContent' => $comment->content,
@@ -135,7 +134,7 @@ class PreviewEmailController extends Controller
                 }
 
                 try {
-                    return response(view('emails.comment.reply_notification', [
+                    return response(view('sumimasen-cms::emails.comment.reply_notification', [
                         'parentCommentAuthorName' => $comment->parent->name,
                         'replyAuthorName' => $comment->name,
                         'replyContent' => $comment->content,
