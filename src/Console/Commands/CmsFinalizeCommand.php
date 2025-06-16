@@ -49,7 +49,7 @@ class CmsFinalizeCommand extends Command
             $this->info('Installing Filament Shield...');
             $this->call('shield:install');
             $this->call('shield:super-admin');
-            $this->call('shield:publish');
+            $this->call('shield:publish admin');
         }
 
         // 3. Generate default permission roles
