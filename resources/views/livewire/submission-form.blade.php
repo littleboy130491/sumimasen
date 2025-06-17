@@ -1,7 +1,7 @@
 <div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ __('submission-form.title') }}</h2>
-        <p class="text-gray-600">{{ __('submission-form.description') }}</p>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ __('sumimasen-cms::submission-form.title') }}</h2>
+        <p class="text-gray-600">{{ __('sumimasen-cms::submission-form.description') }}</p>
     </div>
 
 
@@ -9,11 +9,11 @@
         {{-- Name Field --}}
         <div>
             <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-                {{ __('submission-form.name') }} <span class="text-red-500">*</span>
+                {{ __('sumimasen-cms::submission-form.name') }} <span class="text-red-500">*</span>
             </label>
             <input type="text" id="name" wire:model.live="name"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 @error('name') border-red-500 focus:ring-red-500 focus:border-red-500 @enderror @if ($formSubmitted) bg-gray-100 cursor-not-allowed @endif"
-                placeholder="{{ __('submission-form.name_placeholder') }}"
+                placeholder="{{ __('sumimasen-cms::submission-form.name_placeholder') }}"
                 @if ($formSubmitted) disabled @endif>
             @error('name')
                 <p class="mt-1 text-sm text-red-600 flex items-center">
@@ -30,11 +30,11 @@
         {{-- Email Field --}}
         <div>
             <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                {{ __('submission-form.email') }} <span class="text-red-500">*</span>
+                {{ __('sumimasen-cms::submission-form.email') }} <span class="text-red-500">*</span>
             </label>
             <input type="email" id="email" wire:model.live="email"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 @error('email') border-red-500 focus:ring-red-500 focus:border-red-500 @enderror @if ($formSubmitted) bg-gray-100 cursor-not-allowed @endif"
-                placeholder="{{ __('submission-form.email_placeholder') }}"
+                placeholder="{{ __('sumimasen-cms::submission-form.email_placeholder') }}"
                 @if ($formSubmitted) disabled @endif>
             @error('email')
                 <p class="mt-1 text-sm text-red-600 flex items-center">
@@ -51,11 +51,11 @@
         {{-- Phone Field --}}
         <div>
             <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
-                {{ __('submission-form.phone') }}
+                {{ __('sumimasen-cms::submission-form.phone') }}
             </label>
             <input type="tel" id="phone" wire:model.live="phone"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 @error('phone') border-red-500 focus:ring-red-500 focus:border-red-500 @enderror @if ($formSubmitted) bg-gray-100 cursor-not-allowed @endif"
-                placeholder="{{ __('submission-form.phone_placeholder') }}"
+                placeholder="{{ __('sumimasen-cms::submission-form.phone_placeholder') }}"
                 @if ($formSubmitted) disabled @endif>
             @error('phone')
                 <p class="mt-1 text-sm text-red-600 flex items-center">
@@ -72,11 +72,11 @@
         {{-- Subject Field --}}
         <div>
             <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">
-                {{ __('submission-form.subject') }}
+                {{ __('sumimasen-cms::submission-form.subject') }}
             </label>
             <input type="text" id="subject" wire:model.live="subject"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 @error('subject') border-red-500 focus:ring-red-500 focus:border-red-500 @enderror @if ($formSubmitted) bg-gray-100 cursor-not-allowed @endif"
-                placeholder="{{ __('submission-form.subject_placeholder') }}"
+                placeholder="{{ __('sumimasen-cms::submission-form.subject_placeholder') }}"
                 @if ($formSubmitted) disabled @endif>
             @error('subject')
                 <p class="mt-1 text-sm text-red-600 flex items-center">
@@ -93,11 +93,11 @@
         {{-- Message Field --}}
         <div>
             <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
-                {{ __('submission-form.message') }} <span class="text-red-500">*</span>
+                {{ __('sumimasen-cms::submission-form.message') }} <span class="text-red-500">*</span>
             </label>
             <textarea id="message" wire:model.live="message" rows="5"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 resize-vertical @error('message') border-red-500 focus:ring-red-500 focus:border-red-500 @enderror @if ($formSubmitted) bg-gray-100 cursor-not-allowed @endif"
-                placeholder="{{ __('submission-form.message_placeholder') }}" @if ($formSubmitted) disabled @endif></textarea>
+                placeholder="{{ __('sumimasen-cms::submission-form.message_placeholder') }}" @if ($formSubmitted) disabled @endif></textarea>
             @error('message')
                 <p class="mt-1 text-sm text-red-600 flex items-center">
                     <svg class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -124,7 +124,7 @@
                     <noscript>
                         <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
                             <p class="text-sm text-yellow-800">
-                                {{ __('submission-form.captcha_js_required') }}
+                                {{ __('sumimasen-cms::submission-form.captcha_js_required') }}
                             </p>
                         </div>
                     </noscript>
@@ -163,9 +163,9 @@
                 @if ($formSubmitted) disabled @endif>
                 <span wire:loading.remove>
                     @if ($formSubmitted)
-                        {{ __('submission-form.submitted') }}
+                        {{ __('sumimasen-cms::submission-form.submitted') }}
                     @else
-                        {{ __('submission-form.submit') }}
+                        {{ __('sumimasen-cms::submission-form.submit') }}
                     @endif
                 </span>
                 <span wire:loading class="flex items-center">
@@ -177,7 +177,7 @@
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                         </path>
                     </svg>
-                    {{ __('submission-form.submitting') }}
+                    {{ __('sumimasen-cms::submission-form.submitting') }}
                 </span>
             </button>
         </div>
@@ -200,8 +200,8 @@
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <h3 class="text-sm font-medium text-green-800">{{ __('submission-form.success_title') }}</h3>
-                    <p class="text-sm text-green-700 mt-1">{{ __('submission-form.success_message') }}</p>
+                    <h3 class="text-sm font-medium text-green-800">{{ __('sumimasen-cms::submission-form.success_title') }}</h3>
+                    <p class="text-sm text-green-700 mt-1">{{ __('sumimasen-cms::submission-form.success_message') }}</p>
                 </div>
                 <div class="ml-auto pl-3">
                     <button wire:click="hideSuccess"
@@ -229,7 +229,7 @@
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <h3 class="text-sm font-medium text-red-800">{{ __('submission-form.error_title') }}</h3>
+                    <h3 class="text-sm font-medium text-red-800">{{ __('sumimasen-cms::submission-form.error_title') }}</h3>
                     <p class="text-sm text-red-700 mt-1">{{ $errors->first('form') }}</p>
                 </div>
             </div>
@@ -244,10 +244,10 @@
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                         clip-rule="evenodd" />
                 </svg>
-                {{ __('submission-form.form_submitted_note') }}
+                {{ __('sumimasen-cms::submission-form.form_submitted_note') }}
             </div>
         @else
-            <span class="text-red-500">*</span> {{ __('submission-form.required_fields') }}
+            <span class="text-red-500">*</span> {{ __('sumimasen-cms::submission-form.required_fields') }}
         @endif
     </div>
 </div>

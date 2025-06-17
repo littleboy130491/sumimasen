@@ -109,6 +109,6 @@ class SubmissionForm extends Component
 
     public function render()
     {
-        return view('livewire.submission-form');
+        return view('sumimasen-cms::livewire.submission-form');
     }
 }
