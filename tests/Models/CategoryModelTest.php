@@ -105,7 +105,7 @@ class CategoryModelTest extends TestCase
     public function it_can_have_a_featured_image()
     {
         $media = Media::factory()->create();
-        
+
         $category = Category::create([
             'title' => ['en' => 'Test Category'],
             'slug' => ['en' => 'test-category'],

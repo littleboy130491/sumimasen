@@ -30,7 +30,7 @@ class ComponentModelTest extends TestCase
     public function it_casts_data_to_array()
     {
         $data = ['title' => 'Test Title', 'content' => 'Test Content'];
-        
+
         $component = Component::create([
             'name' => 'Test Component',
             'data' => $data,
@@ -47,7 +47,7 @@ class ComponentModelTest extends TestCase
             'name' => 'Test Component',
             'data' => [
                 'en' => ['title' => 'English Title'],
-                'id' => ['title' => 'Indonesian Title']
+                'id' => ['title' => 'Indonesian Title'],
             ],
         ]);
 
@@ -59,21 +59,21 @@ class ComponentModelTest extends TestCase
     public function it_processes_blocks_attribute_correctly()
     {
         $media = Media::factory()->create();
-        
+
         $data = [
             [
                 'type' => 'text',
                 'data' => [
                     'content' => 'Some text',
                     'media_id' => $media->id,
-                ]
+                ],
             ],
             [
                 'type' => 'image',
                 'data' => [
                     'caption' => 'Image caption',
-                ]
-            ]
+                ],
+            ],
         ];
 
         $component = Component::create([
@@ -82,7 +82,7 @@ class ComponentModelTest extends TestCase
         ]);
 
         $blocks = $component->blocks;
-        
+
         $this->assertIsArray($blocks);
         $this->assertCount(2, $blocks);
         $this->assertEquals('Some text', $blocks[0]['data']['content']);
@@ -114,22 +114,22 @@ class ComponentModelTest extends TestCase
                     'type' => 'hero',
                     'settings' => [
                         'background_color' => '#ffffff',
-                        'text_align' => 'center'
+                        'text_align' => 'center',
                     ],
                     'content' => [
                         'title' => 'Hero Title',
-                        'subtitle' => 'Hero Subtitle'
-                    ]
+                        'subtitle' => 'Hero Subtitle',
+                    ],
                 ],
                 [
                     'type' => 'gallery',
                     'settings' => [
                         'columns' => 3,
-                        'spacing' => 'large'
+                        'spacing' => 'large',
                     ],
-                    'images' => [1, 2, 3]
-                ]
-            ]
+                    'images' => [1, 2, 3],
+                ],
+            ],
         ];
 
         $component = Component::create([

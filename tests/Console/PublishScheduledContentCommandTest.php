@@ -6,7 +6,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
-use Littleboy130491\Sumimasen\Console\Commands\PublishScheduledContent;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Models\Page;
 use Littleboy130491\Sumimasen\Models\Post;
@@ -45,7 +44,7 @@ class PublishScheduledContentCommandTest extends TestCase
     {
         // Create scheduled content with publish time in the past
         $pastTime = Carbon::now()->subHour();
-        
+
         $page = Page::create([
             'author_id' => $this->author->id,
             'title' => ['en' => 'Scheduled Page'],
@@ -63,8 +62,8 @@ class PublishScheduledContentCommandTest extends TestCase
         ]);
 
         $this->artisan('cms:publish-scheduled')
-            ->expectsOutput('Published scheduled content for model: ' . Page::class)
-            ->expectsOutput('Published scheduled content for model: ' . Post::class)
+            ->expectsOutput('Published scheduled content for model: '.Page::class)
+            ->expectsOutput('Published scheduled content for model: '.Post::class)
             ->expectsOutput('Scheduled content publishing complete.')
             ->assertSuccessful();
 
@@ -78,7 +77,7 @@ class PublishScheduledContentCommandTest extends TestCase
     {
         // Create scheduled content with publish time in the future
         $futureTime = Carbon::now()->addHour();
-        
+
         $page = Page::create([
             'author_id' => $this->author->id,
             'title' => ['en' => 'Future Scheduled Page'],
@@ -144,7 +143,7 @@ class PublishScheduledContentCommandTest extends TestCase
     {
         // Create content scheduled for exactly now
         $now = Carbon::now();
-        
+
         $page = Page::create([
             'author_id' => $this->author->id,
             'title' => ['en' => 'Exact Time Page'],
@@ -236,8 +235,8 @@ class PublishScheduledContentCommandTest extends TestCase
         ]);
 
         $this->artisan('cms:publish-scheduled')
-            ->expectsOutput('Published scheduled content for model: ' . Page::class)
-            ->expectsOutput('Published scheduled content for model: ' . Post::class)
+            ->expectsOutput('Published scheduled content for model: '.Page::class)
+            ->expectsOutput('Published scheduled content for model: '.Post::class)
             ->assertSuccessful();
 
         $this->assertEquals(ContentStatus::Published, $page->fresh()->status);
@@ -273,8 +272,8 @@ class PublishScheduledContentCommandTest extends TestCase
         ]);
 
         $this->artisan('cms:publish-scheduled')
-            ->expectsOutput('Published scheduled content for model: ' . Page::class)
-            ->doesntExpectOutput('Published scheduled content for model: ' . \Littleboy130491\Sumimasen\Models\Category::class)
+            ->expectsOutput('Published scheduled content for model: '.Page::class)
+            ->doesntExpectOutput('Published scheduled content for model: '.\Littleboy130491\Sumimasen\Models\Category::class)
             ->assertSuccessful();
 
         $this->assertEquals(ContentStatus::Published, $page->fresh()->status);

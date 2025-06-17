@@ -148,7 +148,7 @@ class PostModelTest extends TestCase
     public function it_can_have_a_featured_image()
     {
         $media = Media::factory()->create();
-        
+
         $post = Post::create([
             'author_id' => $this->author->id,
             'title' => ['en' => 'Test Post'],

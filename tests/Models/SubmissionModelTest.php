@@ -39,7 +39,7 @@ class SubmissionModelTest extends TestCase
                 'notifications' => false,
             ],
         ];
-        
+
         $submission = Submission::create([
             'fields' => $fields,
         ]);

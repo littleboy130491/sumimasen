@@ -14,6 +14,7 @@ class LikeButtonTest extends TestCase
     use RefreshDatabase;
 
     private User $author;
+
     private Post $post;
 
     protected function setUp(): void
@@ -31,8 +32,8 @@ class LikeButtonTest extends TestCase
             'lang' => 'en',
             'contentType' => 'posts',
         ])
-        ->assertSuccessful()
-        ->assertViewIs('livewire.like-button');
+            ->assertSuccessful()
+            ->assertViewIs('livewire.like-button');
     }
 
     /** @test */
@@ -43,11 +44,11 @@ class LikeButtonTest extends TestCase
             'lang' => 'en',
             'contentType' => 'posts',
         ])
-        ->assertSet('hasLiked', false)
-        ->assertSet('likesCount', 0)
-        ->assertSet('content.id', $this->post->id)
-        ->assertSet('lang', 'en')
-        ->assertSet('contentType', 'posts');
+            ->assertSet('hasLiked', false)
+            ->assertSet('likesCount', 0)
+            ->assertSet('content.id', $this->post->id)
+            ->assertSet('lang', 'en')
+            ->assertSet('contentType', 'posts');
     }
 
     /** @test */
@@ -58,14 +59,14 @@ class LikeButtonTest extends TestCase
             'lang' => 'en',
             'contentType' => 'posts',
         ])
-        ->call('toggleLike')
-        ->assertSet('hasLiked', true)
-        ->assertSet('likesCount', 1)
-        ->assertDispatched('like-toggled', [
-            'contentId' => $this->post->id,
-            'liked' => true,
-            'likesCount' => 1,
-        ]);
+            ->call('toggleLike')
+            ->assertSet('hasLiked', true)
+            ->assertSet('likesCount', 1)
+            ->assertDispatched('like-toggled', [
+                'contentId' => $this->post->id,
+                'liked' => true,
+                'likesCount' => 1,
+            ]);
 
         $this->assertEquals(1, $this->post->fresh()->page_likes);
     }
@@ -74,7 +75,7 @@ class LikeButtonTest extends TestCase
     public function it_can_toggle_like_from_liked_to_unliked()
     {
         $this->post->incrementPageLikes();
-        
+
         $component = Livewire::test(LikeButton::class, [
             'content' => $this->post,
             'lang' => 'en',
@@ -123,9 +124,9 @@ class LikeButtonTest extends TestCase
             'size' => 'lg',
             'variant' => 'minimal',
         ])
-        ->assertSet('showCount', false)
-        ->assertSet('size', 'lg')
-        ->assertSet('variant', 'minimal');
+            ->assertSet('showCount', false)
+            ->assertSet('size', 'lg')
+            ->assertSet('variant', 'minimal');
     }
 
     /** @test */
@@ -170,13 +171,13 @@ class LikeButtonTest extends TestCase
     public function it_initializes_like_state_from_cookie()
     {
         $cookieName = "liked_content_{$this->post->id}";
-        
+
         $component = Livewire::test(LikeButton::class, [
             'content' => $this->post,
             'lang' => 'en',
             'contentType' => 'posts',
         ])
-        ->withCookies([$cookieName => 'true']);
+            ->withCookies([$cookieName => 'true']);
 
         $component->call('initializeLikeState');
         $component->assertSet('hasLiked', true);
@@ -192,7 +193,7 @@ class LikeButtonTest extends TestCase
             'lang' => 'en',
             'contentType' => 'posts',
         ])
-        ->assertSet('likesCount', 5);
+            ->assertSet('likesCount', 5);
     }
 
     /** @test */

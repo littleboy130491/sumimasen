@@ -7,7 +7,6 @@ use Filament\Actions\DeleteAction;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
-use Littleboy130491\Sumimasen\Filament\Resources\PageResource;
 use Littleboy130491\Sumimasen\Filament\Resources\PageResource\Pages\CreatePage;
 use Littleboy130491\Sumimasen\Filament\Resources\PageResource\Pages\EditPage;
 use Littleboy130491\Sumimasen\Filament\Resources\PageResource\Pages\ListPages;

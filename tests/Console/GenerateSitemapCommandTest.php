@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
-use Littleboy130491\Sumimasen\Console\Commands\GenerateSitemap;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Models\Page;
 use Littleboy130491\Sumimasen\Models\Post;
@@ -175,7 +174,7 @@ class GenerateSitemapCommandTest extends TestCase
         ]);
 
         $sitemapPath = public_path('sitemap.xml');
-        
+
         // Ensure file doesn't exist before command
         $this->assertFileDoesNotExist($sitemapPath);
 

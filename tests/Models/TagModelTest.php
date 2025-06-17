@@ -62,7 +62,7 @@ class TagModelTest extends TestCase
     public function it_can_have_a_featured_image()
     {
         $media = Media::factory()->create();
-        
+
         $tag = Tag::create([
             'title' => ['en' => 'Test Tag'],
             'slug' => ['en' => 'test-tag'],

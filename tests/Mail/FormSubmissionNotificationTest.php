@@ -16,7 +16,7 @@ class FormSubmissionNotificationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->submission = Submission::create([
             'fields' => [
                 'name' => 'John Doe',

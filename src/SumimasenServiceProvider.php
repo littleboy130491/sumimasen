@@ -189,22 +189,22 @@ class SumimasenServiceProvider extends PackageServiceProvider
         if (! class_exists(\Livewire\Livewire::class)) {
             return;
         }
-    
+
         // Auto-register all Livewire components under this namespace
         $baseNamespace = 'Littleboy130491\\Sumimasen\\Livewire';
-        $basePath = __DIR__ . '/Livewire';
-    
-        if (!is_dir($basePath)) {
+        $basePath = __DIR__.'/Livewire';
+
+        if (! is_dir($basePath)) {
             return;
         }
-    
+
         foreach (scandir($basePath) as $file) {
-            if (in_array($file, ['.', '..']) || !str_ends_with($file, '.php')) {
+            if (in_array($file, ['.', '..']) || ! str_ends_with($file, '.php')) {
                 continue;
             }
-    
-            $class = $baseNamespace . '\\' . pathinfo($file, PATHINFO_FILENAME);
-    
+
+            $class = $baseNamespace.'\\'.pathinfo($file, PATHINFO_FILENAME);
+
             if (class_exists($class)) {
                 // Component name will be kebab-case version of class name
                 $alias = \Illuminate\Support\Str::kebab(class_basename($class));

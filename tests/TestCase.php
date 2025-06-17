@@ -3,8 +3,8 @@
 namespace Littleboy130491\Sumimasen\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Orchestra\Testbench\TestCase as Orchestra;
 use Littleboy130491\Sumimasen\SumimasenServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {

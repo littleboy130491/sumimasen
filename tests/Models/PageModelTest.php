@@ -72,7 +72,7 @@ class PageModelTest extends TestCase
     public function it_casts_custom_fields_to_array()
     {
         $customFields = ['key1' => 'value1', 'key2' => 'value2'];
-        
+
         $page = Page::create([
             'author_id' => $this->author->id,
             'title' => ['en' => 'Test Page'],
@@ -121,7 +121,7 @@ class PageModelTest extends TestCase
     public function it_can_have_a_featured_image()
     {
         $media = Media::factory()->create();
-        
+
         $page = Page::create([
             'author_id' => $this->author->id,
             'title' => ['en' => 'Test Page'],
@@ -137,21 +137,21 @@ class PageModelTest extends TestCase
     public function it_processes_blocks_attribute_correctly()
     {
         $media = Media::factory()->create();
-        
+
         $sections = [
             [
                 'type' => 'text',
                 'data' => [
                     'content' => 'Some text',
                     'media_id' => $media->id,
-                ]
+                ],
             ],
             [
                 'type' => 'image',
                 'data' => [
                     'caption' => 'Image caption',
-                ]
-            ]
+                ],
+            ],
         ];
 
         $page = Page::create([
@@ -162,7 +162,7 @@ class PageModelTest extends TestCase
         ]);
 
         $blocks = $page->blocks;
-        
+
         $this->assertIsArray($blocks);
         $this->assertCount(2, $blocks);
         $this->assertEquals('Some text', $blocks[0]['data']['content']);
@@ -190,7 +190,7 @@ class PageModelTest extends TestCase
     public function it_casts_published_at_to_datetime()
     {
         $publishedAt = now();
-        
+
         $page = Page::create([
             'author_id' => $this->author->id,
             'title' => ['en' => 'Test Page'],

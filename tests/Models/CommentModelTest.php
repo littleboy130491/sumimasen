@@ -14,6 +14,7 @@ class CommentModelTest extends TestCase
     use RefreshDatabase;
 
     private User $author;
+
     private Post $post;
 
     protected function setUp(): void
@@ -145,7 +146,7 @@ class CommentModelTest extends TestCase
         ]);
 
         $recursiveChildren = $parentComment->childrenRecursive;
-        
+
         $this->assertCount(1, $recursiveChildren);
         $this->assertEquals($child->id, $recursiveChildren->first()->id);
         $this->assertCount(1, $recursiveChildren->first()->childrenRecursive);

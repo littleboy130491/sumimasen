@@ -132,7 +132,7 @@ class SubmissionFormTest extends TestCase
 
         Livewire::test(SubmissionForm::class)
             ->set('name', 'John Doe')
-            ->set('email', str_repeat('a', 250) . '@example.com') // Too long
+            ->set('email', str_repeat('a', 250).'@example.com') // Too long
             ->set('message', 'Valid message with enough characters.')
             ->call('submit')
             ->assertHasErrors(['email' => 'max']);
@@ -229,7 +229,7 @@ class SubmissionFormTest extends TestCase
             ->call('submit');
 
         $submission = Submission::first();
-        
+
         $this->assertArrayHasKey('submitted_at', $submission->fields);
         $this->assertArrayHasKey('ip_address', $submission->fields);
         $this->assertArrayHasKey('user_agent', $submission->fields);
