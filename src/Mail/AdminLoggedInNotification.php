@@ -13,7 +13,7 @@ use Littleboy130491\Sumimasen\Mail\Concerns\HasViewFallback;
 
 class AdminLoggedInNotification extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels, HasViewFallback;
+    use HasViewFallback, Queueable, SerializesModels;
 
     public User $user;
 
