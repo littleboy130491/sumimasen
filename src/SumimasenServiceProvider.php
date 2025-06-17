@@ -186,16 +186,38 @@ class SumimasenServiceProvider extends PackageServiceProvider
 
     private function bootLivewireComponents(): void
     {
-        // Only register Livewire components if Livewire is available
-        if (class_exists('Livewire\Livewire')) {
-            \Livewire\Livewire::component('like-button', \Littleboy130491\Sumimasen\Livewire\LikeButton::class);
-            \Livewire\Livewire::component('submission-form', \Littleboy130491\Sumimasen\Livewire\SubmissionForm::class);
+        if (! class_exists(\Livewire\Livewire::class)) {
+            return;
+        }
+    
+        // Auto-register all Livewire components under this namespace
+        $baseNamespace = 'Littleboy130491\\Sumimasen\\Livewire';
+        $basePath = __DIR__ . '/Livewire';
+    
+        if (!is_dir($basePath)) {
+            return;
+        }
+    
+        foreach (scandir($basePath) as $file) {
+            if (in_array($file, ['.', '..']) || !str_ends_with($file, '.php')) {
+                continue;
+            }
+    
+            $class = $baseNamespace . '\\' . pathinfo($file, PATHINFO_FILENAME);
+    
+            if (class_exists($class)) {
+                // Component name will be kebab-case version of class name
+                $alias = \Illuminate\Support\Str::kebab(class_basename($class));
+                \Livewire\Livewire::component($alias, $class);
+            }
         }
     }
 
     private function bootBladeComponents(): void
     {
         Blade::anonymousComponentPath(__DIR__.'/resources/views/components', 'cms');
+        // Register class-based components in this namespace
+        Blade::componentNamespace('Littleboy130491\\Sumimasen\\View\\Components', 'sumimasen-cms');
     }
 
     private function bootScheduledTasks(): void
