@@ -23,7 +23,7 @@ Route::prefix('/{lang}/preview')
         Route::get('/email/{slug}', [PreviewEmailController::class, 'emailTemplate'])
             ->name('preview.email.detail');
         // Preview a dynamic component
-        Route::get('/component/{slug}', function ($slug) {
+        Route::get('/component/{slug}', function ($lang, $slug) {
             return view('sumimasen-cms::preview-component', compact('slug'));
         });
         // Preview a submission form
