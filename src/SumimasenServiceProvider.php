@@ -45,6 +45,9 @@ class SumimasenServiceProvider extends PackageServiceProvider
             $router = $this->app['router'];
             $router->aliasMiddleware('setLocale', \Littleboy130491\Sumimasen\Http\Middleware\SetLocale::class);
             $router->aliasMiddleware('doNotCacheResponse', \Spatie\ResponseCache\Middlewares\DoNotCacheResponse::class);
+
+            // register route after the entire application has booted, to avoid conflict with filament and livewire
+             $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
         });
     }
 
@@ -56,8 +59,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
             ->hasViews()
             ->hasTranslations()
             ->hasMigrations($this->getMigrations())
-            ->hasCommands($this->getCommands())
-            ->hasRoute('web');
+            ->hasCommands($this->getCommands());
     }
 
     public function packageRegistered(): void
