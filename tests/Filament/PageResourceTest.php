@@ -2,7 +2,7 @@
 
 namespace Littleboy130491\Sumimasen\Tests\Filament;
 
-use App\Models\User;
+use Littleboy130491\Sumimasen\Models\User;
 use Filament\Actions\DeleteAction;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -2,7 +2,7 @@
 
 namespace Littleboy130491\Sumimasen\Observers;
 
-use App\Models\User;
+use Littleboy130491\Sumimasen\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Littleboy130491\Sumimasen\Enums\CommentStatus;

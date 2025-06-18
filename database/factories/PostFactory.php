@@ -6,19 +6,19 @@ use Littleboy130491\Sumimasen\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
-use Littleboy130491\Sumimasen\Models\Page;
+use Littleboy130491\Sumimasen\Models\Post;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Littleboy130491\Sumimasen\Models\Page>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Littleboy130491\Sumimasen\Models\Post>
  */
-class PageFactory extends Factory
+class PostFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Page::class;
+    protected $model = Post::class;
 
     /**
      * Define the model's default state.
@@ -53,13 +53,6 @@ class PageFactory extends Factory
                 'en' => fake()->paragraph(),
                 'id' => fake()->paragraph(),
             ],
-            'section' => [
-                'en' => [],
-                'id' => [],
-            ],
-            'template' => fake()->randomElement(['default', 'page', 'landing']),
-            'menu_order' => fake()->numberBetween(0, 100),
-            'custom_fields' => [],
             'published_at' => fake()->optional()->dateTimeBetween('-1 year', 'now'),
             'created_at' => now(),
             'updated_at' => now(),
@@ -67,7 +60,7 @@ class PageFactory extends Factory
     }
 
     /**
-     * Indicate that the page should be published.
+     * Indicate that the post should be published.
      */
     public function published(): static
     {
@@ -78,7 +71,7 @@ class PageFactory extends Factory
     }
 
     /**
-     * Indicate that the page should be a draft.
+     * Indicate that the post should be a draft.
      */
     public function draft(): static
     {
@@ -89,7 +82,7 @@ class PageFactory extends Factory
     }
 
     /**
-     * Indicate that the page should be scheduled.
+     * Indicate that the post should be scheduled.
      */
     public function scheduled(): static
     {
@@ -100,7 +93,7 @@ class PageFactory extends Factory
     }
 
     /**
-     * Set specific translations for the page.
+     * Set specific translations for the post.
      */
     public function withTranslations(array $translations): static
     {
@@ -108,37 +101,7 @@ class PageFactory extends Factory
     }
 
     /**
-     * Set the page as a child of another page.
-     */
-    public function childOf(Page $parent): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'parent_id' => $parent->id,
-        ]);
-    }
-
-    /**
-     * Set custom fields for the page.
-     */
-    public function withCustomFields(array $customFields): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'custom_fields' => $customFields,
-        ]);
-    }
-
-    /**
-     * Set section data for the page.
-     */
-    public function withSections(array $sections): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'section' => $sections,
-        ]);
-    }
-
-    /**
-     * Create page without required relationships for testing.
+     * Create post without required relationships for testing.
      */
     public function withoutAuthor(): static
     {

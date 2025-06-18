@@ -58,4 +58,14 @@ class User extends Authenticatable
         // return $this->hasRole('admin');
         return true;
     }
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    protected static function newFactory()
+    {
+        return new \Littleboy130491\Sumimasen\Database\Factories\UserFactory();
+    }
 }

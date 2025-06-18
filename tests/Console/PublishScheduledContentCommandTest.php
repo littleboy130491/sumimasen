@@ -2,7 +2,7 @@
 
 namespace Littleboy130491\Sumimasen\Tests\Console;
 
-use App\Models\User;
+use Littleboy130491\Sumimasen\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;

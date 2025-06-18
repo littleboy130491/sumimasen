@@ -2,7 +2,7 @@
 
 namespace Littleboy130491\Sumimasen\Tests\Livewire;
 
-use App\Models\User;
+use Littleboy130491\Sumimasen\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Littleboy130491\Sumimasen\Livewire\LikeButton;
 use Littleboy130491\Sumimasen\Models\Post;

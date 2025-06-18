@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace Littleboy130491\Sumimasen\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -11,6 +11,13 @@ use Illuminate\Support\Str;
  */
 class UserFactory extends Factory
 {
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var class-string<\Illuminate\Database\Eloquent\Model>
+     */
+    protected $model = \Littleboy130491\Sumimasen\Models\User::class;
+
     /**
      * The current password being used by the factory.
      */

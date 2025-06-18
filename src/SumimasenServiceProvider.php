@@ -35,11 +35,13 @@ class SumimasenServiceProvider extends PackageServiceProvider
         $this->bootMultilanguageSupport();
         $this->bootObservers();
         $this->bootDebugMode();
-        $this->bootLivewireComponents();
         $this->bootBladeComponents();
         $this->bootScheduledTasks();
         $this->bootPolicies();
+        
         $this->app->booted(function () {
+            // Boot Livewire components after everything else
+            $this->bootLivewireComponents();
             $router = $this->app['router'];
             $router->aliasMiddleware('setLocale', \Littleboy130491\Sumimasen\Http\Middleware\SetLocale::class);
             $router->aliasMiddleware('doNotCacheResponse', \Spatie\ResponseCache\Middlewares\DoNotCacheResponse::class);
@@ -192,22 +194,22 @@ class SumimasenServiceProvider extends PackageServiceProvider
 
         // Auto-register all Livewire components under this namespace
         $baseNamespace = 'Littleboy130491\\Sumimasen\\Livewire';
-        $basePath = __DIR__.'/Livewire';
+        $basePath = __DIR__ . '/Livewire';
 
-        if (! is_dir($basePath)) {
+        if (!is_dir($basePath)) {
             return;
         }
 
         foreach (scandir($basePath) as $file) {
-            if (in_array($file, ['.', '..']) || ! str_ends_with($file, '.php')) {
+            if (in_array($file, ['.', '..']) || !str_ends_with($file, '.php')) {
                 continue;
             }
 
-            $class = $baseNamespace.'\\'.pathinfo($file, PATHINFO_FILENAME);
+            $class = $baseNamespace . '\\' . pathinfo($file, PATHINFO_FILENAME);
 
             if (class_exists($class)) {
-                // Component name will be kebab-case version of class name
-                $alias = \Illuminate\Support\Str::kebab(class_basename($class));
+                // Add package prefix to avoid conflicts
+                $alias = static::$name . '.' . \Illuminate\Support\Str::kebab(class_basename($class));
                 \Livewire\Livewire::component($alias, $class);
             }
         }

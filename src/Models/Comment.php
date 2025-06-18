@@ -34,7 +34,7 @@ class Comment extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'status' => Littleboy130491\Sumimasen\Enums\CommentStatus::class,
+        'status' => \Littleboy130491\Sumimasen\Enums\CommentStatus::class,
         'parent_id' => 'integer',
         'commentable_id' => 'integer',
     ];

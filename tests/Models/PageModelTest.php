@@ -2,7 +2,7 @@
 
 namespace Littleboy130491\Sumimasen\Tests\Models;
 
-use App\Models\User;
+use Littleboy130491\Sumimasen\Models\User;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
