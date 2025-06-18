@@ -47,7 +47,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
             $router->aliasMiddleware('doNotCacheResponse', \Spatie\ResponseCache\Middlewares\DoNotCacheResponse::class);
 
             // register route after the entire application has booted, to avoid conflict with filament and livewire
-             $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+            $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
         });
     }
 
