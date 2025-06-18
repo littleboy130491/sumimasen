@@ -2,7 +2,6 @@
 
 namespace Littleboy130491\Sumimasen\Tests\Filament;
 
-use Littleboy130491\Sumimasen\Models\User;
 use Filament\Actions\DeleteAction;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -11,6 +10,7 @@ use Littleboy130491\Sumimasen\Filament\Resources\PageResource\Pages\CreatePage;
 use Littleboy130491\Sumimasen\Filament\Resources\PageResource\Pages\EditPage;
 use Littleboy130491\Sumimasen\Filament\Resources\PageResource\Pages\ListPages;
 use Littleboy130491\Sumimasen\Models\Page;
+use Littleboy130491\Sumimasen\Models\User;
 use Littleboy130491\Sumimasen\Tests\TestCase;
 use Livewire\Livewire;
 

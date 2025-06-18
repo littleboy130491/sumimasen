@@ -2,11 +2,11 @@
 
 namespace Littleboy130491\Sumimasen\Database\Factories;
 
-use Littleboy130491\Sumimasen\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Models\Post;
+use Littleboy130491\Sumimasen\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Littleboy130491\Sumimasen\Models\Post>

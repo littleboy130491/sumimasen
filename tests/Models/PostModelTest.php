@@ -2,7 +2,6 @@
 
 namespace Littleboy130491\Sumimasen\Tests\Models;
 
-use Littleboy130491\Sumimasen\Models\User;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
@@ -10,6 +9,7 @@ use Littleboy130491\Sumimasen\Models\Category;
 use Littleboy130491\Sumimasen\Models\Comment;
 use Littleboy130491\Sumimasen\Models\Post;
 use Littleboy130491\Sumimasen\Models\Tag;
+use Littleboy130491\Sumimasen\Models\User;
 use Littleboy130491\Sumimasen\Tests\TestCase;
 
 class PostModelTest extends TestCase
@@ -214,7 +214,7 @@ class PostModelTest extends TestCase
         $this->assertTrue(method_exists($post, 'incrementPageLikes'));
         $this->assertTrue(method_exists($post, 'decrementPageLikes'));
         $this->assertEquals(0, $post->page_likes);
-        
+
         $post->incrementPageLikes();
         $this->assertEquals(1, $post->fresh()->page_likes);
     }
@@ -231,7 +231,7 @@ class PostModelTest extends TestCase
         $this->assertTrue(method_exists($post, 'incrementPageViews'));
         $this->assertTrue(method_exists($post, 'setPageViews'));
         $this->assertEquals(0, $post->page_views);
-        
+
         $post->incrementPageViews();
         $this->assertEquals(1, $post->fresh()->page_views);
     }

@@ -2,11 +2,11 @@
 
 namespace Littleboy130491\Sumimasen\Tests\Models;
 
-use Littleboy130491\Sumimasen\Models\User;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Models\Page;
+use Littleboy130491\Sumimasen\Models\User;
 use Littleboy130491\Sumimasen\Tests\TestCase;
 
 class PageModelTest extends TestCase

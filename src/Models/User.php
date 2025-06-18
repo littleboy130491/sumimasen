@@ -66,6 +66,6 @@ class User extends Authenticatable
      */
     protected static function newFactory()
     {
-        return new \Littleboy130491\Sumimasen\Database\Factories\UserFactory();
+        return new \Littleboy130491\Sumimasen\Database\Factories\UserFactory;
     }
 }

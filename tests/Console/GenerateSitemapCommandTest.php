@@ -2,13 +2,13 @@
 
 namespace Littleboy130491\Sumimasen\Tests\Console;
 
-use Littleboy130491\Sumimasen\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Models\Page;
 use Littleboy130491\Sumimasen\Models\Post;
+use Littleboy130491\Sumimasen\Models\User;
 use Littleboy130491\Sumimasen\Tests\TestCase;
 
 class GenerateSitemapCommandTest extends TestCase

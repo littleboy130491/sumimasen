@@ -2,11 +2,11 @@
 
 namespace Littleboy130491\Sumimasen\Tests\Models;
 
-use Littleboy130491\Sumimasen\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Littleboy130491\Sumimasen\Enums\CommentStatus;
 use Littleboy130491\Sumimasen\Models\Comment;
 use Littleboy130491\Sumimasen\Models\Post;
+use Littleboy130491\Sumimasen\Models\User;
 use Littleboy130491\Sumimasen\Tests\TestCase;
 
 class CommentModelTest extends TestCase
