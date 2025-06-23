@@ -82,7 +82,7 @@ class Post extends Model
     {
         // Use the base class name for the ::class constant
         // Add foreign key argument if specified in YAML
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(\App\Models\User::class);
     }
 
     /**
