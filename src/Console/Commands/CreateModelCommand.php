@@ -126,7 +126,7 @@ class CreateModelCommand extends Command
     protected function generateModelFile(string $modelName, array $definition, bool $force): bool
     {
         // Define namespace here so it's available for buildModelContent
-        $namespace = 'Littleboy130491\Sumimasen\\Models'; // Assuming default Littleboy130491\Sumimasen\Models namespace
+        $namespace = 'App\\Models'; // Assuming default Littleboy130491\Sumimasen\Models namespace
         $className = Str::studly($modelName); // Ensure PascalCase
         $filePath = app_path("Models/{$className}.php"); // Assumes default app/Models path
 
