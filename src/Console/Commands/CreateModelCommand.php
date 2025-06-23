@@ -7,7 +7,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Str;
 use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml; // Required for dump-autoload
+use Symfony\Component\Yaml\Yaml;
 
 class CreateModelCommand extends Command
 {
@@ -19,7 +19,8 @@ class CreateModelCommand extends Command
     protected $signature = 'make:model:from-yaml
                             {yaml_file? : The path to the YAML definition file (defaults to schemas/models.yaml)}
                             {--model= : Specify a single model from the YAML to generate}
-                            {--force : Overwrite existing model files without asking}';
+                            {--force : Overwrite existing model files without asking}
+                            {--with-migration : Generate migration files along with models}';
 
     /**
      * The console command description.
@@ -64,10 +65,10 @@ class CreateModelCommand extends Command
         $yamlFilePath = $this->argument('yaml_file') ?? base_path('schemas/models.yaml');
         $specificModel = $this->option('model');
         $force = $this->option('force');
+        $withMigration = $this->option('with-migration');
 
         if (! $this->files->exists($yamlFilePath)) {
             $this->error("YAML file not found at: {$yamlFilePath}");
-
             return 1;
         }
 
@@ -76,33 +77,70 @@ class CreateModelCommand extends Command
             $schema = Yaml::parse($yamlContent);
         } catch (ParseException $exception) {
             $this->error("Error parsing YAML file: {$exception->getMessage()}");
-
             return 1;
         }
 
         if (! isset($schema['models']) || ! is_array($schema['models'])) {
             $this->error("Invalid YAML structure. Missing 'models' key or it's not an array.");
-
             return 1;
         }
 
         $modelsToProcess = $schema['models'];
 
-        // Filter for a specific model if the option is provided
         if ($specificModel) {
             if (! isset($modelsToProcess[$specificModel])) {
                 $this->error("Model '{$specificModel}' not found in the YAML file.");
-
                 return 1;
             }
             $modelsToProcess = [$specificModel => $modelsToProcess[$specificModel]];
         }
 
-        $generatedCount = 0;
+        // Separate pivot tables from regular models
+        $regularModels = [];
+        $pivotModels = [];
+
         foreach ($modelsToProcess as $modelName => $modelDefinition) {
-            $this->info("Processing model: {$modelName}");
+            if ($this->isPivotTable($modelName, $modelDefinition)) {
+                $pivotModels[$modelName] = $modelDefinition;
+            } else {
+                $regularModels[$modelName] = $modelDefinition;
+            }
+        }
+
+        $generatedCount = 0;
+        $migrationCount = 0;
+
+        // Process regular models first
+        foreach ($regularModels as $modelName => $modelDefinition) {
+            $this->info("Processing regular model: {$modelName}");
             if ($this->generateModelFile($modelName, $modelDefinition, $force)) {
                 $generatedCount++;
+            }
+            
+            if ($withMigration) {
+                if ($this->generateMigrationFile($modelName, $modelDefinition, false)) {
+                    $migrationCount++;
+                }
+            }
+        }
+
+        // Add a small delay to ensure different timestamps for pivot tables
+        if (!empty($pivotModels) && !empty($regularModels)) {
+            $this->info("Waiting to ensure proper migration ordering...");
+            sleep(2); // 2 seconds delay
+        }
+
+        // Process pivot models after regular models
+        foreach ($pivotModels as $modelName => $modelDefinition) {
+            $this->info("Processing pivot model: {$modelName}");
+            if ($this->generateModelFile($modelName, $modelDefinition, $force)) {
+                $generatedCount++;
+            }
+            
+            if ($withMigration) {
+                if ($this->generateMigrationFile($modelName, $modelDefinition, true)) {
+                    $migrationCount++;
+                }
             }
         }
 
@@ -113,9 +151,348 @@ class CreateModelCommand extends Command
             $this->info('No new model files were generated.');
         }
 
-        $this->info('Model generation process completed.');
+        if ($withMigration && $migrationCount > 0) {
+            $this->info("Generated {$migrationCount} migration files with proper ordering.");
+        }
 
+        $this->info('Model generation process completed.');
         return 0;
+    }
+
+    /**
+     * Determine if a model is a pivot table based on naming convention or relationships
+     */
+    protected function isPivotTable(string $modelName, array $definition): bool
+    {
+        // Check if model name contains underscore (common pivot naming convention)
+        if (str_contains($modelName, '_')) {
+            // Additional check: if it has exactly 2 parts and both might be model names
+            $parts = explode('_', $modelName);
+            if (count($parts) >= 2) {
+                return true;
+            }
+        }
+
+        // Check if explicitly marked as pivot in YAML
+        if (isset($definition['is_pivot']) && $definition['is_pivot']) {
+            return true;
+        }
+
+        // Check if model only has belongsTo relationships to 2 or more models
+        if (!empty($definition['relationships'])) {
+            $belongsToCount = 0;
+            foreach ($definition['relationships'] as $relDef) {
+                if (strtolower($relDef['type'] ?? '') === 'belongsto') {
+                    $belongsToCount++;
+                }
+            }
+            
+            if ($belongsToCount >= 2) {
+                return true;
+            }
+        }
+
+        // Check for pivot-specific field patterns
+        if (!empty($definition['fields'])) {
+            $fieldNames = array_keys($definition['fields']);
+            $foreignKeyCount = 0;
+            
+            foreach ($fieldNames as $fieldName) {
+                if (str_ends_with($fieldName, '_id')) {
+                    $foreignKeyCount++;
+                }
+            }
+            
+            // If has 2 or more foreign keys and few other fields, likely a pivot
+            if ($foreignKeyCount >= 2 && count($fieldNames) <= $foreignKeyCount + 2) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Generate migration file along with model
+     */
+    protected function generateMigrationFile(string $modelName, array $definition, bool $isPivot = false): bool
+    {
+        $tableName = $this->getTableName($modelName);
+        $className = 'Create' . Str::studly($tableName) . 'Table';
+        
+        // Generate timestamp with extra seconds for pivot tables
+        $baseTime = now();
+        if ($isPivot) {
+            $baseTime = $baseTime->addSeconds(rand(10, 30)); // Add random delay for pivots
+        }
+        
+        $timestamp = $baseTime->format('Y_m_d_His');
+        $migrationFileName = "{$timestamp}_create_{$tableName}_table.php";
+        $migrationPath = database_path("migrations/{$migrationFileName}");
+        
+        // Check if migration already exists
+        $existingMigrations = glob(database_path("migrations/*_create_{$tableName}_table.php"));
+        if (!empty($existingMigrations) && !$this->option('force')) {
+            $this->line("Migration for {$tableName} already exists. Skipping...");
+            return false;
+        }
+        
+        // Generate migration content
+        $migrationContent = $this->buildMigrationContent($className, $tableName, $definition, $isPivot);
+        
+        if ($this->files->put($migrationPath, $migrationContent) !== false) {
+            $this->line("<info>Created Migration:</info> {$migrationPath}");
+            return true;
+        } else {
+            $this->error("Failed to create migration: {$migrationPath}");
+            return false;
+        }
+    }
+
+    /**
+     * Get table name from model name
+     */
+    protected function getTableName(string $modelName): string
+    {
+        // For pivot tables, keep the exact name
+        if (str_contains($modelName, '_')) {
+            return $modelName;
+        }
+        
+        // For regular models, pluralize
+        return Str::snake(Str::pluralStudly($modelName));
+    }
+
+    /**
+     * Build migration file content
+     */
+    protected function buildMigrationContent(string $className, string $tableName, array $definition, bool $isPivot = false): string
+    {
+        $fields = $this->buildMigrationFields($definition, $isPivot);
+        $indexes = $this->buildMigrationIndexes($definition, $isPivot);
+        
+        return <<<PHP
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('{$tableName}', function (Blueprint \$table) {
+{$fields}
+{$indexes}
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('{$tableName}');
+    }
+};
+
+PHP;
+    }
+
+    /**
+     * Build migration fields
+     */
+    protected function buildMigrationFields(array $definition, bool $isPivot = false): string
+    {
+        $fields = [];
+        
+        // Add ID field for non-pivot tables
+        if (!$isPivot) {
+            $fields[] = "            \$table->id();";
+        }
+        
+        // Add defined fields
+        if (!empty($definition['fields'])) {
+            foreach ($definition['fields'] as $fieldName => $fieldDef) {
+                $fields[] = $this->buildFieldDefinition($fieldName, $fieldDef);
+            }
+        }
+        
+        // Add foreign keys from relationships for belongsTo
+        if (!empty($definition['relationships'])) {
+            foreach ($definition['relationships'] as $relationName => $relDef) {
+                if (strtolower($relDef['type'] ?? '') === 'belongsto') {
+                    $foreignKey = $relDef['foreign_key'] ?? Str::snake($relationName) . '_id';
+                    
+                    // Only add if not already defined in fields
+                    if (empty($definition['fields'][$foreignKey])) {
+                        $fields[] = "            \$table->foreignId('{$foreignKey}')->constrained()->cascadeOnDelete();";
+                    }
+                }
+            }
+        }
+        
+        // Add timestamps for non-pivot tables
+        if (!$isPivot) {
+            $fields[] = "            \$table->timestamps();";
+        }
+        
+        return implode("\n", $fields);
+    }
+
+    /**
+     * Build field definition for migration
+     */
+    protected function buildFieldDefinition(string $fieldName, array $fieldDef): string
+    {
+        $type = strtolower($fieldDef['type'] ?? 'string');
+        $nullable = $fieldDef['nullable'] ?? false;
+        $default = $fieldDef['default'] ?? null;
+        
+        $definition = "            \$table->";
+        
+        switch ($type) {
+            case 'string':
+                $length = $fieldDef['length'] ?? null;
+                if ($length) {
+                    $definition .= "string('{$fieldName}', {$length})";
+                } else {
+                    $definition .= "string('{$fieldName}')";
+                }
+                break;
+                
+            case 'text':
+                $definition .= "text('{$fieldName}')";
+                break;
+                
+            case 'longtext':
+                $definition .= "longText('{$fieldName}')";
+                break;
+                
+            case 'int':
+            case 'integer':
+                $definition .= "integer('{$fieldName}')";
+                break;
+                
+            case 'bigint':
+                $definition .= "bigInteger('{$fieldName}')";
+                break;
+                
+            case 'tinyint':
+                $definition .= "tinyInteger('{$fieldName}')";
+                break;
+                
+            case 'bool':
+            case 'boolean':
+                $definition .= "boolean('{$fieldName}')";
+                break;
+                
+            case 'date':
+                $definition .= "date('{$fieldName}')";
+                break;
+                
+            case 'datetime':
+            case 'timestamp':
+                $definition .= "timestamp('{$fieldName}')";
+                break;
+                
+            case 'json':
+                $definition .= "json('{$fieldName}')";
+                break;
+                
+            case 'decimal':
+                $precision = $fieldDef['precision'] ?? 8;
+                $scale = $fieldDef['scale'] ?? 2;
+                $definition .= "decimal('{$fieldName}', {$precision}, {$scale})";
+                break;
+                
+            case 'float':
+                $definition .= "float('{$fieldName}')";
+                break;
+                
+            case 'enum':
+                if (!empty($fieldDef['enum'])) {
+                    $enumValues = collect($fieldDef['enum'])
+                        ->map(fn($value) => "'{$value}'")
+                        ->implode(', ');
+                    $definition .= "enum('{$fieldName}', [{$enumValues}])";
+                } else {
+                    $definition .= "string('{$fieldName}')";
+                }
+                break;
+                
+            case 'foreignid':
+                $definition .= "foreignId('{$fieldName}')";
+                break;
+                
+            default:
+                $definition .= "string('{$fieldName}')";
+        }
+        
+        // Add nullable
+        if ($nullable) {
+            $definition .= "->nullable()";
+        }
+        
+        // Add default value
+        if ($default !== null) {
+            if (is_string($default)) {
+                $definition .= "->default('{$default}')";
+            } elseif (is_bool($default)) {
+                $definition .= "->default(" . ($default ? 'true' : 'false') . ")";
+            } else {
+                $definition .= "->default({$default})";
+            }
+        }
+        
+        return $definition . ";";
+    }
+
+    /**
+     * Build migration indexes
+     */
+    protected function buildMigrationIndexes(array $definition, bool $isPivot = false): string
+    {
+        $indexes = [];
+        
+        // For pivot tables, create composite primary key
+        if ($isPivot && !empty($definition['fields'])) {
+            $foreignKeys = [];
+            foreach ($definition['fields'] as $fieldName => $fieldDef) {
+                if (str_ends_with($fieldName, '_id')) {
+                    $foreignKeys[] = $fieldName;
+                }
+            }
+            
+            if (count($foreignKeys) >= 2) {
+                $keyString = "'" . implode("', '", $foreignKeys) . "'";
+                $indexes[] = "            \$table->primary([{$keyString}]);";
+            }
+        }
+        
+        // Add custom indexes if defined
+        if (!empty($definition['indexes'])) {
+            foreach ($definition['indexes'] as $index) {
+                $fields = is_array($index['fields']) ? $index['fields'] : [$index['fields']];
+                $fieldString = "'" . implode("', '", $fields) . "'";
+                
+                switch ($index['type'] ?? 'index') {
+                    case 'unique':
+                        $indexes[] = "            \$table->unique([{$fieldString}]);";
+                        break;
+                    case 'index':
+                    default:
+                        $indexes[] = "            \$table->index([{$fieldString}]);";
+                        break;
+                }
+            }
+        }
+        
+        return empty($indexes) ? '' : "\n" . implode("\n", $indexes);
     }
 
     /**
@@ -126,7 +503,7 @@ class CreateModelCommand extends Command
     protected function generateModelFile(string $modelName, array $definition, bool $force): bool
     {
         // Define namespace here so it's available for buildModelContent
-        $namespace = 'App\\Models'; // Assuming default Littleboy130491\Sumimasen\Models namespace
+        $namespace = 'App\\Models'; // Assuming default App\Models namespace
         $className = Str::studly($modelName); // Ensure PascalCase
         $filePath = app_path("Models/{$className}.php"); // Assumes default app/Models path
 
@@ -134,7 +511,6 @@ class CreateModelCommand extends Command
         if ($this->files->exists($filePath) && ! $force) {
             if (! $this->confirm("Model file [{$filePath}] already exists. Overwrite?", false)) {
                 $this->line("Skipping generation for model: {$className}");
-
                 return false;
             }
         }
@@ -151,11 +527,9 @@ class CreateModelCommand extends Command
         // Write the file
         if ($this->files->put($filePath, $content) !== false) {
             $this->line("<info>Created Model:</info> {$filePath}");
-
             return true;
         } else {
             $this->error("Failed to write model file: {$filePath}");
-
             return false;
         }
     }
