@@ -2,13 +2,13 @@
 
 namespace Littleboy130491\Sumimasen\Observers;
 
-use Littleboy130491\Sumimasen\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Littleboy130491\Sumimasen\Enums\CommentStatus;
 use Littleboy130491\Sumimasen\Mail\CommentReplyNotification;
 use Littleboy130491\Sumimasen\Mail\NewCommentNotification;
 use Littleboy130491\Sumimasen\Models\Comment;
+use Littleboy130491\Sumimasen\Models\User;
 use Spatie\ResponseCache\Facades\ResponseCache;
 
 class CommentObserver

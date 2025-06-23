@@ -38,7 +38,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
         $this->bootBladeComponents();
         $this->bootScheduledTasks();
         $this->bootPolicies();
-        
+
         $this->app->booted(function () {
             // Boot Livewire components after everything else
             $this->bootLivewireComponents();
@@ -194,22 +194,22 @@ class SumimasenServiceProvider extends PackageServiceProvider
 
         // Auto-register all Livewire components under this namespace
         $baseNamespace = 'Littleboy130491\\Sumimasen\\Livewire';
-        $basePath = __DIR__ . '/Livewire';
+        $basePath = __DIR__.'/Livewire';
 
-        if (!is_dir($basePath)) {
+        if (! is_dir($basePath)) {
             return;
         }
 
         foreach (scandir($basePath) as $file) {
-            if (in_array($file, ['.', '..']) || !str_ends_with($file, '.php')) {
+            if (in_array($file, ['.', '..']) || ! str_ends_with($file, '.php')) {
                 continue;
             }
 
-            $class = $baseNamespace . '\\' . pathinfo($file, PATHINFO_FILENAME);
+            $class = $baseNamespace.'\\'.pathinfo($file, PATHINFO_FILENAME);
 
             if (class_exists($class)) {
                 // Add package prefix to avoid conflicts
-                $alias = static::$name . '.' . \Illuminate\Support\Str::kebab(class_basename($class));
+                $alias = static::$name.'.'.\Illuminate\Support\Str::kebab(class_basename($class));
                 \Livewire\Livewire::component($alias, $class);
             }
         }
@@ -304,7 +304,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
                 \Littleboy130491\Sumimasen\Models\Tag::class,
                 \App\Policies\TagPolicy::class
             );
-        }        
-       
+        }
+
     }
 }

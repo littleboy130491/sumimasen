@@ -63,12 +63,12 @@ class TestCase extends Orchestra
     protected function defineDatabaseMigrations()
     {
         $this->loadLaravelMigrations();
-        
+
         // Create basic Laravel tables that might be needed
         $this->artisan('migrate:fresh', [
             '--database' => 'testing',
         ]);
-        
+
         // Create CMS-specific tables
         $this->createCmsTableSchemas();
     }
@@ -198,7 +198,7 @@ class TestCase extends Orchestra
             $table->string('name');
             $table->string('guard_name');
             $table->timestamps();
-            
+
             $table->unique(['name', 'guard_name']);
         });
 
@@ -207,7 +207,7 @@ class TestCase extends Orchestra
             $table->string('name');
             $table->string('guard_name');
             $table->timestamps();
-            
+
             $table->unique(['name', 'guard_name']);
         });
 
@@ -216,7 +216,7 @@ class TestCase extends Orchestra
             $table->foreignId('permission_id')->constrained('permissions')->onDelete('cascade');
             $table->string('model_type');
             $table->unsignedBigInteger('model_id');
-            
+
             $table->index(['model_id', 'model_type']);
         });
 
@@ -225,7 +225,7 @@ class TestCase extends Orchestra
             $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
             $table->string('model_type');
             $table->unsignedBigInteger('model_id');
-            
+
             $table->index(['model_id', 'model_type']);
         });
 
