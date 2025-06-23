@@ -58,6 +58,13 @@ class CreateMigrationCommand extends Command
     protected $pivotTablesToCreate = [];
 
     /**
+     * Counter to ensure unique timestamps for migrations.
+     *
+     * @var int
+     */
+    protected $migrationCounter = 0;
+
+    /**
      * Create a new command instance.
      *
      * @return void
@@ -223,6 +230,12 @@ class CreateMigrationCommand extends Command
         $schemaDown = "Schema::dropIfExists('{$tableName}');";
 
         try {
+            // Add a small delay to ensure unique timestamps
+            if ($this->migrationCounter > 0) {
+                usleep(100000); // 0.1 second delay
+            }
+            $this->migrationCounter++;
+
             // Use Laravel's MigrationCreator to create the file
             $migrationPath = $this->creator->create(
                 $migrationBaseName, // e.g., create_posts_table (creator adds timestamp)
@@ -289,6 +302,12 @@ class CreateMigrationCommand extends Command
         $schemaDown = "Schema::dropIfExists('{$pivotTableName}');";
 
         try {
+            // Add a small delay to ensure unique timestamps
+            if ($this->migrationCounter > 0) {
+                usleep(100000); // 0.1 second delay
+            }
+            $this->migrationCounter++;
+
             // Use Laravel's MigrationCreator to create the file
             $migrationPath = $this->creator->create(
                 $migrationBaseName,
