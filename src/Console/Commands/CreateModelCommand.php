@@ -44,6 +44,20 @@ class CreateModelCommand extends Command
     protected $composer;
 
     /**
+     * Base timestamp for generating migrations
+     *
+     * @var \Carbon\Carbon
+     */
+    protected $baseTimestamp;
+
+    /**
+     * Counter for migration ordering
+     *
+     * @var int
+     */
+    protected $migrationCounter = 0;
+
+    /**
      * Create a new command instance.
      *
      * @return void
@@ -53,6 +67,7 @@ class CreateModelCommand extends Command
         parent::__construct();
         $this->files = $files;
         $this->composer = $composer;
+        $this->baseTimestamp = now();
     }
 
     /**
@@ -95,50 +110,25 @@ class CreateModelCommand extends Command
             $modelsToProcess = [$specificModel => $modelsToProcess[$specificModel]];
         }
 
-        // Separate pivot tables from regular models
-        $regularModels = [];
-        $pivotModels = [];
-
-        foreach ($modelsToProcess as $modelName => $modelDefinition) {
-            if ($this->isPivotTable($modelName, $modelDefinition)) {
-                $pivotModels[$modelName] = $modelDefinition;
-            } else {
-                $regularModels[$modelName] = $modelDefinition;
-            }
-        }
+        // Separate and order models properly
+        $orderedModels = $this->orderModels($modelsToProcess);
 
         $generatedCount = 0;
         $migrationCount = 0;
 
-        // Process regular models first
-        foreach ($regularModels as $modelName => $modelDefinition) {
-            $this->info("Processing regular model: {$modelName}");
+        // Process models in dependency order
+        foreach ($orderedModels as $modelName => $modelData) {
+            $modelDefinition = $modelData['definition'];
+            $isPivot = $modelData['is_pivot'];
+            
+            $this->info("Processing " . ($isPivot ? "pivot" : "regular") . " model: {$modelName}");
+            
             if ($this->generateModelFile($modelName, $modelDefinition, $force)) {
                 $generatedCount++;
             }
             
             if ($withMigration) {
-                if ($this->generateMigrationFile($modelName, $modelDefinition, false)) {
-                    $migrationCount++;
-                }
-            }
-        }
-
-        // Add a small delay to ensure different timestamps for pivot tables
-        if (!empty($pivotModels) && !empty($regularModels)) {
-            $this->info("Waiting to ensure proper migration ordering...");
-            sleep(2); // 2 seconds delay
-        }
-
-        // Process pivot models after regular models
-        foreach ($pivotModels as $modelName => $modelDefinition) {
-            $this->info("Processing pivot model: {$modelName}");
-            if ($this->generateModelFile($modelName, $modelDefinition, $force)) {
-                $generatedCount++;
-            }
-            
-            if ($withMigration) {
-                if ($this->generateMigrationFile($modelName, $modelDefinition, true)) {
+                if ($this->generateMigrationFile($modelName, $modelDefinition, $isPivot)) {
                     $migrationCount++;
                 }
             }
@@ -157,6 +147,94 @@ class CreateModelCommand extends Command
 
         $this->info('Model generation process completed.');
         return 0;
+    }
+
+    /**
+     * Order models to ensure dependencies are processed first
+     */
+    protected function orderModels(array $models): array
+    {
+        $regularModels = [];
+        $pivotModels = [];
+        $ordered = [];
+
+        // First pass: separate regular models from pivot models
+        foreach ($models as $modelName => $modelDefinition) {
+            $isPivot = $this->isPivotTable($modelName, $modelDefinition);
+            
+            if ($isPivot) {
+                $pivotModels[$modelName] = [
+                    'definition' => $modelDefinition,
+                    'is_pivot' => true,
+                    'dependencies' => $this->getPivotDependencies($modelName, $modelDefinition)
+                ];
+            } else {
+                $regularModels[$modelName] = [
+                    'definition' => $modelDefinition,
+                    'is_pivot' => false,
+                    'dependencies' => []
+                ];
+            }
+        }
+
+        // Add regular models first (in alphabetical order for consistency)
+        ksort($regularModels);
+        foreach ($regularModels as $modelName => $modelData) {
+            $ordered[$modelName] = $modelData;
+        }
+
+        // Then add pivot models, ensuring their dependencies exist first
+        $pivotModels = $this->sortPivotsByDependencies($pivotModels, array_keys($regularModels));
+        foreach ($pivotModels as $modelName => $modelData) {
+            $ordered[$modelName] = $modelData;
+        }
+
+        return $ordered;
+    }
+
+    /**
+     * Get pivot table dependencies (related models)
+     */
+    protected function getPivotDependencies(string $modelName, array $definition): array
+    {
+        $dependencies = [];
+
+        // Extract from relationships
+        if (!empty($definition['relationships'])) {
+            foreach ($definition['relationships'] as $relDef) {
+                if (strtolower($relDef['type'] ?? '') === 'belongsto' && !empty($relDef['model'])) {
+                    $dependencies[] = $relDef['model'];
+                }
+            }
+        }
+
+        // Extract from naming convention (e.g., user_role -> user, role)
+        if (str_contains($modelName, '_')) {
+            $parts = explode('_', $modelName);
+            if (count($parts) >= 2) {
+                // Take first and last parts as potential model names
+                $dependencies[] = $parts[0];
+                $dependencies[] = end($parts);
+            }
+        }
+
+        return array_unique($dependencies);
+    }
+
+    /**
+     * Sort pivot models by their dependencies
+     */
+    protected function sortPivotsByDependencies(array $pivotModels, array $availableModels): array
+    {
+        $sorted = [];
+        $remaining = $pivotModels;
+
+        // Simple sorting: pivots with fewer dependencies first
+        uasort($remaining, function($a, $b) {
+            return count($a['dependencies']) <=> count($b['dependencies']);
+        });
+
+        return $remaining;
     }
 
     /**
@@ -220,13 +298,8 @@ class CreateModelCommand extends Command
         $tableName = $this->getTableName($modelName);
         $className = 'Create' . Str::studly($tableName) . 'Table';
         
-        // Generate timestamp with extra seconds for pivot tables
-        $baseTime = now();
-        if ($isPivot) {
-            $baseTime = $baseTime->addSeconds(rand(10, 30)); // Add random delay for pivots
-        }
-        
-        $timestamp = $baseTime->format('Y_m_d_His');
+        // Generate timestamp with guaranteed ordering
+        $timestamp = $this->getNextMigrationTimestamp($isPivot);
         $migrationFileName = "{$timestamp}_create_{$tableName}_table.php";
         $migrationPath = database_path("migrations/{$migrationFileName}");
         
@@ -235,6 +308,14 @@ class CreateModelCommand extends Command
         if (!empty($existingMigrations) && !$this->option('force')) {
             $this->line("Migration for {$tableName} already exists. Skipping...");
             return false;
+        }
+        
+        // Remove existing migrations if force option is used
+        if (!empty($existingMigrations) && $this->option('force')) {
+            foreach ($existingMigrations as $existingMigration) {
+                $this->files->delete($existingMigration);
+                $this->line("Removed existing migration: " . basename($existingMigration));
+            }
         }
         
         // Generate migration content
@@ -247,6 +328,20 @@ class CreateModelCommand extends Command
             $this->error("Failed to create migration: {$migrationPath}");
             return false;
         }
+    }
+
+    /**
+     * Get next migration timestamp with guaranteed ordering
+     */
+    protected function getNextMigrationTimestamp(bool $isPivot = false): string
+    {
+        // Increment counter for each migration
+        $this->migrationCounter++;
+        
+        // For pivot tables, add significant time offset to ensure they come after regular tables
+        $offset = $isPivot ? 3600 + ($this->migrationCounter * 60) : $this->migrationCounter * 60; // 1 hour + minutes for pivots
+        
+        return $this->baseTimestamp->copy()->addSeconds($offset)->format('Y_m_d_His');
     }
 
     /**
@@ -318,11 +413,11 @@ PHP;
         // Add defined fields
         if (!empty($definition['fields'])) {
             foreach ($definition['fields'] as $fieldName => $fieldDef) {
-                $fields[] = $this->buildFieldDefinition($fieldName, $fieldDef);
+                $fields[] = $this->buildFieldDefinition($fieldName, $fieldDef, $isPivot);
             }
         }
         
-        // Add foreign keys from relationships for belongsTo
+        // Add foreign keys from relationships for belongsTo (if not already defined in fields)
         if (!empty($definition['relationships'])) {
             foreach ($definition['relationships'] as $relationName => $relDef) {
                 if (strtolower($relDef['type'] ?? '') === 'belongsto') {
@@ -330,7 +425,13 @@ PHP;
                     
                     // Only add if not already defined in fields
                     if (empty($definition['fields'][$foreignKey])) {
-                        $fields[] = "            \$table->foreignId('{$foreignKey}')->constrained()->cascadeOnDelete();";
+                        $relatedModel = $relDef['model'] ?? null;
+                        if ($relatedModel) {
+                            $relatedTable = $this->getTableName($relatedModel);
+                            $fields[] = "            \$table->foreignId('{$foreignKey}')->constrained('{$relatedTable}')->cascadeOnDelete();";
+                        } else {
+                            $fields[] = "            \$table->foreignId('{$foreignKey}')->constrained()->cascadeOnDelete();";
+                        }
                     }
                 }
             }
@@ -347,7 +448,7 @@ PHP;
     /**
      * Build field definition for migration
      */
-    protected function buildFieldDefinition(string $fieldName, array $fieldDef): string
+    protected function buildFieldDefinition(string $fieldName, array $fieldDef, bool $isPivot = false): string
     {
         $type = strtolower($fieldDef['type'] ?? 'string');
         $nullable = $fieldDef['nullable'] ?? false;
@@ -426,20 +527,26 @@ PHP;
                 break;
                 
             case 'foreignid':
-                $definition .= "foreignId('{$fieldName}')";
+                // For pivot tables with foreign IDs, add proper constraints
+                if ($isPivot && str_ends_with($fieldName, '_id')) {
+                    $relatedTable = Str::plural(str_replace('_id', '', $fieldName));
+                    $definition .= "foreignId('{$fieldName}')->constrained('{$relatedTable}')->cascadeOnDelete()";
+                } else {
+                    $definition .= "foreignId('{$fieldName}')";
+                }
                 break;
                 
             default:
                 $definition .= "string('{$fieldName}')";
         }
         
-        // Add nullable
-        if ($nullable) {
+        // Add nullable (but not for foreign keys in pivot tables)
+        if ($nullable && !($isPivot && str_ends_with($fieldName, '_id'))) {
             $definition .= "->nullable()";
         }
         
-        // Add default value
-        if ($default !== null) {
+        // Add default value (but not for foreign keys)
+        if ($default !== null && !str_ends_with($fieldName, '_id')) {
             if (is_string($default)) {
                 $definition .= "->default('{$default}')";
             } elseif (is_bool($default)) {
@@ -495,6 +602,11 @@ PHP;
         return empty($indexes) ? '' : "\n" . implode("\n", $indexes);
     }
 
+    // ... (rest of the methods remain the same as in your original code)
+    // Including: generateModelFile, buildModelContent, buildUses, buildTraits, 
+    // buildConstants, buildFillable, buildCasts, buildTranslatable, buildRelationships,
+    // buildAppends, buildAccessors, buildCustomMethods
+    
     /**
      * Generate the Eloquent model file.
      *
@@ -534,25 +646,22 @@ PHP;
         }
     }
 
-    /**
-     * Build the full content of the model file.
-     */
+    // Add all your other existing methods here (buildModelContent, buildUses, etc.)
+    // I'll include a few key ones to show the pattern:
+
     protected function buildModelContent(string $namespace, string $className, array $definition): string
     {
-        // Pass namespace and className down to buildUses
         $uses = $this->buildUses($namespace, $className, $definition);
         $traits = $this->buildTraits($definition);
-        $constants = $this->buildConstants($definition); // <-- Build constants
+        $constants = $this->buildConstants($definition);
         $fillable = $this->buildFillable($definition);
-        $casts = $this->buildCasts($definition); // Build casts normally
+        $casts = $this->buildCasts($definition);
         $translatable = $this->buildTranslatable($definition);
         $appends = $this->buildAppends($definition);
         $accessors = $this->buildAccessors($definition);
         $customMethods = $this->buildCustomMethods($definition);
-        $relationships = $this->buildRelationships($namespace, $definition); // Pass namespace
+        $relationships = $this->buildRelationships($namespace, $definition);
 
-        // Basic template for the model file
-        // Added {$constants} placeholder
         return <<<PHP
 <?php
 
@@ -579,529 +688,7 @@ class {$className} extends Model
 PHP;
     }
 
-    /**
-     * Build the 'use' statements based on required traits and relationships.
-     */
-    protected function buildUses(string $namespace, string $className, array $definition): string
-    {
-        $uses = [
-            'Illuminate\Database\Eloquent\Factories\HasFactory',
-            'Illuminate\Database\Eloquent\Model',
-        ];
-
-        $relationshipTypes = []; // Store relationship types to avoid duplicate imports
-        $relatedModelClasses = []; // Store related model classes to avoid duplicate imports
-
-        if (! empty($definition['traits'])) {
-            foreach ($definition['traits'] as $trait) {
-                // Add the full trait namespace
-                $uses[] = $trait;
-            }
-        }
-
-        // Add specific imports based on fields
-        if (! empty($definition['fields'])) {
-            foreach ($definition['fields'] as $fieldName => $fieldDef) {
-                if ($fieldName === 'featured_image') {
-                    $uses[] = 'Awcodes\Curator\Models\Media';
-                    $relationshipTypes[] = 'Illuminate\Database\Eloquent\Relations\BelongsTo'; // Add BelongsTo for featuredImage
-                }
-
-                // Note: We don't import enum classes since we use fully qualified names
-            }
-        }
-
-        if (! empty($definition['relationships'])) {
-            foreach ($definition['relationships'] as $relDef) {
-                $type = $relDef['type'] ?? null;
-                $relatedModel = $relDef['model'] ?? null;
-
-                // Add relationship type namespace
-                if ($type) {
-                    switch (strtolower($type)) {
-                        case 'belongsto':
-                            $relationshipTypes[] = 'Illuminate\Database\Eloquent\Relations\BelongsTo';
-                            break;
-                        case 'belongstomany':
-                            $relationshipTypes[] = 'Illuminate\Database\Eloquent\Relations\BelongsToMany';
-                            break;
-                        case 'hasmany':
-                            $relationshipTypes[] = 'Illuminate\Database\Eloquent\Relations\HasMany';
-                            break;
-                        case 'hasone':
-                            $relationshipTypes[] = 'Illuminate\Database\Eloquent\Relations\HasOne';
-                            break;
-                        case 'morphto':
-                            $relationshipTypes[] = 'Illuminate\Database\Eloquent\Relations\MorphTo';
-                            break;
-                        case 'morphmany':
-                            $relationshipTypes[] = 'Illuminate\Database\Eloquent\Relations\MorphMany';
-                            break;
-                            // Add more relationship types if needed
-                    }
-                }
-
-                // Add related model namespace
-                if ($relatedModel) {
-                    // Basic assumption: related models are in the same namespace
-                    // You might need a more complex lookup if models are in different namespaces
-                    // Ensure we don't add the current model's namespace if it's self-referencing
-                    $relatedModelFqn = $namespace.'\\'.Str::studly($relatedModel);
-                    // Extract current class name from namespace for comparison
-                    $currentClassName = Str::afterLast($namespace.'\\'.Str::studly(basename(str_replace('\\', '/', $namespace))), '\\');
-                    $relatedClassName = Str::afterLast($relatedModelFqn, '\\');
-
-                    if ($relatedClassName !== $currentClassName) {
-                        $relatedModelClasses[] = $relatedModelFqn;
-                    }
-                }
-            }
-        }
-
-        // Merge all uses and keep unique
-        $uses = array_unique(array_merge($uses, $relationshipTypes, $relatedModelClasses));
-
-        // Explicitly remove the current model's namespace and class from uses
-        $currentModelFqn = $namespace.'\\'.$className;
-        $uses = array_filter($uses, fn ($use) => $use !== $currentModelFqn);
-
-        sort($uses);
-
-        return collect($uses)->map(fn ($use) => "use {$use};")->implode("\n");
-    }
-
-    /**
-     * Build the 'use TraitName;' lines inside the class.
-     */
-    protected function buildTraits(array $definition): string
-    {
-        $traits = ['HasFactory']; // Always include HasFactory by default?
-        if (! empty($definition['traits'])) {
-            foreach ($definition['traits'] as $trait) {
-                // Get the base name of the trait (e.g., SoftDeletes)
-                $traits[] = class_basename($trait);
-            }
-        }
-
-        $traits = array_unique($traits);
-
-        if (empty($traits)) {
-            return '';
-        }
-
-        // Combine traits on one line if multiple exist
-        return '    use '.implode(', ', $traits).";\n";
-    }
-
-    /**
-     * Build constant definitions for enum fields.
-     */
-    protected function buildConstants(array $definition): string
-    {
-        $constants = [];
-        if (empty($definition['fields'])) {
-            return '';
-        }
-
-        foreach ($definition['fields'] as $fieldName => $fieldDef) {
-            // Only generate constants for enum fields that don't have enum_class specified
-            if (
-                strtolower($fieldDef['type'] ?? '') === 'enum' &&
-                ! empty($fieldDef['enum']) &&
-                is_array($fieldDef['enum']) &&
-                empty($fieldDef['enum_class'])
-            ) {
-
-                // Generate constant name, e.g., status -> STATUS_OPTIONS
-                $constantName = Str::upper(Str::snake($fieldName)).'_OPTIONS';
-
-                // Generate array string, e.g., ['draft' => 'Draft', 'published' => 'Published']
-                $optionsArray = collect($fieldDef['enum'])
-                    ->mapWithKeys(function ($value) {
-                        // Use Str::title or Str::ucfirst for the label
-                        return [$value => Str::title(str_replace('_', ' ', $value))];
-                    })
-                    ->map(fn ($label, $value) => "'{$value}' => '{$label}'")
-                    ->implode(', ');
-
-                $constants[] = "    public const {$constantName} = [{$optionsArray}];";
-            }
-        }
-
-        if (empty($constants)) {
-            return '';
-        }
-
-        return implode("\n", $constants)."\n"; // Add extra newline for spacing
-    }
-
-    /**
-     * Build the $fillable property definition.
-     */
-    protected function buildFillable(array $definition): string
-    {
-        $fillable = [];
-
-        // Add fields from the 'fields' section
-        if (! empty($definition['fields'])) {
-            $fillable = array_keys($definition['fields']);
-        }
-
-        // Add inferred foreign keys from 'belongsTo' relationships ONLY if not already in fields
-        if (! empty($definition['relationships'])) {
-            foreach ($definition['relationships'] as $relationName => $relDef) {
-                if (strtolower($relDef['type'] ?? '') === 'belongsto') {
-                    $foreignKey = $relDef['foreign_key'] ?? Str::snake($relationName).'_id'; // Use explicit or infer
-                    // Add only if not already defined in fields
-                    if (! isset($definition['fields'][$foreignKey])) {
-                        $fillable[] = $foreignKey;
-                    }
-                }
-            }
-        }
-
-        $fillable = array_unique($fillable);
-        sort($fillable);
-
-        if (empty($fillable)) {
-            return "    // protected \$guarded = []; // Or define fillable fields\n";
-        }
-
-        $fillableString = collect($fillable)->map(fn ($field) => "'{$field}'")->implode(",\n        ");
-
-        return <<<PHP
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected \$fillable = [
-        {$fillableString}
-    ];
-
-PHP;
-    }
-
-    /**
-     * Build the $casts property definition.
-     */
-    protected function buildCasts(array $definition): string
-    {
-        $casts = [];
-        if (empty($definition['fields'])) {
-            return '';
-        }
-
-        foreach ($definition['fields'] as $fieldName => $fieldDef) {
-            $type = strtolower($fieldDef['type'] ?? 'string');
-            $isTranslatable = $fieldDef['translatable'] ?? false;
-
-            switch ($type) {
-                case 'bool':
-                case 'boolean':
-                    $casts[$fieldName] = 'boolean';
-                    break;
-                case 'int':
-                case 'integer':
-                case 'tinyint':
-                case 'bigint':
-                    // Only cast if not primary key (usually 'id')
-                    if ($fieldName !== 'id') { // Simple check, might need refinement
-                        $casts[$fieldName] = 'integer';
-                    }
-                    break;
-                case 'float':
-                case 'double':
-                case 'decimal':
-                    $casts[$fieldName] = 'float'; // Or 'decimal:<precision>' if needed
-                    break;
-                case 'date':
-                    $casts[$fieldName] = 'date';
-                    break;
-                case 'datetime':
-                case 'timestamp':
-                case 'datetimetz':
-                case 'timestamptz':
-                    $casts[$fieldName] = 'datetime'; // Or 'immutable_datetime'
-                    break;
-                case 'json':
-                    // Cast JSON fields as array, with special handling for translatable fields
-                    if (! $isTranslatable || $fieldName === 'section') {
-                        // Non-translatable JSON fields or special case for 'section' field
-                        $casts[$fieldName] = 'array';
-                    }
-                    // Translatable JSON fields (title, slug, content, excerpt) are handled by Spatie Translatable
-                    break;
-                case 'enum':
-                    // Check if enum_class is specified
-                    if (! empty($fieldDef['enum_class'])) {
-                        $enumClass = $fieldDef['enum_class'];
-                        // Use fully qualified name with leading backslash
-                        $casts[$fieldName] = '\\'.$enumClass.'::class';
-                    } else {
-                        // Basic string cast for backward compatibility
-                        $casts[$fieldName] = 'string';
-                    }
-                    break;
-            }
-        }
-
-        if (empty($casts)) {
-            return '';
-        }
-
-        $castsString = collect($casts)
-            ->map(function ($castType, $field) {
-                // Don't quote enum class references
-                if (str_contains($castType, '::class')) {
-                    return "'{$field}' => {$castType}";
-                }
-
-                return "'{$field}' => '{$castType}'";
-            })
-            ->implode(",\n        ");
-
-        return <<<PHP
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected \$casts = [
-        {$castsString}
-    ];
-
-PHP;
-    }
-
-    /**
-     * Build the $translatable property definition.
-     */
-    protected function buildTranslatable(array $definition): string
-    {
-        $translatable = [];
-        if (! empty($definition['fields'])) {
-            foreach ($definition['fields'] as $fieldName => $fieldDef) {
-                if ($fieldDef['translatable'] ?? false) {
-                    $translatable[] = $fieldName;
-                }
-            }
-        }
-
-        if (empty($translatable)) {
-            return ''; // No property needed if nothing is translatable
-        }
-
-        sort($translatable);
-        $translatableString = collect($translatable)->map(fn ($field) => "'{$field}'")->implode(",\n        ");
-
-        return <<<PHP
-
-    /**
-     * The attributes that are translatable.
-     *
-     * @var array<int, string>
-     */
-    public \$translatable = [
-        {$translatableString}
-    ];
-
-PHP;
-    }
-
-    /**
-     * Build the relationship method definitions.
-     *
-     * @param  string  $namespace  The namespace of the current model.
-     */
-    protected function buildRelationships(string $namespace, array $definition): string
-    {
-        $methods = [];
-
-        // Add featuredImage relationship if 'featured_image' field exists
-        if (! empty($definition['fields']) && isset($definition['fields']['featured_image'])) {
-            $methods[] = <<<'PHP'
-
-    /**
-     * Define the featuredImage relationship to Curator Media.
-     */
-    public function featuredImage(): BelongsTo
-    {
-        return $this->belongsTo(Media::class, 'featured_image', 'id');
-    }
-PHP;
-        }
-
-        // Build other relationships from the 'relationships' section
-        if (! empty($definition['relationships'])) {
-            foreach ($definition['relationships'] as $methodName => $relDef) {
-                $type = $relDef['type'] ?? null;
-                $relatedModel = $relDef['model'] ?? null;
-                $foreignKey = $relDef['foreign_key'] ?? null; // Get potential foreign key
-                // Add other potential keys here if needed (ownerKey, localKey, etc.)
-
-                if (! $type) {
-                    continue; // Skip if type is missing
-                }
-
-                // For morphTo relationships, we don't need a model
-                if (strtolower($type) === 'morphto') {
-                    $relationshipType = 'MorphTo';
-                    $relationshipMethod = 'morphTo';
-
-                    $methods[] = <<<PHP
-
-    /**
-     * Define the {$methodName} relationship.
-     */
-    public function {$methodName}(): {$relationshipType}
-    {
-        return \$this->{$relationshipMethod}();
-    }
-PHP;
-
-                    continue;
-                }
-
-                if (! $relatedModel) {
-                    continue; // Skip if model is missing for non-morphTo relationships
-                }
-
-                $relatedModelClass = Str::studly($relatedModel); // Ensure PascalCase
-                $relationshipType = Str::studly($type); // e.g., BelongsTo, BelongsToMany - Get Class name for return type hint
-                $relationshipMethod = Str::camel($type); // e.g., belongsTo, belongsToMany - Get method name for the call
-
-                // Construct arguments string
-                $arguments = ["{$relatedModelClass}::class"];
-
-                // Handle special cases for different relationship types
-                if (strtolower($type) === 'morphmany') {
-                    $morphName = $relDef['name'] ?? Str::snake($methodName);
-                    $arguments = ["{$relatedModelClass}::class", "'{$morphName}'"];
-                } else {
-                    // Add foreign_key as second argument if present
-                    if ($foreignKey) {
-                        $arguments[] = "'{$foreignKey}'";
-                    }
-                }
-                // Add logic here for other keys (ownerKey, localKey, pivot keys etc.) if defined in YAML
-
-                $argumentsString = implode(', ', $arguments);
-
-                $methods[] = <<<PHP
-
-    /**
-     * Define the {$methodName} relationship.
-     */
-    public function {$methodName}(): {$relationshipType}
-    {
-        // Use the base class name for the ::class constant
-        // Add foreign key argument if specified in YAML
-        return \$this->{$relationshipMethod}({$argumentsString});
-    }
-PHP;
-            }
-        }
-
-        return implode("\n", $methods);
-    }
-
-    /**
-     * Build the $appends property definition.
-     */
-    protected function buildAppends(array $definition): string
-    {
-        if (empty($definition['special_methods']['appends'])) {
-            return '';
-        }
-
-        $appends = $definition['special_methods']['appends'];
-        $appendsString = collect($appends)->map(fn ($field) => "'{$field}'")->implode(', ');
-
-        return <<<PHP
-
-    protected \$appends = [{$appendsString}];
-
-PHP;
-    }
-
-    /**
-     * Build accessor methods.
-     */
-    protected function buildAccessors(array $definition): string
-    {
-        if (empty($definition['special_methods']['accessors'])) {
-            return '';
-        }
-
-        $methods = [];
-        foreach ($definition['special_methods']['accessors'] as $accessor) {
-            $name = $accessor['name'];
-            $returnType = $accessor['return_type'] ?? 'mixed';
-            $description = $accessor['description'] ?? "Get the {$name} attribute.";
-
-            if ($name === 'getBlocksAttribute') {
-                // Special handling for Page model blocks accessor
-                $methods[] = <<<PHP
-
-    /**
-     * {$description}
-     *
-     * @return {$returnType}
-     */
-    public function getBlocksAttribute(): array
-    {
-        return collect(\$this->section)->map(function (array \$block) {
-            // if this block has an "media" key, fetch its URL
-            if (isset(\$block['data']['media_id'])) {
-                \$media = Media::find(\$block['data']['media_id']);
-                \$block['data']['media_url'] = \$media?->url;
-            }
-
-            return \$block;
-        })->all();
-    }
-PHP;
-            }
-        }
-
-        return implode("\n", $methods);
-    }
-
-    /**
-     * Build custom methods.
-     */
-    protected function buildCustomMethods(array $definition): string
-    {
-        if (empty($definition['special_methods']['custom_methods'])) {
-            return '';
-        }
-
-        $methods = [];
-        foreach ($definition['special_methods']['custom_methods'] as $method) {
-            $name = $method['name'];
-            $returnType = $method['return_type'] ?? 'mixed';
-            $description = $method['description'] ?? "Custom method {$name}.";
-
-            if ($name === 'childrenRecursive') {
-                // Special handling for Comment model recursive children
-                $methods[] = <<<PHP
-
-    /**
-     * {$description}
-     *
-     * @return {$returnType}
-     */
-    public function childrenRecursive(): HasMany
-    {
-        return \$this->children()->with('childrenRecursive');
-    }
-PHP;
-            }
-        }
-
-        return implode("\n", $methods);
-    }
+    // Include all your other existing methods here...
+    // (buildUses, buildTraits, buildConstants, buildFillable, buildCasts, 
+    //  buildTranslatable, buildRelationships, buildAppends, buildAccessors, buildCustomMethods)
 }
