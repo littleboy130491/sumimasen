@@ -243,18 +243,68 @@ class SumimasenServiceProvider extends PackageServiceProvider
 
     private function bootPolicies(): void
     {
-        if (class_exists(\Awcodes\Curator\Models\Media::class)) {
+        if (class_exists(\Awcodes\Curator\Models\Media::class) && class_exists(\App\Policies\MediaPolicy::class)) {
             \Illuminate\Support\Facades\Gate::policy(
                 \Awcodes\Curator\Models\Media::class,
                 \App\Policies\MediaPolicy::class
             );
         }
 
-        if (class_exists(\Datlechin\FilamentMenuBuilder\Models\Menu::class)) {
+        if (class_exists(\Datlechin\FilamentMenuBuilder\Models\Menu::class) && class_exists(\App\Policies\MenuPolicy::class)) {
             \Illuminate\Support\Facades\Gate::policy(
                 \Datlechin\FilamentMenuBuilder\Models\Menu::class,
                 \App\Policies\MenuPolicy::class
             );
         }
+
+        if (class_exists(\Littleboy130491\Sumimasen\Models\Category::class) && class_exists(\App\Policies\CategoryPolicy::class)) {
+            \Illuminate\Support\Facades\Gate::policy(
+                \Littleboy130491\Sumimasen\Models\Category::class,
+                \App\Policies\CategoryPolicy::class
+            );
+        }
+
+        if (class_exists(\Littleboy130491\Sumimasen\Models\Comment::class) && class_exists(\App\Policies\CommentPolicy::class)) {
+            \Illuminate\Support\Facades\Gate::policy(
+                \Littleboy130491\Sumimasen\Models\Comment::class,
+                \App\Policies\CommentPolicy::class
+            );
+        }
+
+        if (class_exists(\Littleboy130491\Sumimasen\Models\Component::class) && class_exists(\App\Policies\ComponentPolicy::class)) {
+            \Illuminate\Support\Facades\Gate::policy(
+                \Littleboy130491\Sumimasen\Models\Component::class,
+                \App\Policies\ComponentPolicy::class
+            );
+        }
+
+        if (class_exists(\Littleboy130491\Sumimasen\Models\Page::class) && class_exists(\App\Policies\PagePolicy::class)) {
+            \Illuminate\Support\Facades\Gate::policy(
+                \Littleboy130491\Sumimasen\Models\Page::class,
+                \App\Policies\PagePolicy::class
+            );
+        }
+
+        if (class_exists(\Littleboy130491\Sumimasen\Models\Post::class) && class_exists(\App\Policies\PostPolicy::class)) {
+            \Illuminate\Support\Facades\Gate::policy(
+                \Littleboy130491\Sumimasen\Models\Post::class,
+                \App\Policies\PostPolicy::class
+            );
+        }
+
+        if (class_exists(\Littleboy130491\Sumimasen\Models\Submission::class) && class_exists(\App\Policies\SubmissionPolicy::class)) {
+            \Illuminate\Support\Facades\Gate::policy(
+                \Littleboy130491\Sumimasen\Models\Submission::class,
+                \App\Policies\SubmissionPolicy::class
+            );
+        }
+
+        if (class_exists(\Littleboy130491\Sumimasen\Models\Tag::class) && class_exists(\App\Policies\TagPolicy::class)) {
+            \Illuminate\Support\Facades\Gate::policy(
+                \Littleboy130491\Sumimasen\Models\Tag::class,
+                \App\Policies\TagPolicy::class
+            );
+        }        
+       
     }
 }
