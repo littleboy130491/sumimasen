@@ -31,66 +31,115 @@ use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
 abstract class BaseResource extends Resource
 {
     protected static ?string $recordTitleAttribute = 'title';
+    
+    protected static function isTranslatable(): bool
+    {
+        return config('cms.multilanguage_enabled', false);
+    }
 
     public static function form(Form $form): Form
     {
-
         return $form
             ->schema([
-                ...static::formSchema(),
-                ...static::formCustomFields(),
-                ...static::formSeoSection(),
+                ...static::getTopSection(),
+                ...static::getBottomSection(),
             ])
-            ->columns(1); // Main form now has 1 column as Translate takes full width
+            ->columns(1);
     }
 
-    protected static function formSchema(): array
+    protected static function getTopSection(): array
     {
-
         return [
             Grid::make()
                 ->columns([
-                    'sm' => 3,
-                    'xl' => 4,
-                    '2xl' => 4,
+                    'sm' => 1,
+                    'md' => 2,
+                    'lg' => 3,
+                    'xl' => 3,
                 ])
                 ->schema([
-                    Translate::make()
-                        ->columnSpanFull()
-                        ->schema(function (string $locale): array {
-                            return [
-                                ...static::formTitleSlugFields($locale),
-                                ...static::formContentFields($locale),
-                                ...static::formSectionField($locale),
-                            ];
-                        })
-                        ->columnSpan([
-                            'sm' => 2,
-                            'xl' => 3,
-                            '2xl' => 3,
-                        ]),
-                    // Section for non-translatable fields and relationships
-                    Section::make()
+                    // Top Left Section
+                    Section::make('Content')
                         ->schema([
-                            ...static::formFeaturedImageField(),
-                            ...static::formRelationshipsFields(),
-                            ...static::formAuthorRelationshipField(),
-                            ...static::formStatusField(),
-                            ...static::formTemplateField(),
-                            ...static::formFeaturedField(),
-                            ...static::formPublishedDateField(),
-                            ...static::formMenuOrderField(),
-
+                            ...static::getTopLeftFields(),
                         ])
                         ->columnSpan([
                             'sm' => 1,
+                            'md' => 1,
+                            'lg' => 2,
+                            'xl' => 2,
+                        ]),
+                    
+                    // Top Right Section  
+                    Section::make('Settings')
+                        ->schema([
+                            ...static::getTopRightFields(),
+                        ])
+                        ->columnSpan([
+                            'sm' => 1,
+                            'md' => 1,
+                            'lg' => 1,
                             'xl' => 1,
-                            '2xl' => 1,
                         ]),
                 ]),
-
         ];
+    }
 
+    protected static function getTopLeftFields(): array
+    {
+        return [
+            ...static::formTranslatableWrapper([
+                ...static::formTitleSlugFields(),
+                ...static::formContentFields(),
+                ...static::formSectionField(),
+            ]),
+        ];
+    }
+
+    protected static function getTopRightFields(): array
+    {
+        return [
+            ...static::formFeaturedImageField(),
+            ...static::formRelationshipsFields(),
+            ...static::formAuthorRelationshipField(),
+            ...static::formStatusField(),
+            ...static::formTemplateField(),
+            ...static::formFeaturedField(),
+            ...static::formPublishedDateField(),
+            ...static::formMenuOrderField(),
+        ];
+    }
+
+    protected static function getBottomSection(): array
+    {
+        return [
+            ...static::formCustomFieldsSection(),
+            ...static::formSeoSection(),
+        ];
+    }
+
+    protected static function formTranslatableWrapper(array $fields): array
+    {
+        // Flatten the fields array first
+        $flattenedFields = [];
+        foreach ($fields as $field) {
+            if (is_array($field)) {
+                $flattenedFields = array_merge($flattenedFields, $field);
+            } else {
+                $flattenedFields[] = $field;
+            }
+        }
+        
+        if (!static::isTranslatable()) {
+            return $flattenedFields;
+        }
+        
+        return [
+            Translate::make()
+                ->schema(function (string $locale) use ($flattenedFields): array {
+                    return $flattenedFields;
+                }),
+        ];
     }
 
     protected static function modelStatusOptions(): array
@@ -98,56 +147,75 @@ abstract class BaseResource extends Resource
         return ContentStatus::class::all();
     }
 
-    protected static function formTitleSlugFields(string $locale, string $tableName = ''): array
+    protected static function modelHasColumn(string $column): bool
     {
-        $defaultLocale = config('cms.default_language', 'en'); // Default fallback
+        $model = app(static::$model);
+        return in_array($column, $model->getFillable()) || 
+               array_key_exists($column, $model->getCasts()) ||
+               $model->hasAttribute($column);
+    }
 
-        if ($tableName === '') {
-            $tableName = app(static::$model)->getTable();
+    protected static function modelHasColumns(array $columns): bool
+    {
+        foreach ($columns as $column) {
+            if (!static::modelHasColumn($column)) {
+                return false;
+            }
         }
+        return true;
+    }
 
-        return [
-            TextInput::make('title')
+    protected static function formTitleSlugFields(): array
+    {
+        $fields = [];
+        
+        if (static::modelHasColumn('title')) {
+            $fields[] = TextInput::make('title')
                 ->live(onBlur: true)
-                ->afterStateUpdated(function (Set $set, Get $get, ?string $state, string $operation) use ($locale) {
-
-                    if ($operation === 'edit' && ! empty($get('slug.'.$locale))) {
+                ->afterStateUpdated(function (Set $set, Get $get, ?string $state, string $operation) {
+                    if ($operation === 'edit' && !empty($get('slug'))) {
                         return;
                     }
-
-                    $set('slug.'.$locale, $state ? Str::slug($state) : null);
+                    $set('slug', $state ? Str::slug($state) : null);
                 })
-                ->required($locale === $defaultLocale),
-            TextInput::make('slug')
+                ->required();
+        }
+        
+        if (static::modelHasColumn('slug')) {
+            $tableName = app(static::$model)->getTable();
+            $fields[] = TextInput::make('slug')
                 ->maxLength(255)
                 ->rules(function (Get $get) use ($tableName): array {
-
                     return [
                         UTR::for($tableName, 'slug')
                             ->ignore($get('id')),
                         'alpha_dash',
                     ];
                 })
-                ->required($locale === $defaultLocale),
-        ];
+                ->required();
+        }
+        
+        return $fields;
     }
 
-    protected static function formContentFields(string $locale): array
+    protected static function formContentFields(): array
     {
-
         return [];
     }
 
-    protected static function formSectionField(string $locale): array
+    protected static function formSectionField(): array
     {
-
         return [];
     }
 
-    protected static function formCustomFields(): array
+    protected static function formCustomFieldsSection(): array
     {
+        if (!static::modelHasColumn('custom_fields')) {
+            return [];
+        }
+        
         return [
-            Section::make()
+            Section::make('Custom Fields')
                 ->schema([
                     KeyValue::make('custom_fields')
                         ->nullable(),
@@ -158,6 +226,10 @@ abstract class BaseResource extends Resource
 
     protected static function formFeaturedImageField(): array
     {
+        if (!static::modelHasColumn('featured_image')) {
+            return [];
+        }
+        
         return [
             CuratorPicker::make('featured_image')
                 ->relationship('featuredImage', 'id')
@@ -183,7 +255,8 @@ abstract class BaseResource extends Resource
                         ->columnSpanFull()
                         ->schema(function (string $locale) use ($taxonomy): array {
                             return [
-                                ...static::formTitleSlugFields($locale, $taxonomy),
+                                TextInput::make('title')->required(),
+                                TextInput::make('slug')->required(),
                             ];
                         }),
                 ]),
@@ -192,6 +265,10 @@ abstract class BaseResource extends Resource
 
     protected static function formParentRelationshipField(): array
     {
+        if (!static::modelHasColumn('parent_id')) {
+            return [];
+        }
+        
         return [
             Select::make('parent_id')
                 ->relationship('parent', 'title', ignoreRecord: true),
@@ -200,6 +277,10 @@ abstract class BaseResource extends Resource
 
     protected static function formAuthorRelationshipField(): array
     {
+        if (!static::modelHasColumn('author_id')) {
+            return [];
+        }
+        
         return [
             Select::make('author_id')
                 ->relationship('author', 'name')
@@ -212,6 +293,10 @@ abstract class BaseResource extends Resource
 
     protected static function formStatusField(): array
     {
+        if (!static::modelHasColumn('status')) {
+            return [];
+        }
+        
         return [
             Select::make('status')
                 ->enum(ContentStatus::class)
@@ -223,8 +308,11 @@ abstract class BaseResource extends Resource
 
     protected static function formTemplateField(): array
     {
+        if (!static::modelHasColumn('template')) {
+            return [];
+        }
+        
         $subPath = '';
-
         return static::getTemplateOptions($subPath);
     }
 
@@ -298,7 +386,10 @@ abstract class BaseResource extends Resource
 
     protected static function formFeaturedField(): array
     {
-
+        if (!static::modelHasColumn('featured')) {
+            return [];
+        }
+        
         return [
             Toggle::make('featured')
                 ->default(false),
@@ -307,7 +398,10 @@ abstract class BaseResource extends Resource
 
     protected static function formPublishedDateField(): array
     {
-
+        if (!static::modelHasColumn('published_at')) {
+            return [];
+        }
+        
         return [
             DateTimePicker::make('published_at')
                 ->nullable(),
@@ -316,9 +410,12 @@ abstract class BaseResource extends Resource
 
     protected static function formMenuOrderField(): array
     {
-
+        if (!static::modelHasColumn('menu_order')) {
+            return [];
+        }
+        
         return [
-            TextInput::make('menu_order') // Common menu order field
+            TextInput::make('menu_order')
                 ->numeric()
                 ->default(0),
         ];

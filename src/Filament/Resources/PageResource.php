@@ -20,8 +20,12 @@ class PageResource extends BaseContentResource
 
     protected static ?int $navigationSort = 0;
 
-    protected static function formSectionField(string $locale): array
+    protected static function formSectionField(): array
     {
+        if (!static::modelHasColumn('section')) {
+            return [];
+        }
+        
         return [
             FormsBuilder::make('section')
                 ->collapsed(false)
