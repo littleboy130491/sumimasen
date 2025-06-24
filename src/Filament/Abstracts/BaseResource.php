@@ -61,7 +61,15 @@ abstract class BaseResource extends Resource
                     // Top Left Section
                     Section::make('Content')
                         ->schema([
-                            ...static::getTopLeftFields(),
+                            Translate::make()
+                                ->locales(static::isTranslatable() ? $locales : [config('cms.default_language')])
+                                ->schema(function (string $locale): array {
+                                    return [
+                                        ...static::formTitleSlugFields(),
+                                        ...static::formContentFields(),
+                                        ...static::formSectionField(),
+                                    ];
+                                }),
                         ])
                         ->columnSpan([
                             'sm' => 1,
@@ -87,31 +95,12 @@ abstract class BaseResource extends Resource
 
     protected static function getTopLeftFields(): array
     {
-        $fields = [
-            ...static::formTitleSlugFields(),
-            ...static::formContentFields(),
-            ...static::formSectionField(),
-        ];
-
-        // Flatten the fields array first
-        $flattenedFields = [];
-        foreach ($fields as $field) {
-            if (is_array($field)) {
-                $flattenedFields = array_merge($flattenedFields, $field);
-            } else {
-                $flattenedFields[] = $field;
-            }
-        }
-
-        if (!static::isTranslatable()) {
-            return $flattenedFields;
-        }
-
         return [
-            Translate::make()
-                ->schema(function (string $locale) use ($flattenedFields): array {
-                    return $flattenedFields;
-                }),
+            ...static::formTranslatableWrapper([
+                ...static::formTitleSlugFields(),
+                ...static::formContentFields(),
+                ...static::formSectionField(),
+            ]),
         ];
     }
 
@@ -184,7 +173,7 @@ abstract class BaseResource extends Resource
         return true;
     }
 
-    protected static function formTitleSlugFields(): array
+    protected static function formTitleSlugFields(string $tableName = ''): array
     {
         $fields = [];
         
@@ -201,7 +190,9 @@ abstract class BaseResource extends Resource
         }
         
         if (static::modelHasColumn('slug')) {
-            $tableName = app(static::$model)->getTable();
+            if ($tableName === '') {
+                $tableName = app(static::$model)->getTable();
+            }
             $fields[] = TextInput::make('slug')
                 ->maxLength(255)
                 ->rules(function (Get $get) use ($tableName): array {
@@ -274,8 +265,7 @@ abstract class BaseResource extends Resource
                         ->columnSpanFull()
                         ->schema(function (string $locale) use ($taxonomy): array {
                             return [
-                                TextInput::make('title')->required(),
-                                TextInput::make('slug')->required(),
+                                ...static::formTitleSlugFields($taxonomy)
                             ];
                         }),
                 ]),
