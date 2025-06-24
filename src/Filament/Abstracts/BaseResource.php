@@ -155,12 +155,15 @@ abstract class BaseResource extends Resource
         return ContentStatus::class::all();
     }
 
-    protected static function modelHasColumn(string $column): bool
+    protected static function modelHasColumn(string $column , string $modelClass = ''): bool
     {
-        $model = app(static::$model);
-        return in_array($column, $model->getFillable()) || 
-               array_key_exists($column, $model->getCasts()) ||
-               $model->hasAttribute($column);
+        if ($modelClass === '') {
+            $modelClass = app(static::$model);
+        }
+       
+        return in_array($column, $modelClass->getFillable()) || 
+               array_key_exists($column, $modelClass->getCasts()) ||
+               $modelClass->hasAttribute($column);
     }
 
     protected static function modelHasColumns(array $columns): bool
@@ -173,11 +176,19 @@ abstract class BaseResource extends Resource
         return true;
     }
 
-    protected static function formTitleSlugFields(string $tableName = ''): array
+    protected static function formTitleSlugFields(string $tableName = '', string $modelClass = ''): array
     {
         $fields = [];
+
+        if ($tableName === '') {
+            if ($modelClass) {
+                $tableName = $modelClass->getTable();
+            } else {
+                $tableName = app(static::$model)->getTable();
+            }
+        }
         
-        if (static::modelHasColumn('title')) {
+        if (static::modelHasColumn('title', $model)) {
             $fields[] = TextInput::make('title')
                 ->live(onBlur: true)
                 ->afterStateUpdated(function (Set $set, Get $get, ?string $state, string $operation) {
@@ -189,10 +200,7 @@ abstract class BaseResource extends Resource
                 ->required();
         }
         
-        if (static::modelHasColumn('slug')) {
-            if ($tableName === '') {
-                $tableName = app(static::$model)->getTable();
-            }
+        if (static::modelHasColumn('slug', $model)) {
             $fields[] = TextInput::make('slug')
                 ->maxLength(255)
                 ->rules(function (Get $get) use ($tableName): array {
@@ -252,23 +260,30 @@ abstract class BaseResource extends Resource
         return [];
     }
 
-    protected static function formTaxonomyRelationshipField(string $taxonomy): array
+    protected static function formTaxonomyRelationshipField(string $taxonomy, string $tableName = ''): array
     {
+        if ($tableName === '') {
+            $tableName = $taxonomy;
+        }
+
         return [
             Select::make($taxonomy)
                 ->relationship($taxonomy, 'title')
                 ->multiple()
                 ->searchable()
                 ->preload()
-                ->createOptionForm([
-                    Translate::make()
-                        ->columnSpanFull()
-                        ->schema(function (string $locale) use ($taxonomy): array {
-                            return [
-                                ...static::formTitleSlugFields($taxonomy)
-                            ];
-                        }),
-                ]),
+                ->createOptionForm(function ($form) {
+                    $modelClass = $form->getModel();
+                    return [
+                        Translate::make()
+                            ->columnSpanFull()
+                            ->schema(function (string $locale) use ($tableName): array {
+                                return [
+                                    ...static::formTitleSlugFields($tableName, $modelClass)
+                                ];
+                            }),
+                        ];
+                }),
         ];
     }
 
