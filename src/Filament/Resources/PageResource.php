@@ -22,10 +22,10 @@ class PageResource extends BaseContentResource
 
     protected static function formSectionField(): array
     {
-        if (!static::modelHasColumn('section')) {
+        if (! static::modelHasColumn('section')) {
             return [];
         }
-        
+
         return [
             FormsBuilder::make('section')
                 ->collapsed(false)

@@ -10,27 +10,28 @@ abstract class BaseContentResource extends BaseResource
     protected static function formContentFields(): array
     {
         $fields = [];
-        
+
         if (static::modelHasColumn('content')) {
             $fields[] = RichEditor::make('content')
                 ->nullable();
         }
-        
+
         if (static::modelHasColumn('excerpt')) {
             $fields[] = Textarea::make('excerpt')
                 ->nullable();
         }
-        
+
         return $fields;
     }
 
     protected static function formTemplateField(): array
     {
-        if (!static::modelHasColumn('template')) {
+        if (! static::modelHasColumn('template')) {
             return [];
         }
-        
+
         $subPath = '';
+
         return static::getTemplateOptions($subPath);
     }
 

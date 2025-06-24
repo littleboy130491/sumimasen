@@ -8,10 +8,10 @@ abstract class BaseTaxonomyResource extends BaseResource
 {
     protected static function formContentFields(): array
     {
-        if (!static::modelHasColumn('content')) {
+        if (! static::modelHasColumn('content')) {
             return [];
         }
-        
+
         return [
             RichEditor::make('content')
                 ->nullable(),
@@ -27,11 +27,12 @@ abstract class BaseTaxonomyResource extends BaseResource
 
     protected static function formTemplateField(): array
     {
-        if (!static::modelHasColumn('template')) {
+        if (! static::modelHasColumn('template')) {
             return [];
         }
-        
+
         $subPath = 'archives';
+
         return static::getTemplateOptions($subPath);
     }
 

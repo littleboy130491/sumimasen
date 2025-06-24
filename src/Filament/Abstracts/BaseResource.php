@@ -31,7 +31,7 @@ use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
 abstract class BaseResource extends Resource
 {
     protected static ?string $recordTitleAttribute = 'title';
-    
+
     protected static function isTranslatable(): bool
     {
         return config('cms.multilanguage_enabled', false);
@@ -77,8 +77,8 @@ abstract class BaseResource extends Resource
                             'lg' => 2,
                             'xl' => 2,
                         ]),
-                    
-                    // Top Right Section  
+
+                    // Top Right Section
                     Section::make('Settings')
                         ->schema([
                             ...static::getTopRightFields(),
@@ -137,11 +137,11 @@ abstract class BaseResource extends Resource
                 $flattenedFields[] = $field;
             }
         }
-        
-        if (!static::isTranslatable()) {
+
+        if (! static::isTranslatable()) {
             return $flattenedFields;
         }
-        
+
         return [
             Translate::make()
                 ->schema(function (string $locale) use ($flattenedFields): array {
@@ -155,13 +155,13 @@ abstract class BaseResource extends Resource
         return ContentStatus::class::all();
     }
 
-    protected static function modelHasColumn(string $column , string $modelClass = ''): bool
+    protected static function modelHasColumn(string $column, string $modelClass = ''): bool
     {
         if ($modelClass === '') {
             $modelClass = app(static::$model);
         }
-       
-        return in_array($column, $modelClass->getFillable()) || 
+
+        return in_array($column, $modelClass->getFillable()) ||
                array_key_exists($column, $modelClass->getCasts()) ||
                $modelClass->hasAttribute($column);
     }
@@ -169,10 +169,11 @@ abstract class BaseResource extends Resource
     protected static function modelHasColumns(array $columns): bool
     {
         foreach ($columns as $column) {
-            if (!static::modelHasColumn($column)) {
+            if (! static::modelHasColumn($column)) {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -187,19 +188,19 @@ abstract class BaseResource extends Resource
                 $tableName = app(static::$model)->getTable();
             }
         }
-        
+
         if (static::modelHasColumn('title', $model)) {
             $fields[] = TextInput::make('title')
                 ->live(onBlur: true)
                 ->afterStateUpdated(function (Set $set, Get $get, ?string $state, string $operation) {
-                    if ($operation === 'edit' && !empty($get('slug'))) {
+                    if ($operation === 'edit' && ! empty($get('slug'))) {
                         return;
                     }
                     $set('slug', $state ? Str::slug($state) : null);
                 })
                 ->required();
         }
-        
+
         if (static::modelHasColumn('slug', $model)) {
             $fields[] = TextInput::make('slug')
                 ->maxLength(255)
@@ -212,7 +213,7 @@ abstract class BaseResource extends Resource
                 })
                 ->required();
         }
-        
+
         return $fields;
     }
 
@@ -228,10 +229,10 @@ abstract class BaseResource extends Resource
 
     protected static function formCustomFieldsSection(): array
     {
-        if (!static::modelHasColumn('custom_fields')) {
+        if (! static::modelHasColumn('custom_fields')) {
             return [];
         }
-        
+
         return [
             Section::make('Custom Fields')
                 ->schema([
@@ -244,10 +245,10 @@ abstract class BaseResource extends Resource
 
     protected static function formFeaturedImageField(): array
     {
-        if (!static::modelHasColumn('featured_image')) {
+        if (! static::modelHasColumn('featured_image')) {
             return [];
         }
-        
+
         return [
             CuratorPicker::make('featured_image')
                 ->relationship('featuredImage', 'id')
@@ -274,25 +275,26 @@ abstract class BaseResource extends Resource
                 ->preload()
                 ->createOptionForm(function ($form) {
                     $modelClass = $form->getModel();
+
                     return [
                         Translate::make()
                             ->columnSpanFull()
                             ->schema(function (string $locale) use ($tableName): array {
                                 return [
-                                    ...static::formTitleSlugFields($tableName, $modelClass)
+                                    ...static::formTitleSlugFields($tableName, $modelClass),
                                 ];
                             }),
-                        ];
+                    ];
                 }),
         ];
     }
 
     protected static function formParentRelationshipField(): array
     {
-        if (!static::modelHasColumn('parent_id')) {
+        if (! static::modelHasColumn('parent_id')) {
             return [];
         }
-        
+
         return [
             Select::make('parent_id')
                 ->relationship('parent', 'title', ignoreRecord: true),
@@ -301,10 +303,10 @@ abstract class BaseResource extends Resource
 
     protected static function formAuthorRelationshipField(): array
     {
-        if (!static::modelHasColumn('author_id')) {
+        if (! static::modelHasColumn('author_id')) {
             return [];
         }
-        
+
         return [
             Select::make('author_id')
                 ->relationship('author', 'name')
@@ -317,10 +319,10 @@ abstract class BaseResource extends Resource
 
     protected static function formStatusField(): array
     {
-        if (!static::modelHasColumn('status')) {
+        if (! static::modelHasColumn('status')) {
             return [];
         }
-        
+
         return [
             Select::make('status')
                 ->enum(ContentStatus::class)
@@ -332,11 +334,12 @@ abstract class BaseResource extends Resource
 
     protected static function formTemplateField(): array
     {
-        if (!static::modelHasColumn('template')) {
+        if (! static::modelHasColumn('template')) {
             return [];
         }
-        
+
         $subPath = '';
+
         return static::getTemplateOptions($subPath);
     }
 
@@ -410,10 +413,10 @@ abstract class BaseResource extends Resource
 
     protected static function formFeaturedField(): array
     {
-        if (!static::modelHasColumn('featured')) {
+        if (! static::modelHasColumn('featured')) {
             return [];
         }
-        
+
         return [
             Toggle::make('featured')
                 ->default(false),
@@ -422,10 +425,10 @@ abstract class BaseResource extends Resource
 
     protected static function formPublishedDateField(): array
     {
-        if (!static::modelHasColumn('published_at')) {
+        if (! static::modelHasColumn('published_at')) {
             return [];
         }
-        
+
         return [
             DateTimePicker::make('published_at')
                 ->nullable(),
@@ -434,10 +437,10 @@ abstract class BaseResource extends Resource
 
     protected static function formMenuOrderField(): array
     {
-        if (!static::modelHasColumn('menu_order')) {
+        if (! static::modelHasColumn('menu_order')) {
             return [];
         }
-        
+
         return [
             TextInput::make('menu_order')
                 ->numeric()
