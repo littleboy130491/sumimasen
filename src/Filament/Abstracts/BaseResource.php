@@ -87,12 +87,31 @@ abstract class BaseResource extends Resource
 
     protected static function getTopLeftFields(): array
     {
+        $fields = [
+            ...static::formTitleSlugFields(),
+            ...static::formContentFields(),
+            ...static::formSectionField(),
+        ];
+
+        // Flatten the fields array first
+        $flattenedFields = [];
+        foreach ($fields as $field) {
+            if (is_array($field)) {
+                $flattenedFields = array_merge($flattenedFields, $field);
+            } else {
+                $flattenedFields[] = $field;
+            }
+        }
+
+        if (!static::isTranslatable()) {
+            return $flattenedFields;
+        }
+
         return [
-            ...static::formTranslatableWrapper([
-                ...static::formTitleSlugFields(),
-                ...static::formContentFields(),
-                ...static::formSectionField(),
-            ]),
+            Translate::make()
+                ->schema(function (string $locale) use ($flattenedFields): array {
+                    return $flattenedFields;
+                }),
         ];
     }
 
