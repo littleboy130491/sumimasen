@@ -27,9 +27,14 @@ use Illuminate\Support\Str;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Filament\Forms\Components\SeoFields;
 use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
+use Littleboy130491\Sumimasen\Filament\Traits\HasContentBlocks;
+use Filament\Forms\Components\Builder as FormsBuilder;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Textarea;
 
 abstract class BaseResource extends Resource
 {
+    use HasContentBlocks;
     protected static ?string $recordTitleAttribute = 'title';
 
     protected static function isTranslatable(): bool
@@ -40,11 +45,18 @@ abstract class BaseResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                ...static::getTopSection(),
-                ...static::getBottomSection(),
-            ])
+            ->schema(static::formSchema())
             ->columns(1);
+    }
+
+    protected static function formSchema(): array
+    {
+        $schema = [
+            ...static::getTopSection(),
+            ...static::getBottomSection(),
+        ];
+
+        return $schema;
     }
 
     protected static function getTopSection(): array
@@ -52,61 +64,48 @@ abstract class BaseResource extends Resource
         return [
             Grid::make()
                 ->columns([
-                    'sm' => 1,
-                    'md' => 2,
-                    'lg' => 3,
-                    'xl' => 3,
+                    'sm' => 3,
+                    'xl' => 4,
+                    '2xl' => 4,
                 ])
                 ->schema([
-                    // Top Left Section
-                    Section::make('Content')
-                        ->schema([
-                            Translate::make()
-                                ->locales(static::isTranslatable() ? $locales : [config('cms.default_language')])
-                                ->schema(function (string $locale): array {
-                                    return [
-                                        ...static::formTitleSlugFields(),
-                                        ...static::formContentFields(),
-                                        ...static::formSectionField(),
-                                    ];
-                                }),
-                        ])
+                    // Top Left Section - Translated Fields
+                    Translate::make()
+                        ->columnSpanFull()
+                        ->schema(function (string $locale): array {
+                            return static::topLeftSchema($locale);
+                        })
                         ->columnSpan([
-                            'sm' => 1,
-                            'md' => 1,
-                            'lg' => 2,
-                            'xl' => 2,
+                            'sm' => 2,
+                            'xl' => 3,
+                            '2xl' => 3,
                         ]),
 
-                    // Top Right Section
-                    Section::make('Settings')
-                        ->schema([
-                            ...static::getTopRightFields(),
-                        ])
+                    // Top Right Section  
+                    Section::make()
+                        ->schema(static::topRightSchema())
                         ->columnSpan([
                             'sm' => 1,
-                            'md' => 1,
-                            'lg' => 1,
                             'xl' => 1,
+                            '2xl' => 1,
                         ]),
                 ]),
         ];
     }
 
-    protected static function getTopLeftFields(): array
+    protected static function topLeftSchema(string $locale): array
     {
-        return [
-            ...static::formTranslatableWrapper([
-                ...static::formTitleSlugFields(),
-                ...static::formContentFields(),
-                ...static::formSectionField(),
-            ]),
+        $schema = [
+            ...static::formTitleSlugFields($locale),
+            ...static::formContentFields($locale),
         ];
+
+        return $schema;
     }
 
-    protected static function getTopRightFields(): array
+    protected static function topRightSchema(): array
     {
-        return [
+        $schema = [
             ...static::formFeaturedImageField(),
             ...static::formRelationshipsFields(),
             ...static::formAuthorRelationshipField(),
@@ -116,136 +115,98 @@ abstract class BaseResource extends Resource
             ...static::formPublishedDateField(),
             ...static::formMenuOrderField(),
         ];
+
+        return $schema;
     }
 
     protected static function getBottomSection(): array
     {
-        return [
-            ...static::formCustomFieldsSection(),
-            ...static::formSeoSection(),
-        ];
-    }
+        $sections = [];
 
-    protected static function formTranslatableWrapper(array $fields): array
-    {
-        // Flatten the fields array first
-        $flattenedFields = [];
-        foreach ($fields as $field) {
-            if (is_array($field)) {
-                $flattenedFields = array_merge($flattenedFields, $field);
-            } else {
-                $flattenedFields[] = $field;
-            }
+        // Custom Fields Section
+        if (static::modelHasColumn('custom_fields')) {
+            $sections[] =
+                Section::make('Custom Fields')
+                    ->schema([
+                        KeyValue::make('custom_fields')
+                            ->nullable(),
+                    ])
+                    ->columns(1);
         }
 
-        if (! static::isTranslatable()) {
-            return $flattenedFields;
-        }
+        // SEO Section
+        $sections[] =
+            Section::make('SEO Settings')
+                ->schema([
+                    SeoFields::make(),
+                ]);
 
-        return [
-            Translate::make()
-                ->schema(function (string $locale) use ($flattenedFields): array {
-                    return $flattenedFields;
-                }),
-        ];
+        return $sections;
+
     }
 
-    protected static function modelStatusOptions(): array
+
+
+    protected static function formTitleSlugFields(string $locale, string $tableName = ''): array
     {
-        return ContentStatus::class::all();
-    }
-
-    protected static function modelHasColumn(string $column, string $modelClass = ''): bool
-    {
-        if ($modelClass === '') {
-            $modelClass = app(static::$model);
-        }
-
-        return in_array($column, $modelClass->getFillable()) ||
-               array_key_exists($column, $modelClass->getCasts()) ||
-               $modelClass->hasAttribute($column);
-    }
-
-    protected static function modelHasColumns(array $columns): bool
-    {
-        foreach ($columns as $column) {
-            if (! static::modelHasColumn($column)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    protected static function formTitleSlugFields(string $tableName = '', string $modelClass = ''): array
-    {
-        $fields = [];
+        $defaultLocale = config('cms.default_language', 'en'); // Default fallback
 
         if ($tableName === '') {
-            if ($modelClass) {
-                $tableName = $modelClass->getTable();
-            } else {
-                $tableName = app(static::$model)->getTable();
-            }
+            $tableName = app(static::$model)->getTable();
         }
 
-        if (static::modelHasColumn('title', $model)) {
-            $fields[] = TextInput::make('title')
+        return [
+            TextInput::make('title')
                 ->live(onBlur: true)
-                ->afterStateUpdated(function (Set $set, Get $get, ?string $state, string $operation) {
-                    if ($operation === 'edit' && ! empty($get('slug'))) {
+                ->afterStateUpdated(function (Set $set, Get $get, ?string $state, string $operation) use ($locale) {
+
+                    if ($operation === 'edit' && !empty($get('slug.' . $locale))) {
                         return;
                     }
-                    $set('slug', $state ? Str::slug($state) : null);
-                })
-                ->required();
-        }
 
-        if (static::modelHasColumn('slug', $model)) {
-            $fields[] = TextInput::make('slug')
+                    $set('slug.' . $locale, $state ? Str::slug($state) : null);
+                })
+                ->required($locale === $defaultLocale),
+            TextInput::make('slug')
                 ->maxLength(255)
                 ->rules(function (Get $get) use ($tableName): array {
+
                     return [
                         UTR::for($tableName, 'slug')
                             ->ignore($get('id')),
                         'alpha_dash',
                     ];
                 })
-                ->required();
+                ->required($locale === $defaultLocale),
+        ];
+    }
+
+    protected static function formContentFields(?string $locale): array
+    {
+        $fields = [];
+
+        if (static::modelHasColumn('content')) {
+            $fields[] = RichEditor::make('content')
+                ->nullable();
+        }
+
+        if (static::modelHasColumn('excerpt')) {
+            $fields[] = Textarea::make('excerpt')
+                ->nullable();
+        }
+
+        if (static::modelHasColumn('section')) {
+            $fields[] = FormsBuilder::make('section')
+                ->collapsed(false)
+                ->blocks(static::getContentBlocks());
         }
 
         return $fields;
     }
 
-    protected static function formContentFields(): array
-    {
-        return [];
-    }
-
-    protected static function formSectionField(): array
-    {
-        return [];
-    }
-
-    protected static function formCustomFieldsSection(): array
-    {
-        if (! static::modelHasColumn('custom_fields')) {
-            return [];
-        }
-
-        return [
-            Section::make('Custom Fields')
-                ->schema([
-                    KeyValue::make('custom_fields')
-                        ->nullable(),
-                ])
-                ->columns(1),
-        ];
-    }
-
     protected static function formFeaturedImageField(): array
     {
-        if (! static::modelHasColumn('featured_image')) {
+        if (!static::modelHasColumn('featured_image')) {
             return [];
         }
 
@@ -258,40 +219,32 @@ abstract class BaseResource extends Resource
 
     protected static function formRelationshipsFields(): array
     {
-        return [];
+        return []; // relationships are handled in the child class
     }
 
-    protected static function formTaxonomyRelationshipField(string $taxonomy, string $tableName = ''): array
+    protected static function formTaxonomyRelationshipField(string $relationship): array
     {
-        if ($tableName === '') {
-            $tableName = $taxonomy;
-        }
-
         return [
-            Select::make($taxonomy)
-                ->relationship($taxonomy, 'title')
+            Select::make($relationship)
+                ->relationship($relationship, 'title')
                 ->multiple()
                 ->searchable()
                 ->preload()
-                ->createOptionForm(function ($form) {
-                    $modelClass = $form->getModel();
-
-                    return [
-                        Translate::make()
-                            ->columnSpanFull()
-                            ->schema(function (string $locale) use ($tableName): array {
-                                return [
-                                    ...static::formTitleSlugFields($tableName, $modelClass),
-                                ];
-                            }),
-                    ];
-                }),
+                ->createOptionForm([
+                    Translate::make()
+                        ->columnSpanFull()
+                        ->schema(function (string $locale) use ($relationship): array {
+                            return [
+                                ...static::formTitleSlugFields($locale, $relationship),
+                            ];
+                        }),
+                ]),
         ];
     }
 
     protected static function formParentRelationshipField(): array
     {
-        if (! static::modelHasColumn('parent_id')) {
+        if (!static::modelHasColumn('parent_id')) {
             return [];
         }
 
@@ -303,7 +256,7 @@ abstract class BaseResource extends Resource
 
     protected static function formAuthorRelationshipField(): array
     {
-        if (! static::modelHasColumn('author_id')) {
+        if (!static::modelHasColumn('author_id')) {
             return [];
         }
 
@@ -313,13 +266,13 @@ abstract class BaseResource extends Resource
                 ->required()
                 ->searchable()
                 ->preload()
-                ->default(fn () => auth()->id()),
+                ->default(fn() => auth()->id()),
         ];
     }
 
     protected static function formStatusField(): array
     {
-        if (! static::modelHasColumn('status')) {
+        if (!static::modelHasColumn('status')) {
             return [];
         }
 
@@ -332,13 +285,11 @@ abstract class BaseResource extends Resource
         ];
     }
 
-    protected static function formTemplateField(): array
+    protected static function formTemplateField(string $subPath = ''): array
     {
-        if (! static::modelHasColumn('template')) {
+        if (!static::modelHasColumn('template')) {
             return [];
         }
-
-        $subPath = '';
 
         return static::getTemplateOptions($subPath);
     }
@@ -363,7 +314,7 @@ abstract class BaseResource extends Resource
                 ->label('Template')
                 ->dehydrateStateUsing(function ($state) use ($subPath) {
                     // $state is the value of the 'template' field just before saving.
-
+        
                     // If the state is already null (meaning "Default System Template" was selected
                     // or it was already null), keep it as null.
                     if ($state === null) {
@@ -394,7 +345,7 @@ abstract class BaseResource extends Resource
     protected static function fetchRawTemplateData(string $subPath = ''): array
     {
         $options = [];
-        $fullPath = 'views/templates/'.($subPath ? ltrim($subPath, '/') : '');
+        $fullPath = 'views/templates/' . ($subPath ? ltrim($subPath, '/') : '');
         $templatesPath = resource_path(rtrim($fullPath, '/'));
 
         if (File::isDirectory($templatesPath)) {
@@ -402,7 +353,7 @@ abstract class BaseResource extends Resource
             foreach ($files as $file) {
                 $filename = $file->getFilenameWithoutExtension();
                 // Ensure filename is not empty and use it as both key and value
-                if (! empty($filename)) {
+                if (!empty($filename)) {
                     $options[$filename] = $filename;
                 }
             }
@@ -413,7 +364,7 @@ abstract class BaseResource extends Resource
 
     protected static function formFeaturedField(): array
     {
-        if (! static::modelHasColumn('featured')) {
+        if (!static::modelHasColumn('featured')) {
             return [];
         }
 
@@ -425,7 +376,7 @@ abstract class BaseResource extends Resource
 
     protected static function formPublishedDateField(): array
     {
-        if (! static::modelHasColumn('published_at')) {
+        if (!static::modelHasColumn('published_at')) {
             return [];
         }
 
@@ -437,7 +388,7 @@ abstract class BaseResource extends Resource
 
     protected static function formMenuOrderField(): array
     {
-        if (! static::modelHasColumn('menu_order')) {
+        if (!static::modelHasColumn('menu_order')) {
             return [];
         }
 
@@ -445,17 +396,6 @@ abstract class BaseResource extends Resource
             TextInput::make('menu_order')
                 ->numeric()
                 ->default(0),
-        ];
-    }
-
-    protected static function formSeoSection(): array
-    {
-
-        return [
-            Section::make('SEO Settings')
-                ->schema([
-                    SeoFields::make(),
-                ]),
         ];
     }
 
@@ -486,76 +426,91 @@ abstract class BaseResource extends Resource
 
     protected static function tableColumns(): array
     {
+        $columns = [];
 
-        return [
-            TextColumn::make('title')
-                ->searchable(['title', 'content'])
-                ->sortable()
-                ->limit(50),
-            TextColumn::make('slug')
-                ->limit(50),
-            ...static::tableFeaturedColumn(),
-            ...static::tableStatusColumn(),
-            ...static::tableAuthorColumn(),
-            ...static::tableDateColumns(),
-            TextColumn::make('menu_order')
-                ->label('Order')
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
-        ];
-    }
+        if (static::modelHasColumn('title')) {
+            $columns[] =
+                TextColumn::make('title')
+                    ->searchable(['title', 'content'])
+                    ->sortable()
+                    ->limit(50);
+        }
 
-    protected static function tableFeaturedColumn(): array
-    {
-        return [
-            ToggleColumn::make('featured'),
-        ];
-    }
+        if (static::modelHasColumn('slug')) {
+            $columns[] =
+                TextColumn::make('slug')
+                    ->limit(50);
+        }
 
-    protected static function tableStatusColumn(): array
-    {
-        return [
-            TextColumn::make('status')
-                ->badge()
-                ->sortable(),
-        ];
-    }
+        if (static::modelHasColumn('featured')) {
+            $columns[] =
+                ToggleColumn::make('featured');
+        }
 
-    protected static function tableAuthorColumn(): array
-    {
-        return [
-            TextColumn::make('author.name')
-                ->sortable()
-                ->searchable(),
-        ];
+        if (static::modelHasColumn('status')) {
+            $columns[] =
+                TextColumn::make('status')
+                    ->badge()
+                    ->sortable();
+        }
+
+        if (static::modelHasRelationship('author')) {
+            $columns[] =
+                TextColumn::make('author.name')
+                    ->sortable()
+                    ->searchable();
+        }
+
+        $columns = [...$columns, ...static::tableDateColumns()];
+
+        if (static::modelHasColumn('menu_order')) {
+            $columns[] =
+                TextColumn::make('menu_order')
+                    ->label('Order')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true);
+        }
+
+        return $columns;
+
     }
 
     protected static function tableDateColumns(): array
     {
-        return [
-            ...static::tablePublishedAtColumn(),
-            TextColumn::make('created_at')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
-            TextColumn::make('updated_at')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
-            TextColumn::make('deleted_at')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
-        ];
-    }
+        $columns = [];
 
-    protected static function tablePublishedAtColumn(): array
-    {
-        return [
-            TextColumn::make('published_at')
-                ->dateTime()
-                ->sortable(),
-        ];
+        if (static::modelHasColumn('published_at')) {
+            $columns[] =
+                TextColumn::make('published_at')
+                    ->dateTime()
+                    ->sortable();
+        }
+
+        if (static::modelHasColumn('created_at')) {
+            $columns[] =
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true);
+        }
+
+        if (static::modelHasColumn('updated_at')) {
+            $columns[] =
+                TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true);
+        }
+
+        if (static::modelHasColumn('deleted_at')) {
+            $columns[] =
+                TextColumn::make('deleted_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true);
+        }
+
+        return $columns;
     }
 
     protected static function tableFilters(): array
@@ -573,43 +528,7 @@ abstract class BaseResource extends Resource
             Tables\Actions\Action::make('replicate')
                 ->icon('heroicon-o-document-duplicate')
                 ->action(function (\Filament\Tables\Actions\Action $action, \Illuminate\Database\Eloquent\Model $record, \Livewire\Component $livewire) {
-                    $newRecord = $record->replicate();
-
-                    // Handle multilingual slug uniqueness
-                    $originalSlugs = $newRecord->getTranslations('slug');
-                    $newSlugs = [];
-                    $locales = array_keys(config('cms.language_available')); // Get locales from app config
-
-                    foreach ($locales as $locale) {
-
-                        $originalSlug = Arr::get($originalSlugs, $locale);
-                        if ($originalSlug) {
-                            $count = 1;
-                            $newSlug = $originalSlug;
-                            // Check for uniqueness across all translations of the slug field
-                            $modelClass = static::getModel();
-                            while ($modelClass::whereJsonContains('slug->'.$locale, $newSlug)->exists()) {
-                                $newSlug = $originalSlug.'-copy-'.$count++;
-                            }
-                            $newSlugs[$locale] = $newSlug;
-                        } else {
-                            $newSlugs[$locale] = null; // Or handle as needed for missing translations
-                        }
-                    }
-                    $newRecord->setTranslations('slug', $newSlugs);
-
-                    // Check if the record has a 'status' attribute and set it to 'Draft'
-                    if (array_key_exists('status', $newRecord->getAttributes()) || $newRecord->isFillable('status')) {
-                        $newRecord->status = ContentStatus::Draft;
-                    }
-
-                    // Check if the record has a 'published_at' attribute and set it to null
-                    if (array_key_exists('published_at', $newRecord->getAttributes()) || $newRecord->isFillable('published_at')) {
-                        $newRecord->published_at = null;
-                    }
-
-                    $newRecord->save();
-
+                    $newRecord = static::duplicateRecord($record);
                     $livewire->redirect(static::getUrl('index', ['record' => $newRecord]));
                 }),
             Tables\Actions\DeleteAction::make(),
@@ -635,19 +554,34 @@ abstract class BaseResource extends Resource
     {
         return [
             Tables\Actions\BulkAction::make('edit')
-                ->form([
-                    Select::make('status')
-                        ->enum(ContentStatus::class)
-                        ->options(ContentStatus::class)
-                        ->nullable(),
-                    Select::make('author_id')
-                        ->relationship('author', 'name')
-                        ->searchable()
-                        ->preload()
-                        ->nullable(),
-                    DateTimePicker::make('published_at')
-                        ->nullable(),
-                ])
+                ->form(function () {
+                    $fields = [];
+
+                    if (static::modelHasColumn('status')) {
+                        $fields[] =
+                            Select::make('status')
+                                ->enum(ContentStatus::class)
+                                ->options(ContentStatus::class)
+                                ->nullable();
+                    }
+
+                    if (static::modelHasColumn('author_id')) {
+                        $fields[] =
+                            Select::make('author_id')
+                                ->relationship('author', 'name')
+                                ->searchable()
+                                ->preload()
+                                ->nullable();
+                    }
+
+                    if (static::modelHasColumn('published_at')) {
+                        $fields[] =
+                            DateTimePicker::make('published_at')
+                                ->nullable();
+                    }
+
+                    return $fields;
+                })
                 ->action(function (\Illuminate\Support\Collection $records, array $data) {
                     $records->each(function (\Illuminate\Database\Eloquent\Model $record) use ($data) {
                         $updateData = [];
@@ -687,5 +621,141 @@ abstract class BaseResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    // Helper methods
+
+    // Check if the model has a specific column
+    protected static function modelHasColumn(string $column): bool
+    {
+        $modelClass = app(static::$model);
+
+        return in_array($column, $modelClass->getFillable()) ||
+            array_key_exists($column, $modelClass->getCasts()) ||
+            $modelClass->hasAttribute($column);
+    }
+
+    // Check if the model has a specific relationship
+    protected static function modelHasRelationship(string $relationship): bool
+    {
+        $modelClass = app(static::$model);
+
+        // Check if the method exists on the model
+        if (!method_exists($modelClass, $relationship)) {
+            return false;
+        }
+
+        try {
+            // Call the relationship method and check if it returns a Relation instance
+            $result = $modelClass->{$relationship}();
+
+            return $result instanceof \Illuminate\Database\Eloquent\Relations\Relation;
+        } catch (\Exception $e) {
+            // If calling the method throws an exception, it's likely not a relationship
+            return false;
+        }
+    }
+
+    /**
+     * Replicate actions for table records
+     */
+    protected static function duplicateRecord(\Illuminate\Database\Eloquent\Model $record): \Illuminate\Database\Eloquent\Model
+    {
+        $newRecord = $record->replicate();
+
+        static::handleMultilingualSlugs($record, $newRecord);
+        static::resetDraftStatus($newRecord);
+
+        $newRecord->save();
+
+        static::replicateRelationships($record, $newRecord);
+
+        return $newRecord;
+    }
+
+    protected static function handleMultilingualSlugs(\Illuminate\Database\Eloquent\Model $record, \Illuminate\Database\Eloquent\Model $newRecord): void
+    {
+        $originalSlugs = $newRecord->getTranslations('slug');
+        $newSlugs = [];
+        $locales = static::getAvailableLocales();
+
+        foreach ($locales as $locale) {
+            $originalSlug = Arr::get($originalSlugs, $locale);
+            $newSlugs[$locale] = $originalSlug ? static::generateUniqueSlug($originalSlug, $locale) : null;
+        }
+
+        $newRecord->setTranslations('slug', $newSlugs);
+    }
+
+    protected static function generateUniqueSlug(string $originalSlug, string $locale): string
+    {
+        $count = 1;
+        $newSlug = $originalSlug;
+        $modelClass = static::getModel();
+
+        while ($modelClass::whereJsonContains("slug->{$locale}", $newSlug)->exists()) {
+            $newSlug = "{$originalSlug}-copy-{$count}";
+            $count++;
+        }
+
+        return $newSlug;
+    }
+
+    protected static function resetDraftStatus(\Illuminate\Database\Eloquent\Model $newRecord): void
+    {
+        // Set status to Draft if the field exists
+        if (static::hasAttribute($newRecord, 'status')) {
+            $newRecord->status = ContentStatus::Draft;
+        }
+
+        // Clear published_at if the field exists
+        if (static::hasAttribute($newRecord, 'published_at')) {
+            $newRecord->published_at = null;
+        }
+    }
+
+    protected static function hasAttribute(\Illuminate\Database\Eloquent\Model $model, string $attribute): bool
+    {
+        return array_key_exists($attribute, $model->getAttributes()) || $model->isFillable($attribute);
+    }
+
+    protected static function getAvailableLocales(): array
+    {
+        return array_keys(config('cms.language_available'));
+    }
+
+    /**
+     * Replicate many-to-many and other relationships
+     */
+
+    protected static function getRelationshipsToReplicate(): array
+    {
+        return ['categories', 'tags']; // Default relationships
+    }
+
+    protected static function replicateRelationships(\Illuminate\Database\Eloquent\Model $original, \Illuminate\Database\Eloquent\Model $replica): void
+    {
+
+        $relationshipsToReplicate = static::getRelationshipsToReplicate();
+
+        foreach ($relationshipsToReplicate as $relationshipName) {
+            if (static::modelHasRelationship($relationshipName)) {
+                try {
+                    $relationship = $original->{$relationshipName}();
+
+                    // Handle BelongsToMany relationships
+                    if ($relationship instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+                        $relatedIds = $original->{$relationshipName}()->pluck($relationship->getRelatedKeyName())->toArray();
+                        if (!empty($relatedIds)) {
+                            $replica->{$relationshipName}()->attach($relatedIds);
+                        }
+                    }
+
+                } catch (\Exception $e) {
+                    // Log the error or handle it gracefully
+                    \Log::warning("Failed to replicate relationship '{$relationshipName}': " . $e->getMessage());
+                }
+            }
+        }
     }
 }
