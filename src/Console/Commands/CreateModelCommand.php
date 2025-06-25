@@ -216,8 +216,12 @@ PHP;
         // Add specific imports based on fields
         if (! empty($definition['fields'])) {
             foreach ($definition['fields'] as $fieldName => $fieldDef) {
-                // Add ContentStatus enum import for status fields
-                if ($fieldName === 'status') {
+                // Handle enum class imports
+                if (isset($fieldDef['enum_class']) && !empty($fieldDef['enum_class'])) {
+                    // Use the explicitly defined enum class
+                    $uses[] = ltrim($fieldDef['enum_class'], '\\');
+                } elseif ($fieldName === 'status' && strtolower($fieldDef['type'] ?? '') === 'enum') {
+                    // Only add default ContentStatus if no custom enum_class is specified
                     $uses[] = 'Littleboy130491\Sumimasen\Enums\ContentStatus';
                 }
 
@@ -225,11 +229,6 @@ PHP;
                 if ($fieldName === 'featured_image') {
                     $uses[] = 'Awcodes\Curator\Models\Media';
                     $relationshipTypes[] = 'Illuminate\Database\Eloquent\Relations\BelongsTo';
-                }
-
-                // Add custom enum class imports
-                if (isset($fieldDef['enum_class']) && !empty($fieldDef['enum_class'])) {
-                    $uses[] = ltrim($fieldDef['enum_class'], '\\');
                 }
             }
         }
@@ -449,12 +448,13 @@ PHP;
                     break;
                     
                 case 'enum':
-                    // Special handling for status field with ContentStatus enum
-                    if ($fieldName === 'status') {
-                        $casts[$fieldName] = 'ContentStatus::class';
-                    } elseif (! empty($fieldDef['enum_class'])) {
+                    if (! empty($fieldDef['enum_class'])) {
+                        // Use the explicitly defined enum class
                         $enumClass = class_basename($fieldDef['enum_class']);
                         $casts[$fieldName] = "{$enumClass}::class";
+                    } elseif ($fieldName === 'status') {
+                        // Use default ContentStatus for status fields
+                        $casts[$fieldName] = 'ContentStatus::class';
                     } else {
                         $casts[$fieldName] = 'string';
                     }
@@ -462,7 +462,7 @@ PHP;
             }
         }
 
-        // Add common casts
+        // Add common casts only if not already handled above
         $commonCasts = [
             'published_at' => 'datetime',
             'custom_fields' => 'array',
@@ -472,11 +472,7 @@ PHP;
 
         foreach ($commonCasts as $field => $cast) {
             if (isset($definition['fields'][$field]) && !isset($casts[$field])) {
-                if ($field === 'status') {
-                    $casts[$field] = 'ContentStatus::class';
-                } else {
-                    $casts[$field] = $cast;
-                }
+                $casts[$field] = $cast;
             }
         }
 
