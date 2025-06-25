@@ -98,7 +98,7 @@ abstract class BaseResource extends Resource
         $schema = [
             ...static::formTitleSlugFields($locale),
             ...static::formContentFields($locale),
-            ...static::additionalFormFieldsTranslatable($locale), // hook for additional translatable fields
+            ...static::additionalTranslatableFormFields($locale), // hook for additional translatable fields
         ];
 
         return $schema;
@@ -125,9 +125,9 @@ abstract class BaseResource extends Resource
         $sections = [];
 
         // Hook Additional Non-Translatable Fields Section
-        if (!empty(static::additionalFormFieldsNonTranslatable())) {
+        if (!empty(static::additionalNonTranslatableFormFields())) {
             $sections[] = Section::make('Additional Fields')
-                ->schema(static::additionalFormFieldsNonTranslatable())
+                ->schema(static::additionalNonTranslatableFormFields())
                 ->columns(1);
         }
 
@@ -212,13 +212,13 @@ abstract class BaseResource extends Resource
         return $fields;
     }
 
-    protected static function additionalFormFieldsTranslatable(?string $locale): array
+    protected static function additionalTranslatableFormFields(?string $locale): array
     {
     
         return []; // hook for additional translatable fields
     }
 
-    protected static function additionalFormFieldsNonTranslatable(): array
+    protected static function additionalNonTranslatableFormFields(): array
     {
     
         return []; // hook for additional non-translatable fields
