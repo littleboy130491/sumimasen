@@ -98,6 +98,7 @@ abstract class BaseResource extends Resource
         $schema = [
             ...static::formTitleSlugFields($locale),
             ...static::formContentFields($locale),
+            ...static::additionalFormFieldsTranslatable($locale), // hook for additional translatable fields
         ];
 
         return $schema;
@@ -122,6 +123,13 @@ abstract class BaseResource extends Resource
     protected static function getBottomSection(): array
     {
         $sections = [];
+
+        // Hook Additional Non-Translatable Fields Section
+        if (!empty(static::additionalFormFieldsNonTranslatable())) {
+            $sections[] = Section::make('Additional Fields')
+                ->schema(static::additionalFormFieldsNonTranslatable())
+                ->columns(1);
+        }
 
         // Custom Fields Section
         if (static::modelHasColumn('custom_fields')) {
@@ -204,6 +212,18 @@ abstract class BaseResource extends Resource
         return $fields;
     }
 
+    protected static function additionalFormFieldsTranslatable(?string $locale): array
+    {
+    
+        return []; // hook for additional translatable fields
+    }
+
+    protected static function additionalFormFieldsNonTranslatable(): array
+    {
+    
+        return []; // hook for additional non-translatable fields
+    }
+
     protected static function formFeaturedImageField(): array
     {
         if (!static::modelHasColumn('featured_image')) {
@@ -224,6 +244,11 @@ abstract class BaseResource extends Resource
 
     protected static function formTaxonomyRelationshipField(string $relationship): array
     {
+        // Check if the relationship exists on the model
+        if (!static::modelHasRelationship($relationship)) {
+            return [];
+        }
+
         return [
             Select::make($relationship)
                 ->relationship($relationship, 'title')
@@ -461,6 +486,9 @@ abstract class BaseResource extends Resource
                     ->searchable();
         }
 
+        // hook for additional columns
+        $columns = [...$columns, ...static::additionalTableColumns()];
+
         $columns = [...$columns, ...static::tableDateColumns()];
 
         if (static::modelHasColumn('menu_order')) {
@@ -470,6 +498,8 @@ abstract class BaseResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true);
         }
+
+        
 
         return $columns;
 
@@ -511,6 +541,11 @@ abstract class BaseResource extends Resource
         }
 
         return $columns;
+    }
+
+    protected static function additionalTableColumns(): array
+    {
+        return []; // hook for additional columns
     }
 
     protected static function tableFilters(): array
