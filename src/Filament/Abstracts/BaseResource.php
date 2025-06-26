@@ -42,6 +42,11 @@ abstract class BaseResource extends Resource
         return config('cms.multilanguage_enabled', false);
     }
 
+    protected static function hiddenFields(): array
+    {
+        return []; // 'title' and 'slug' should never be hidden
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -132,7 +137,7 @@ abstract class BaseResource extends Resource
         }
 
         // Custom Fields Section
-        if (static::modelHasColumn('custom_fields')) {
+        if (static::modelHasColumn('custom_fields') && !static::isFieldHidden('custom_fields')) {
             $sections[] =
                 Section::make('Custom Fields')
                     ->schema([
@@ -193,18 +198,18 @@ abstract class BaseResource extends Resource
     {
         $fields = [];
 
-        if (static::modelHasColumn('content')) {
+        if (static::modelHasColumn('content') && !static::isFieldHidden('content')) {
             $fields[] = TiptapEditor::make('content')
                 ->profile('simple')
                 ->nullable();
         }
 
-        if (static::modelHasColumn('excerpt')) {
+        if (static::modelHasColumn('excerpt') && !static::isFieldHidden('excerpt')) {
             $fields[] = Textarea::make('excerpt')
                 ->nullable();
         }
 
-        if (static::modelHasColumn('section')) {
+        if (static::modelHasColumn('section') && !static::isFieldHidden('section')) {
             $fields[] = FormsBuilder::make('section')
                 ->collapsed(false)
                 ->blocks(static::getContentBlocks());
@@ -227,7 +232,7 @@ abstract class BaseResource extends Resource
 
     protected static function formFeaturedImageField(): array
     {
-        if (!static::modelHasColumn('featured_image')) {
+        if (!static::modelHasColumn('featured_image') || static::isFieldHidden('featured_image')) {
             return [];
         }
 
@@ -246,7 +251,7 @@ abstract class BaseResource extends Resource
     protected static function formTaxonomyRelationshipField(string $relationship): array
     {
         // Check if the relationship exists on the model
-        if (!static::modelHasRelationship($relationship)) {
+        if (!static::modelHasRelationship($relationship) || static::isFieldHidden($relationship)) {
             return [];
         }
 
@@ -270,7 +275,7 @@ abstract class BaseResource extends Resource
 
     protected static function formParentRelationshipField(): array
     {
-        if (!static::modelHasColumn('parent_id')) {
+        if (!static::modelHasColumn('parent_id') || static::isFieldHidden('parent_id')) {
             return [];
         }
 
@@ -282,7 +287,7 @@ abstract class BaseResource extends Resource
 
     protected static function formAuthorRelationshipField(): array
     {
-        if (!static::modelHasColumn('author_id')) {
+        if (!static::modelHasColumn('author_id') || static::isFieldHidden('author_id')) {
             return [];
         }
 
@@ -298,7 +303,7 @@ abstract class BaseResource extends Resource
 
     protected static function formStatusField(): array
     {
-        if (!static::modelHasColumn('status')) {
+        if (!static::modelHasColumn('status') || static::isFieldHidden('status')) {
             return [];
         }
 
@@ -313,7 +318,7 @@ abstract class BaseResource extends Resource
 
     protected static function formTemplateField(string $subPath = ''): array
     {
-        if (!static::modelHasColumn('template')) {
+        if (!static::modelHasColumn('template') || static::isFieldHidden('template')) {
             return [];
         }
 
@@ -390,7 +395,7 @@ abstract class BaseResource extends Resource
 
     protected static function formFeaturedField(): array
     {
-        if (!static::modelHasColumn('featured')) {
+        if (!static::modelHasColumn('featured') || static::isFieldHidden('featured')) {
             return [];
         }
 
@@ -402,7 +407,7 @@ abstract class BaseResource extends Resource
 
     protected static function formPublishedDateField(): array
     {
-        if (!static::modelHasColumn('published_at')) {
+        if (!static::modelHasColumn('published_at') || static::isFieldHidden('published_at')) {
             return [];
         }
 
@@ -414,7 +419,7 @@ abstract class BaseResource extends Resource
 
     protected static function formMenuOrderField(): array
     {
-        if (!static::modelHasColumn('menu_order')) {
+        if (!static::modelHasColumn('menu_order') || static::isFieldHidden('menu_order')) {
             return [];
         }
 
@@ -468,19 +473,19 @@ abstract class BaseResource extends Resource
                     ->limit(50);
         }
 
-        if (static::modelHasColumn('featured')) {
+        if (static::modelHasColumn('featured') && !static::isFieldHidden('featured')) {
             $columns[] =
                 ToggleColumn::make('featured');
         }
 
-        if (static::modelHasColumn('status')) {
+        if (static::modelHasColumn('status') && !static::isFieldHidden('status')) {
             $columns[] =
                 TextColumn::make('status')
                     ->badge()
                     ->sortable();
         }
 
-        if (static::modelHasRelationship('author')) {
+        if (static::modelHasRelationship('author') && !static::isFieldHidden('author_id')) {
             $columns[] =
                 TextColumn::make('author.name')
                     ->sortable()
@@ -492,7 +497,7 @@ abstract class BaseResource extends Resource
 
         $columns = [...$columns, ...static::tableDateColumns()];
 
-        if (static::modelHasColumn('menu_order')) {
+        if (static::modelHasColumn('menu_order') && !static::isFieldHidden('menu_order')) {
             $columns[] =
                 TextColumn::make('menu_order')
                     ->label('Order')
@@ -510,14 +515,14 @@ abstract class BaseResource extends Resource
     {
         $columns = [];
 
-        if (static::modelHasColumn('published_at')) {
+        if (static::modelHasColumn('published_at') && !static::isFieldHidden('published_at')) {
             $columns[] =
                 TextColumn::make('published_at')
                     ->dateTime()
                     ->sortable();
         }
 
-        if (static::modelHasColumn('created_at')) {
+        if (static::modelHasColumn('created_at') && !static::isFieldHidden('created_at')) {
             $columns[] =
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -525,7 +530,7 @@ abstract class BaseResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true);
         }
 
-        if (static::modelHasColumn('updated_at')) {
+        if (static::modelHasColumn('updated_at') && !static::isFieldHidden('updated_at')) {
             $columns[] =
                 TextColumn::make('updated_at')
                     ->dateTime()
@@ -533,7 +538,7 @@ abstract class BaseResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true);
         }
 
-        if (static::modelHasColumn('deleted_at')) {
+        if (static::modelHasColumn('deleted_at') && !static::isFieldHidden('deleted_at')) {
             $columns[] =
                 TextColumn::make('deleted_at')
                     ->dateTime()
@@ -660,6 +665,14 @@ abstract class BaseResource extends Resource
     }
 
     // Helper methods
+
+     /**
+     * Check if a field should be hidden
+     */
+    protected static function isFieldHidden(string $field): bool
+    {
+        return in_array($field, static::hiddenFields());
+    }
 
     // Check if the model has a specific column
     protected static function modelHasColumn(string $column): bool

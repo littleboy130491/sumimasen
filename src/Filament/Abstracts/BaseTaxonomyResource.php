@@ -7,7 +7,7 @@ abstract class BaseTaxonomyResource extends BaseResource
 
     protected static function formTemplateField(string $subPath = 'archives'): array
     {
-        if (!static::modelHasColumn('template')) {
+        if (!static::modelHasColumn('template') || static::isFieldHidden('template')) {
             return [];
         }
 
