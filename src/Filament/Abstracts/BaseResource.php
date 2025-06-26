@@ -44,7 +44,7 @@ abstract class BaseResource extends Resource
 
     protected static function hiddenFields(): array
     {
-        return []; // 'title' and 'slug' should never be hidden
+        return []; // required fields (ex:'title' and 'slug') should never be hidden
     }
 
     public static function form(Form $form): Form
