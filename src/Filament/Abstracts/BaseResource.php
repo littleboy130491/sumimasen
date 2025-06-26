@@ -29,7 +29,7 @@ use Littleboy130491\Sumimasen\Filament\Forms\Components\SeoFields;
 use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
 use Littleboy130491\Sumimasen\Filament\Traits\HasContentBlocks;
 use Filament\Forms\Components\Builder as FormsBuilder;
-use Filament\Forms\Components\RichEditor;
+use FilamentTiptapEditor\TiptapEditor;
 use Filament\Forms\Components\Textarea;
 
 abstract class BaseResource extends Resource
@@ -194,7 +194,7 @@ abstract class BaseResource extends Resource
         $fields = [];
 
         if (static::modelHasColumn('content')) {
-            $fields[] = RichEditor::make('content')
+            $fields[] = TiptapEditor::make('content')
                 ->nullable();
         }
 

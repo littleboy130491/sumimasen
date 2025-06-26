@@ -18,18 +18,20 @@
     ],
     "require": {
         "php": "^8.2",
-        "littleboy130491/seo-suite": "*",
         "anhskohbo/no-captcha": "^3.7",
         "awcodes/filament-curator": "*",
+        "awcodes/filament-tiptap-editor": "^3.5",
         "bezhansalleh/filament-language-switch": "^3.1",
         "bezhansalleh/filament-shield": "^3.3",
         "codezero/laravel-unique-translation": "^4.3",
         "datlechin/filament-menu-builder": "^0.7.0",
         "filament/filament": "^3.3",
         "filament/spatie-laravel-settings-plugin": "^3.3",
+        "illuminate/contracts": "^10.0||^11.0||^12.0",
         "jeffgreco13/filament-breezy": "^2.6",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
+        "littleboy130491/seo-suite": "*",
         "livewire/livewire": "^3.6",
         "outerweb/filament-translatable-fields": "^2.1",
         "shuvroroy/filament-spatie-laravel-backup": "^2.2",
@@ -42,8 +44,7 @@
         "stechstudio/filament-impersonate": "^3.16",
         "symfony/http-client": "^7.2",
         "symfony/mailgun-mailer": "^7.2",
-        "yizack/instagram-feed": "^2.0",
-        "illuminate/contracts": "^10.0||^11.0||^12.0"
+        "yizack/instagram-feed": "^2.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

@@ -4,7 +4,7 @@ namespace Littleboy130491\Sumimasen\Filament\Traits;
 
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Filament\Forms\Components\Builder as FormsBuilder;
-use Filament\Forms\Components\RichEditor;
+use FilamentTiptapEditor\TiptapEditor;
 use Filament\Forms\Components\TextInput;
 
 trait HasContentBlocks
@@ -15,7 +15,7 @@ trait HasContentBlocks
             ->schema([
                 TextInput::make('heading'),
                 TextInput::make('group'),
-                RichEditor::make('description')->columnSpan('full'),
+                TiptapEditor::make('description')->columnSpan('full'),
                 TextInput::make('cta-label')->label('CTA label'),
                 TextInput::make('cta-url')->label('CTA URL'),
                 CuratorPicker::make('media_id')
@@ -30,7 +30,7 @@ trait HasContentBlocks
         return FormsBuilder\Block::make('simple')
             ->schema([
                 TextInput::make('heading'),
-                RichEditor::make('description'),
+                TiptapEditor::make('description'),
             ])
             ->columns(1);
     }
@@ -41,7 +41,7 @@ trait HasContentBlocks
             ->schema([
                 TextInput::make('heading'),
                 TextInput::make('group'),
-                RichEditor::make('description')->columnSpan('full'),
+                TiptapEditor::make('description')->columnSpan('full'),
                 TextInput::make('video_url'),
             ])
             ->columns(2);
