@@ -195,6 +195,7 @@ abstract class BaseResource extends Resource
 
         if (static::modelHasColumn('content')) {
             $fields[] = TiptapEditor::make('content')
+                ->profile('simple')
                 ->nullable();
         }
 
