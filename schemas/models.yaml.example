@@ -41,7 +41,6 @@ models:
         nullable: false
         enum: [draft, published, scheduled]
         default: draft
-        enum_class: App\Enums\ContentStatus
       published_at:
         type: datetime
         nullable: true
@@ -117,7 +116,6 @@ models:
         nullable: false
         enum: [draft, published, scheduled]
         default: draft
-        enum_class: App\Enums\ContentStatus
       published_at:
         type: datetime
         nullable: true
@@ -248,7 +246,6 @@ models:
         nullable: false
         enum: [pending, approved, rejected]
         default: pending
-        enum_class: App\Enums\CommentStatus
       parent_id:
         type: bigint
         nullable: true

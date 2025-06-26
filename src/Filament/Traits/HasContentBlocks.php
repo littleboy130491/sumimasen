@@ -15,7 +15,9 @@ trait HasContentBlocks
             ->schema([
                 TextInput::make('heading'),
                 TextInput::make('group'),
-                TiptapEditor::make('description')->columnSpan('full'),
+                TiptapEditor::make('description')
+                    ->profile('simple')
+                    ->columnSpan('full'),
                 TextInput::make('cta-label')->label('CTA label'),
                 TextInput::make('cta-url')->label('CTA URL'),
                 CuratorPicker::make('media_id')
@@ -30,7 +32,8 @@ trait HasContentBlocks
         return FormsBuilder\Block::make('simple')
             ->schema([
                 TextInput::make('heading'),
-                TiptapEditor::make('description'),
+                TiptapEditor::make('description')
+                    ->profile('simple'),
             ])
             ->columns(1);
     }
@@ -41,7 +44,9 @@ trait HasContentBlocks
             ->schema([
                 TextInput::make('heading'),
                 TextInput::make('group'),
-                TiptapEditor::make('description')->columnSpan('full'),
+                TiptapEditor::make('description')
+                    ->profile('simple')
+                    ->columnSpan('full'),
                 TextInput::make('video_url'),
             ])
             ->columns(2);
