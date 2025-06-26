@@ -31,6 +31,7 @@ use Littleboy130491\Sumimasen\Filament\Traits\HasContentBlocks;
 use Filament\Forms\Components\Builder as FormsBuilder;
 use FilamentTiptapEditor\TiptapEditor;
 use Filament\Forms\Components\Textarea;
+use Illuminate\Support\Facades\Schema;
 
 abstract class BaseResource extends Resource
 {
@@ -248,11 +249,17 @@ abstract class BaseResource extends Resource
         return []; // relationships are handled in the child class
     }
 
-    protected static function formTaxonomyRelationshipField(string $relationship): array
+    protected static function formTaxonomyRelationshipField(string $relationship, ?string $tableName = ''): array
     {
         // Check if the relationship exists on the model
         if (!static::modelHasRelationship($relationship) || static::isFieldHidden($relationship)) {
             return [];
+        }
+
+        // if $tableName empty check whether there is table with the name $relationship
+        if (empty($tableName)) {
+            if (!Schema::hasTable($relationship)) return [];
+            $tableName = $relationship;
         }
 
         return [
@@ -264,9 +271,9 @@ abstract class BaseResource extends Resource
                 ->createOptionForm([
                     Translate::make()
                         ->columnSpanFull()
-                        ->schema(function (string $locale) use ($relationship): array {
+                        ->schema(function (string $locale) use ($tableName): array {
                             return [
-                                ...static::formTitleSlugFields($locale, $relationship),
+                                ...static::formTitleSlugFields($locale, $tableName),
                             ];
                         }),
                 ]),
