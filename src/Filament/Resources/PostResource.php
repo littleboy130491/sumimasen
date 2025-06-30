@@ -5,6 +5,7 @@ namespace Littleboy130491\Sumimasen\Filament\Resources;
 use Littleboy130491\Sumimasen\Filament\Abstracts\BaseContentResource;
 use Littleboy130491\Sumimasen\Filament\Resources\PostResource\Pages;
 use Littleboy130491\Sumimasen\Models\Post;
+use Littleboy130491\Sumimasen\Filament\RelationManagers\CommentsRelationManager;
 
 class PostResource extends BaseContentResource
 {
