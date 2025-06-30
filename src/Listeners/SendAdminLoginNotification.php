@@ -26,7 +26,7 @@ class SendAdminLoginNotification implements ShouldQueue
      */
     public function handle(Login $event): void
     {
-        // Check if the login guard is 'filament' and the user is an instance of Littleboy130491\Sumimasen\Models\User
+        // Check if the login guard is 'filament' and the user is an instance of App\Models\User
         if ($event->guard === 'filament' && $event->user instanceof User) {
             $adminEmail = config('cms.site_email'); // Uses the email from config/cms.php
 

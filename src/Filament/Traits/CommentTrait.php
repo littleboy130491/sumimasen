@@ -96,21 +96,6 @@ trait CommentTrait
                 ignoreRecord: true,
                 modifyQueryUsing: fn(Builder $query) => $query->where('status', CommentStatus::Approved)
             )->label('Reply to'),
-            ...static::formFieldsCommentable(),
-        ];
-    }
-
-    public static function formFieldsCommentable(): array
-    {
-        return [
-            TextInput::make('commentable_type')
-                ->label('Resource Type')
-                ->required()
-                ->readOnly(),
-            TextInput::make('commentable_id')
-                ->label('Resource ID')
-                ->required()
-                ->readOnly(),
         ];
     }
 
@@ -149,6 +134,7 @@ trait CommentTrait
                 ->sortable()
                 ->searchable(),
             Tables\Columns\TextColumn::make('commentable.id')
+                ->label('Commentable ID')
                 ->sortable()
                 ->searchable()
                 ->url(function ($record): ?string {

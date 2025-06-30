@@ -24,11 +24,6 @@ class CommentsRelationManager extends RelationManager
             ->columns(2);
     }
 
-    public static function formFieldsCommentable(): array
-    {
-        return [];
-    }
-
     public function table(Table $table): Table
     {
         return $table
@@ -57,29 +52,4 @@ class CommentsRelationManager extends RelationManager
 
     }
 
-    public static function tableColumns(): array
-    {
-        return [
-            Tables\Columns\TextColumn::make('id')
-                ->sortable()
-                ->searchable(),
-            Tables\Columns\TextColumn::make('content')
-                ->limit(50)
-                ->sortable()
-                ->searchable(),
-            Tables\Columns\TextColumn::make('name')
-                ->sortable()
-                ->searchable(),
-            Tables\Columns\TextColumn::make('email')
-                ->sortable()
-                ->searchable(),
-            Tables\Columns\SelectColumn::make('status')->options(CommentStatus::class)
-                ->sortable(),
-            Tables\Columns\TextColumn::make('parent.id')
-                ->label('Reply to')
-                ->sortable()
-                ->searchable(),
-            Tables\Columns\TextColumn::make('created_at')->sortable(),
-        ];
-    }
 }
