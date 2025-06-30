@@ -20,10 +20,9 @@ class SumimasenPlugin implements Plugin
     use EvaluatesClosures;
 
     protected bool $hasSettingsPage = true;
-
     protected array $resources = [];
-
     protected array $pages = [];
+    protected array $exceptResources = [];
 
     public function getId(): string
     {
@@ -32,12 +31,31 @@ class SumimasenPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
+        $defaultResources = [
+            'category' => CategoryResource::class,
+            'comment' => CommentResource::class,
+            'component' => ComponentResource::class,
+            'page' => PageResource::class,
+            'post' => PostResource::class,
+            'submission' => SubmissionResource::class,
+            'tag' => TagResource::class,
+            'user' => UserResource::class,
+        ];
+
+        // Remove excepted resources
+        $resourcesToRegister = array_diff_key(
+            $defaultResources,
+            array_flip($this->exceptResources)
+        );
+
         $panel
-            ->resources($this->getResources())
+            ->resources(array_merge(array_values($resourcesToRegister), $this->resources))
             ->pages($this->getPages());
     }
 
-    public function boot(Panel $panel): void {}
+    public function boot(Panel $panel): void
+    {
+    }
 
     public static function make(): static
     {
@@ -49,31 +67,21 @@ class SumimasenPlugin implements Plugin
         return filament(app(static::class)->getId());
     }
 
-    public function resources(array $resources): static
+    public function exceptResources(array $resources): static
     {
-        $this->resources = $resources;
-
+        $this->exceptResources = $resources;
         return $this;
     }
 
-    public function getResources(): array
+    public function resources(array $resources): static
     {
-        return array_merge([
-            CategoryResource::class,
-            CommentResource::class,
-            ComponentResource::class,
-            PageResource::class,
-            PostResource::class,
-            SubmissionResource::class,
-            TagResource::class,
-            UserResource::class,
-        ], $this->resources);
+        $this->resources = $resources;
+        return $this;
     }
 
     public function pages(array $pages): static
     {
         $this->pages = $pages;
-
         return $this;
     }
 
@@ -91,7 +99,6 @@ class SumimasenPlugin implements Plugin
     public function settingsPage(bool $condition = true): static
     {
         $this->hasSettingsPage = $condition;
-
         return $this;
     }
 
