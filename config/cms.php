@@ -89,10 +89,6 @@ return [
     'front_page_slug' => 'beranda',
 
     'pagination_limit' => env('CMS_PAGINATION_LIMIT', 12),
-    'commentable_resources' => [
-        Littleboy130491\Sumimasen\Models\Post::class => Littleboy130491\Sumimasen\Filament\Resources\PostResource::class,
-        Littleboy130491\Sumimasen\Models\Page::class => Littleboy130491\Sumimasen\Filament\Resources\PageResource::class,
-    ],
 
     'navigation_menu_locations' => [
         'header' => 'Header',
