@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Models\Post;
-use Littleboy130491\Sumimasen\Models\User;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Littleboy130491\Sumimasen\Models\Post>
@@ -64,7 +64,7 @@ class PostFactory extends Factory
      */
     public function published(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'status' => ContentStatus::Published,
             'published_at' => fake()->dateTimeBetween('-1 year', 'now'),
         ]);
@@ -75,7 +75,7 @@ class PostFactory extends Factory
      */
     public function draft(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'status' => ContentStatus::Draft,
             'published_at' => null,
         ]);
@@ -86,7 +86,7 @@ class PostFactory extends Factory
      */
     public function scheduled(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'status' => ContentStatus::Scheduled,
             'published_at' => fake()->dateTimeBetween('now', '+1 year'),
         ]);
@@ -97,7 +97,7 @@ class PostFactory extends Factory
      */
     public function withTranslations(array $translations): static
     {
-        return $this->state(fn (array $attributes) => $translations);
+        return $this->state(fn(array $attributes) => $translations);
     }
 
     /**
@@ -105,7 +105,7 @@ class PostFactory extends Factory
      */
     public function withoutAuthor(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'author_id' => null,
         ]);
     }
