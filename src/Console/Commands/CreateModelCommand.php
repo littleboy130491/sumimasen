@@ -67,6 +67,7 @@ class CreateModelCommand extends Command
 
         if (! $this->files->exists($yamlFilePath)) {
             $this->error("YAML file not found at: {$yamlFilePath}");
+
             return 1;
         }
 
@@ -75,11 +76,13 @@ class CreateModelCommand extends Command
             $schema = Yaml::parse($yamlContent);
         } catch (ParseException $exception) {
             $this->error("Error parsing YAML file: {$exception->getMessage()}");
+
             return 1;
         }
 
         if (! isset($schema['models']) || ! is_array($schema['models'])) {
             $this->error("Invalid YAML structure. Missing 'models' key or it's not an array.");
+
             return 1;
         }
 
@@ -89,6 +92,7 @@ class CreateModelCommand extends Command
         if ($specificModel) {
             if (! isset($modelsToProcess[$specificModel])) {
                 $this->error("Model '{$specificModel}' not found in the YAML file.");
+
                 return 1;
             }
             $modelsToProcess = [$specificModel => $modelsToProcess[$specificModel]];
@@ -110,6 +114,7 @@ class CreateModelCommand extends Command
         }
 
         $this->info('Model generation process completed.');
+
         return 0;
     }
 
@@ -128,6 +133,7 @@ class CreateModelCommand extends Command
         if ($this->files->exists($filePath) && ! $force) {
             if (! $this->confirm("Model file [{$filePath}] already exists. Overwrite?", false)) {
                 $this->line("Skipping generation for model: {$className}");
+
                 return false;
             }
         }
@@ -144,9 +150,11 @@ class CreateModelCommand extends Command
         // Write the file
         if ($this->files->put($filePath, $content) !== false) {
             $this->line("<info>Created Model:</info> {$filePath}");
+
             return true;
         } else {
             $this->error("Failed to write model file: {$filePath}");
+
             return false;
         }
     }
@@ -217,7 +225,7 @@ PHP;
         if (! empty($definition['fields'])) {
             foreach ($definition['fields'] as $fieldName => $fieldDef) {
                 // Handle enum class imports
-                if (isset($fieldDef['enum_class']) && !empty($fieldDef['enum_class'])) {
+                if (isset($fieldDef['enum_class']) && ! empty($fieldDef['enum_class'])) {
                     // Use the explicitly defined enum class
                     $uses[] = ltrim($fieldDef['enum_class'], '\\');
                 } elseif ($fieldName === 'status' && strtolower($fieldDef['type'] ?? '') === 'enum') {
@@ -399,7 +407,7 @@ PHP;
     protected function buildCasts(array $definition): string
     {
         $casts = [];
-        
+
         if (empty($definition['fields'])) {
             return '';
         }
@@ -413,7 +421,7 @@ PHP;
                 case 'boolean':
                     $casts[$fieldName] = 'boolean';
                     break;
-                    
+
                 case 'int':
                 case 'integer':
                 case 'tinyint':
@@ -422,31 +430,31 @@ PHP;
                         $casts[$fieldName] = 'integer';
                     }
                     break;
-                    
+
                 case 'float':
                 case 'double':
                 case 'decimal':
                     $precision = $fieldDef['scale'] ?? 2;
                     $casts[$fieldName] = "decimal:{$precision}";
                     break;
-                    
+
                 case 'date':
                     $casts[$fieldName] = 'date';
                     break;
-                    
+
                 case 'datetime':
                 case 'timestamp':
                 case 'datetimetz':
                 case 'timestamptz':
                     $casts[$fieldName] = 'datetime';
                     break;
-                    
+
                 case 'json':
                     if (! $isTranslatable || $fieldName === 'section') {
                         $casts[$fieldName] = 'array';
                     }
                     break;
-                    
+
                 case 'enum':
                     if (! empty($fieldDef['enum_class'])) {
                         // Use the explicitly defined enum class
@@ -471,7 +479,7 @@ PHP;
         ];
 
         foreach ($commonCasts as $field => $cast) {
-            if (isset($definition['fields'][$field]) && !isset($casts[$field])) {
+            if (isset($definition['fields'][$field]) && ! isset($casts[$field])) {
                 $casts[$field] = $cast;
             }
         }
@@ -485,6 +493,7 @@ PHP;
                 if (str_contains($castType, '::class')) {
                     return "'{$field}' => {$castType}";
                 }
+
                 return "'{$field}' => '{$castType}'";
             })
             ->implode(",\n        ");
@@ -509,7 +518,7 @@ PHP;
     protected function buildTranslatable(array $definition): string
     {
         $translatable = [];
-        
+
         if (! empty($definition['fields'])) {
             foreach ($definition['fields'] as $fieldName => $fieldDef) {
                 if ($fieldDef['translatable'] ?? false) {
@@ -586,6 +595,7 @@ PHP;
         return \$this->{$relationshipMethod}();
     }
 PHP;
+
                     continue;
                 }
 

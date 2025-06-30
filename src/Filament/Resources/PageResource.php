@@ -2,15 +2,12 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources;
 
-use Filament\Forms\Components\Builder as FormsBuilder;
 use Littleboy130491\Sumimasen\Filament\Abstracts\BaseContentResource;
 use Littleboy130491\Sumimasen\Filament\Resources\PageResource\Pages;
 use Littleboy130491\Sumimasen\Models\Page;
 
 class PageResource extends BaseContentResource
 {
-
-
     protected static ?string $model = Page::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
@@ -18,7 +15,6 @@ class PageResource extends BaseContentResource
     protected static ?string $navigationGroup = 'Contents';
 
     protected static ?int $navigationSort = 0;
-
 
     protected static function formRelationshipsFields(): array
     {

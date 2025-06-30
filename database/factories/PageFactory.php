@@ -2,11 +2,11 @@
 
 namespace Littleboy130491\Sumimasen\Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Models\Page;
-use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Littleboy130491\Sumimasen\Models\Page>
@@ -71,7 +71,7 @@ class PageFactory extends Factory
      */
     public function published(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => ContentStatus::Published,
             'published_at' => fake()->dateTimeBetween('-1 year', 'now'),
         ]);
@@ -82,7 +82,7 @@ class PageFactory extends Factory
      */
     public function draft(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => ContentStatus::Draft,
             'published_at' => null,
         ]);
@@ -93,7 +93,7 @@ class PageFactory extends Factory
      */
     public function scheduled(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => ContentStatus::Scheduled,
             'published_at' => fake()->dateTimeBetween('now', '+1 year'),
         ]);
@@ -104,7 +104,7 @@ class PageFactory extends Factory
      */
     public function withTranslations(array $translations): static
     {
-        return $this->state(fn(array $attributes) => $translations);
+        return $this->state(fn (array $attributes) => $translations);
     }
 
     /**
@@ -112,7 +112,7 @@ class PageFactory extends Factory
      */
     public function childOf(Page $parent): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'parent_id' => $parent->id,
         ]);
     }
@@ -122,7 +122,7 @@ class PageFactory extends Factory
      */
     public function withCustomFields(array $customFields): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'custom_fields' => $customFields,
         ]);
     }
@@ -132,7 +132,7 @@ class PageFactory extends Factory
      */
     public function withSections(array $sections): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'section' => $sections,
         ]);
     }
@@ -142,7 +142,7 @@ class PageFactory extends Factory
      */
     public function withoutAuthor(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'author_id' => null,
         ]);
     }

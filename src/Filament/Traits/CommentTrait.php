@@ -17,7 +17,7 @@ trait CommentTrait
         $configuredResources = config('cms.commentable_resources', []);
 
         // If manually configured, use those
-        if (!empty($configuredResources)) {
+        if (! empty($configuredResources)) {
             return $configuredResources;
         }
 
@@ -47,7 +47,7 @@ trait CommentTrait
 
     protected static function modelHasCommentsTrait(string $modelClass): bool
     {
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             return false;
         }
 
@@ -62,7 +62,7 @@ trait CommentTrait
         $modelName = class_basename($modelClass);
 
         // Standard naming convention: replace \Models\ with \Filament\Resources\ and append Resource
-        $expectedResourceClass = str_replace('\\Models\\', '\\Filament\\Resources\\', $modelClass) . 'Resource';
+        $expectedResourceClass = str_replace('\\Models\\', '\\Filament\\Resources\\', $modelClass).'Resource';
 
         // Check if the resource exists
         if (class_exists($expectedResourceClass)) {
@@ -71,7 +71,7 @@ trait CommentTrait
 
         // Fallback: look in the same namespace as the package
         $packageNamespace = 'Littleboy130491\\Sumimasen\\Filament\\Resources\\';
-        $packageResourceClass = $packageNamespace . $modelName . 'Resource';
+        $packageResourceClass = $packageNamespace.$modelName.'Resource';
 
         if (class_exists($packageResourceClass)) {
             return $packageResourceClass;
@@ -94,7 +94,7 @@ trait CommentTrait
                 name: 'parent',
                 titleAttribute: 'id',
                 ignoreRecord: true,
-                modifyQueryUsing: fn(Builder $query) => $query->where('status', CommentStatus::Approved)
+                modifyQueryUsing: fn (Builder $query) => $query->where('status', CommentStatus::Approved)
             )->label('Reply to'),
         ];
     }
@@ -147,7 +147,7 @@ trait CommentTrait
                     $resources = self::getCommentableResources();
                     $resourceClass = $resources[$record->commentable_type] ?? self::resolveResourceFromModel($record->commentable_type);
 
-                    if (!$resourceClass || !class_exists($resourceClass)) {
+                    if (! $resourceClass || ! class_exists($resourceClass)) {
                         return null;
                     }
 

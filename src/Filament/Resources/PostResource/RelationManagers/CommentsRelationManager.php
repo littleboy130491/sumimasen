@@ -6,7 +6,6 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Littleboy130491\Sumimasen\Enums\CommentStatus;
 use Littleboy130491\Sumimasen\Filament\Traits\CommentTrait;
 
 class CommentsRelationManager extends RelationManager
@@ -51,5 +50,4 @@ class CommentsRelationManager extends RelationManager
             ->emptyStateDescription('');
 
     }
-
 }

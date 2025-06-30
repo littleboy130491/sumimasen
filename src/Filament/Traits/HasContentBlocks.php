@@ -4,8 +4,8 @@ namespace Littleboy130491\Sumimasen\Filament\Traits;
 
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Filament\Forms\Components\Builder as FormsBuilder;
-use FilamentTiptapEditor\TiptapEditor;
 use Filament\Forms\Components\TextInput;
+use FilamentTiptapEditor\TiptapEditor;
 
 trait HasContentBlocks
 {
