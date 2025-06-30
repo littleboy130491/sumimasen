@@ -11,95 +11,81 @@ use Littleboy130491\Sumimasen\Enums\CommentStatus;
 
 trait CommentTrait
 {
-    public static function getCommentableResources(): array
-    {
-        // First, check for manually configured resources (backward compatibility)
-        $configuredResources = config('cms.commentable_resources', []);
-
-        // If manually configured, use those
-        if (!empty($configuredResources)) {
-            return $configuredResources;
-        }
-
-        // Auto-discover commentable resources
-        return static::discoverCommentableResources();
-    }
-
-    protected static function discoverCommentableResources(): array
-    {
-        $resources = [];
-
-        // Get all registered Filament resources
-        $filamentResources = collect(app('filament')->getResources());
-
-        foreach ($filamentResources as $resourceClass) {
-            // Get the model class from the resource
-            $modelClass = $resourceClass::getModel();
-
-            // Check if the model uses HasComments trait
-            if (static::modelHasCommentsTrait($modelClass)) {
-                $resources[$modelClass] = $resourceClass;
-            }
-        }
-
-        return $resources;
-    }
-
-    protected static function modelHasCommentsTrait(string $modelClass): bool
-    {
-        if (!class_exists($modelClass)) {
-            return false;
-        }
-
-        $traits = class_uses_recursive($modelClass);
-
-        return in_array('Littleboy130491\\Sumimasen\\Traits\\HasComments', $traits);
-    }
-
-    protected static function resolveResourceFromModel(string $modelClass): ?string
-    {
-        // Extract model name from full class path
-        $modelName = class_basename($modelClass);
-
-        // Standard naming convention: replace \Models\ with \Filament\Resources\ and append Resource
-        $expectedResourceClass = str_replace('\\Models\\', '\\Filament\\Resources\\', $modelClass) . 'Resource';
-
-        // Check if the resource exists
-        if (class_exists($expectedResourceClass)) {
-            return $expectedResourceClass;
-        }
-
-        // Fallback: look in the same namespace as the package
-        $packageNamespace = 'Littleboy130491\\Sumimasen\\Filament\\Resources\\';
-        $packageResourceClass = $packageNamespace . $modelName . 'Resource';
-
-        if (class_exists($packageResourceClass)) {
-            return $packageResourceClass;
-        }
-
-        return null;
-    }
-
-    public static function formSchema(): array
+    /**
+     * Form schema for standalone Comment resource.
+     */
+    public static function getCommentFormSchema(): array
     {
         return [
-            Textarea::make('content')->required()->maxLength(255)->columnSpan('full'),
-            TextInput::make('name')->required()->maxLength(255),
+            Textarea::make('content')
+                ->required()
+                ->maxLength(1000)
+                ->columnSpan('full'),
+            TextInput::make('name')
+                ->required()
+                ->maxLength(255),
             TextInput::make('email')
                 ->required()
                 ->maxLength(255)
                 ->email(),
-            Select::make('status')->enum(CommentStatus::class)->options(CommentStatus::class)->default(CommentStatus::Pending)->required(),
-            Select::make('parent_id')->relationship(
-                name: 'parent',
-                titleAttribute: 'id',
-                ignoreRecord: true,
-                modifyQueryUsing: fn(Builder $query) => $query->where('status', CommentStatus::Approved)
-            )->label('Reply to'),
+            Select::make('status')
+                ->enum(CommentStatus::class)
+                ->options(CommentStatus::class)
+                ->default(CommentStatus::Pending)
+                ->required(),
+            Select::make('parent_id')
+                ->relationship(
+                    name: 'parent',
+                    titleAttribute: 'id',
+                    ignoreRecord: true,
+                    modifyQueryUsing: fn(Builder $query) => $query->where('status', CommentStatus::Approved)
+                )
+                ->label('Reply to'),
         ];
     }
 
-    public static function tableColumns(): array
+    /**
+     * Form schema for relation manager (no commentable fields needed).
+     */
+    public static function getRelationManagerFormSchema(): array
+    {
+        return [
+            Textarea::make('content')
+                ->required()
+                ->maxLength(1000)
+                ->columnSpan('full'),
+            TextInput::make('name')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('email')
+                ->required()
+                ->maxLength(255)
+                ->email(),
+            Select::make('status')
+                ->enum(CommentStatus::class)
+                ->options(CommentStatus::class)
+                ->default(CommentStatus::Pending)
+                ->required(),
+            Select::make('parent_id')
+                ->relationship(
+                    name: 'parent',
+                    titleAttribute: 'id',
+                    ignoreRecord: true,
+                    modifyQueryUsing: function (Builder $query, $livewire) {
+                        // Only show parent comments for the same commentable
+                        return $query->where('status', CommentStatus::Approved)
+                            ->where('commentable_type', $livewire->getOwnerRecord()::class)
+                            ->where('commentable_id', $livewire->getOwnerRecord()->getKey());
+                    }
+                )
+                ->label('Reply to'),
+        ];
+    }
+
+    /**
+     * Base table columns (common to both contexts).
+     */
+    public static function getBaseTableColumns(): array
     {
         return [
             Tables\Columns\TextColumn::make('id')
@@ -115,20 +101,25 @@ trait CommentTrait
             Tables\Columns\TextColumn::make('email')
                 ->sortable()
                 ->searchable(),
-            ...self::tableColumnsCommentable(),
-            Tables\Columns\SelectColumn::make('status')->options(CommentStatus::class)
+            Tables\Columns\SelectColumn::make('status')
+                ->options(CommentStatus::class)
                 ->sortable(),
             Tables\Columns\TextColumn::make('parent.id')
                 ->label('Reply to')
                 ->sortable()
                 ->searchable(),
-            Tables\Columns\TextColumn::make('created_at')->sortable(),
+            Tables\Columns\TextColumn::make('created_at')
+                ->sortable(),
         ];
     }
 
-    public static function tableColumnsCommentable(): array
+    /**
+     * Table columns for standalone Comment resource (includes commentable info).
+     */
+    public static function getResourceTableColumns(): array
     {
         return [
+            ...self::getBaseTableColumns(),
             Tables\Columns\TextColumn::make('commentable_type')
                 ->label('Type')
                 ->sortable()
@@ -138,47 +129,55 @@ trait CommentTrait
                 ->sortable()
                 ->searchable()
                 ->url(function ($record): ?string {
-                    // Use the model's built-in method if available
                     if ($record->commentable && method_exists($record->commentable, 'getFilamentEditUrl')) {
                         return $record->commentable->getFilamentEditUrl();
                     }
-
-                    // Fallback to traditional resource mapping
-                    $resources = self::getCommentableResources();
-                    $resourceClass = $resources[$record->commentable_type] ?? self::resolveResourceFromModel($record->commentable_type);
-
-                    if (!$resourceClass || !class_exists($resourceClass)) {
-                        return null;
-                    }
-
-                    return $resourceClass::getUrl('edit', ['record' => $record->commentable]);
+                    return null;
                 }),
         ];
     }
 
-    public static function tableEditBulkAction(): array
+    /**
+     * Table columns for relation manager (no commentable info needed).
+     */
+    public static function getRelationManagerTableColumns(): array
+    {
+        return self::getBaseTableColumns();
+    }
+
+    /**
+     * Bulk actions for editing comment status.
+     */
+    public static function getBulkEditActions(): array
     {
         return [
-            Tables\Actions\BulkAction::make('edit')
+            Tables\Actions\BulkAction::make('edit_status')
+                ->label('Update Status')
+                ->icon('heroicon-o-pencil-square')
+                ->color('primary')
                 ->form([
                     Select::make('status')
                         ->enum(CommentStatus::class)
                         ->options(CommentStatus::class)
-                        ->nullable(),
+                        ->required(),
                 ])
                 ->action(function (\Illuminate\Support\Collection $records, array $data) {
-                    $records->each(function (\Illuminate\Database\Eloquent\Model $record) use ($data) {
-                        $updateData = [];
-                        if (isset($data['status'])) {
-                            $updateData['status'] = $data['status'];
-                        }
-                        $record->update($updateData);
+                    $records->each(function ($record) use ($data) {
+                        $record->update(['status' => $data['status']]);
                     });
                 })
-                ->deselectRecordsAfterCompletion()
-                ->icon('heroicon-o-pencil-square')
-                ->color('primary')
-                ->label('Edit selected'),
+                ->deselectRecordsAfterCompletion(),
+        ];
+    }
+
+    /**
+     * Get table filters for comments.
+     */
+    public static function getCommentFilters(): array
+    {
+        return [
+            Tables\Filters\SelectFilter::make('status')
+                ->options(CommentStatus::class),
         ];
     }
 }

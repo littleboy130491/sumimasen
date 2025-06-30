@@ -1,12 +1,11 @@
 <?php
 
-namespace Littleboy130491\Sumimasen\Filament\Resources\PostResource\RelationManagers;
+namespace Littleboy130491\Sumimasen\Filament\RelationManagers;
 
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Littleboy130491\Sumimasen\Enums\CommentStatus;
 use Littleboy130491\Sumimasen\Filament\Traits\CommentTrait;
 
 class CommentsRelationManager extends RelationManager
@@ -18,9 +17,7 @@ class CommentsRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form
-            ->schema([
-                ...self::formSchema(),
-            ])
+            ->schema(self::getRelationManagerFormSchema())
             ->columns(2);
     }
 
@@ -28,12 +25,11 @@ class CommentsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('content')
-            ->columns([
-                ...static::tableColumns(),
-            ])
-            ->filters([
-                //
-            ])
+            ->modifyQueryUsing(function ($query) {
+                return $query->with(['parent']); // Prevent N+1 queries
+            })
+            ->columns(self::getRelationManagerTableColumns())
+            ->filters(self::getCommentFilters())
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
             ])
@@ -44,12 +40,11 @@ class CommentsRelationManager extends RelationManager
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    ...self::tableEditBulkAction(),
+                    ...self::getBulkEditActions(),
                 ]),
             ])
-            ->emptyStateHeading('No comments for this record')
-            ->emptyStateDescription('');
-
+            ->emptyStateHeading('No comments yet')
+            ->emptyStateDescription('Comments will appear here when added')
+            ->defaultSort('created_at', 'desc');
     }
-
 }
