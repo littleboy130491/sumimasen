@@ -18,7 +18,8 @@ A powerful, multilingual Laravel CMS package built with Filament v3. Features hi
 📈 **Analytics** - Page views and likes tracking with real-time updates  
 🔄 **Scheduled Publishing** - Automatic content publishing with cron integration  
 📷 **Media Management** - Advanced media handling with Curator integration  
-🎯 **Performance** - Optimized queries, caching, and queue support
+🎯 **Performance** - Optimized queries, caching, and queue support  
+💬 **Comments System** - Hierarchical comments with moderation and approval workflow
 
 ## Requirements
 
@@ -95,6 +96,7 @@ Navigate to **Settings > General** in the admin panel to configure:
 2. **Posts**: Create blog posts or news articles
 3. **Categories & Tags**: Organize your content
 4. **Menus**: Build navigation menus
+5. **Comments**: Manage user comments and feedback
 
 ## Configuration
 
@@ -133,6 +135,27 @@ Configure supported languages:
     'ko' => 'Korean',
 ],
 ```
+
+### Comments System Configuration
+
+Enable comments on your content models by adding the `HasComments` trait:
+
+```php
+use Littleboy130491\Sumimasen\Traits\HasComments;
+
+class Post extends Model
+{
+    use HasComments;
+    
+    // Your model code...
+}
+```
+
+Comments support:
+- **Hierarchical Structure**: Nested replies with unlimited depth
+- **Moderation Workflow**: Pending, approved, and rejected status
+- **Admin Management**: Full CRUD operations in Filament admin
+- **Frontend Integration**: Ready-to-use comment components
 
 ### Template System
 
@@ -194,6 +217,85 @@ php artisan cms:refresh-instagram-token
 
 ## Advanced Features
 
+### Comments System
+
+The CMS includes a powerful hierarchical comments system with the following features:
+
+#### Admin Management
+
+**Comments Resource**: Manage all comments from a centralized location with:
+- Bulk status updates (approve, reject, pending)
+- Content moderation tools
+- User information tracking
+- Hierarchical relationship viewing
+
+**Relation Managers**: Each commentable model automatically gets a comments relation manager for inline comment management:
+
+```php
+// Automatically available in your Filament resources
+public static function getRelations(): array
+{
+    return [
+        RelationManagers\CommentsRelationManager::class,
+    ];
+}
+```
+
+#### Model Integration
+
+Add comments to any model:
+
+```php
+use Littleboy130491\Sumimasen\Traits\HasComments;
+
+class Article extends Model
+{
+    use HasComments;
+    
+    // Now your model has comments relationship
+}
+```
+
+Access comments in your code:
+
+```php
+// Get all comments
+$article->comments
+
+// Get only approved comments
+$article->approvedComments
+
+// Get Filament edit URL (if resource exists)
+$article->getFilamentEditUrl()
+```
+
+#### Frontend Integration
+
+Display comments in your templates:
+
+```blade
+{{-- Show approved comments --}}
+@foreach($post->approvedComments as $comment)
+    <div class="comment">
+        <h5>{{ $comment->name }}</h5>
+        <p>{{ $comment->content }}</p>
+        <small>{{ $comment->created_at->diffForHumans() }}</small>
+        
+        {{-- Show replies --}}
+        @if($comment->replies->count())
+            <div class="replies ml-4">
+                @foreach($comment->replies as $reply)
+                    <div class="reply">
+                        <h6>{{ $reply->name }}</h6>
+                        <p>{{ $reply->content }}</p>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+@endforeach
+```
+
 ### Dynamic Components
 
 Create reusable content blocks:
@@ -228,6 +330,9 @@ Built-in interactive components:
 
 {{-- Contact form with reCAPTCHA --}}
 <livewire:submission-form />
+
+{{-- Comment form (if implementing frontend comments) --}}
+<livewire:comment-form :commentable="$post" />
 ```
 
 ### Settings Management
@@ -291,6 +396,7 @@ Automated tasks include:
 - reCAPTCHA integration
 - Secure file uploads
 - Input validation and filtering
+- Comment moderation system
 
 ## Performance Optimization
 
@@ -300,6 +406,7 @@ Automated tasks include:
 - Queue support for heavy operations
 - Database indexing
 - Asset minification
+- Optimized comment queries with relationship loading
 
 ## Customization
 
@@ -310,10 +417,11 @@ Add traits to your models:
 ```php
 use Littleboy130491\Sumimasen\Traits\HasPageViews;
 use Littleboy130491\Sumimasen\Traits\HasPageLikes;
+use Littleboy130491\Sumimasen\Traits\HasComments;
 
 class CustomModel extends Model
 {
-    use HasPageViews, HasPageLikes;
+    use HasPageViews, HasPageLikes, HasComments;
 }
 ```
 
@@ -325,8 +433,31 @@ Override default resources:
 SumimasenPlugin::make()
     ->resources([
         CustomPostResource::class,
+        CustomCommentResource::class,
         // ... other resources
     ])
+```
+
+### Custom Comment Integration
+
+Create custom comment forms and displays:
+
+```php
+// Custom comment resource
+class CustomCommentResource extends CommentResource
+{
+    use CommentTrait;
+    
+    public static function form(Form $form): Form
+    {
+        return $form->schema(self::getCommentFormSchema());
+    }
+    
+    public static function table(Table $table): Table
+    {
+        return $table->columns(self::getResourceTableColumns());
+    }
+}
 ```
 
 ### Custom Templates
@@ -375,6 +506,11 @@ composer format         # Code formatting
 - Check domain registration in Google Console
 - Ensure HTTPS in production
 
+**Comments not showing:**
+- Ensure model uses `HasComments` trait
+- Check comment status (must be approved to show)
+- Verify relationship is properly loaded
+
 ### Debug Mode
 
 Enable debug mode for detailed error information:
@@ -382,6 +518,39 @@ Enable debug mode for detailed error information:
 ```env
 CMS_DEBUG_MODE_ENABLED=true
 APP_DEBUG=true
+```
+
+## API Reference
+
+### Comment Model Methods
+
+```php
+// Relationship methods
+$comment->commentable  // Get the parent model (post, page, etc.)
+$comment->parent      // Get parent comment (for replies)
+$comment->replies     // Get child comments
+
+// Status methods
+$comment->isApproved()
+$comment->isPending()
+$comment->isRejected()
+
+// Utility methods
+$comment->getDepth()           // Get nesting level
+$comment->isReply()           // Check if it's a reply
+$comment->hasReplies()        // Check if has replies
+```
+
+### HasComments Trait Methods
+
+```php
+// Relationship methods
+$model->comments                    // All comments
+$model->approvedComments           // Only approved comments
+
+// Utility methods
+$model->getFilamentResourceClass() // Get associated Filament resource
+$model->getFilamentEditUrl()       // Get admin edit URL
 ```
 
 ## Contributing
