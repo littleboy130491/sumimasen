@@ -23,21 +23,18 @@ class CommentResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                ...self::formSchema(),
-            ])
+            ->schema(self::getCommentFormSchema())
             ->columns(2);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                ...self::tableColumns(),
-            ])
-            ->filters([
-                //
-            ])
+            ->modifyQueryUsing(function ($query) {
+                return $query->with(['commentable', 'parent']);
+            })
+            ->columns(self::getResourceTableColumns())
+            ->filters(self::getCommentFilters())
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -45,25 +42,17 @@ class CommentResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    ...self::tableEditBulkAction(),
+                    ...self::getBulkEditActions(),
                 ]),
             ])
-            ->emptyStateHeading('No comments yet')
-            ->emptyStateDescription('');
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListComments::route('/'),
-            // 'create' => Pages\CreateComment::route('/create'),
+            'create' => Pages\CreateComment::route('/create'),
             'edit' => Pages\EditComment::route('/{record}/edit'),
         ];
     }
