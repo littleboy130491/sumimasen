@@ -38,7 +38,7 @@ class PostResource extends BaseContentResource
     public static function getRelations(): array
     {
         return [
-            PostResource\RelationManagers\CommentsRelationManager::class,
+            CommentsRelationManager::class,
         ];
     }
 }

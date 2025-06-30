@@ -13,9 +13,71 @@ trait CommentTrait
 {
     public static function getCommentableResources(): array
     {
+        // First, check for manually configured resources (backward compatibility)
+        $configuredResources = config('cms.commentable_resources', []);
 
-        return config('cms.commentable_resources', []);
+        // If manually configured, use those
+        if (!empty($configuredResources)) {
+            return $configuredResources;
+        }
 
+        // Auto-discover commentable resources
+        return static::discoverCommentableResources();
+    }
+
+    protected static function discoverCommentableResources(): array
+    {
+        $resources = [];
+
+        // Get all registered Filament resources
+        $filamentResources = collect(app('filament')->getResources());
+
+        foreach ($filamentResources as $resourceClass) {
+            // Get the model class from the resource
+            $modelClass = $resourceClass::getModel();
+
+            // Check if the model uses HasComments trait
+            if (static::modelHasCommentsTrait($modelClass)) {
+                $resources[$modelClass] = $resourceClass;
+            }
+        }
+
+        return $resources;
+    }
+
+    protected static function modelHasCommentsTrait(string $modelClass): bool
+    {
+        if (!class_exists($modelClass)) {
+            return false;
+        }
+
+        $traits = class_uses_recursive($modelClass);
+
+        return in_array('Littleboy130491\\Sumimasen\\Traits\\HasComments', $traits);
+    }
+
+    protected static function resolveResourceFromModel(string $modelClass): ?string
+    {
+        // Extract model name from full class path
+        $modelName = class_basename($modelClass);
+
+        // Standard naming convention: replace \Models\ with \Filament\Resources\ and append Resource
+        $expectedResourceClass = str_replace('\\Models\\', '\\Filament\\Resources\\', $modelClass) . 'Resource';
+
+        // Check if the resource exists
+        if (class_exists($expectedResourceClass)) {
+            return $expectedResourceClass;
+        }
+
+        // Fallback: look in the same namespace as the package
+        $packageNamespace = 'Littleboy130491\\Sumimasen\\Filament\\Resources\\';
+        $packageResourceClass = $packageNamespace . $modelName . 'Resource';
+
+        if (class_exists($packageResourceClass)) {
+            return $packageResourceClass;
+        }
+
+        return null;
     }
 
     public static function formSchema(): array
@@ -32,7 +94,7 @@ trait CommentTrait
                 name: 'parent',
                 titleAttribute: 'id',
                 ignoreRecord: true,
-                modifyQueryUsing: fn (Builder $query) => $query->where('status', CommentStatus::Approved)
+                modifyQueryUsing: fn(Builder $query) => $query->where('status', CommentStatus::Approved)
             )->label('Reply to'),
             ...static::formFieldsCommentable(),
         ];
@@ -90,9 +152,16 @@ trait CommentTrait
                 ->sortable()
                 ->searchable()
                 ->url(function ($record): ?string {
+                    // Use the model's built-in method if available
+                    if ($record->commentable && method_exists($record->commentable, 'getFilamentEditUrl')) {
+                        return $record->commentable->getFilamentEditUrl();
+                    }
+
+                    // Fallback to traditional resource mapping
                     $resources = self::getCommentableResources();
-                    $resourceClass = $resources[$record->commentable_type] ?? null;
-                    if (! $resourceClass) {
+                    $resourceClass = $resources[$record->commentable_type] ?? self::resolveResourceFromModel($record->commentable_type);
+
+                    if (!$resourceClass || !class_exists($resourceClass)) {
                         return null;
                     }
 

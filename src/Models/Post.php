@@ -7,16 +7,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Littleboy130491\SeoSuite\Models\Traits\InteractsWithSeoSuite;
+use Littleboy130491\Sumimasen\Traits\HasComments;
 use Littleboy130491\Sumimasen\Traits\HasPageLikes;
 use Littleboy130491\Sumimasen\Traits\HasPageViews;
 use Spatie\Translatable\HasTranslations;
 
 class Post extends Model
 {
-    use HasFactory, HasPageLikes, HasPageViews, HasTranslations, InteractsWithSeoSuite, SoftDeletes;
+    use HasComments, HasFactory, HasPageLikes, HasPageViews, HasTranslations, InteractsWithSeoSuite, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -105,13 +105,4 @@ class Post extends Model
         return $this->belongsToMany(Tag::class);
     }
 
-    /**
-     * Define the comments relationship.
-     */
-    public function comments(): MorphMany
-    {
-        // Use the base class name for the ::class constant
-        // Add foreign key argument if specified in YAML
-        return $this->morphMany(Comment::class, 'commentable');
-    }
 }
