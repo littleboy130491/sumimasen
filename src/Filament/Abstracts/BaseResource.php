@@ -52,7 +52,7 @@ abstract class BaseResource extends Resource
     {
         return $form
             ->schema(static::formSchema())
-            ->columns(1);
+            ->columns(2);
     }
 
     protected static function formSchema(): array
@@ -134,7 +134,7 @@ abstract class BaseResource extends Resource
         if (!empty(static::additionalNonTranslatableFormFields())) {
             $sections[] = Section::make('Additional Fields')
                 ->schema(static::additionalNonTranslatableFormFields())
-                ->columns(1);
+                ->columns(2);
         }
 
         // Custom Fields Section
@@ -145,7 +145,7 @@ abstract class BaseResource extends Resource
                         KeyValue::make('custom_fields')
                             ->nullable(),
                     ])
-                    ->columns(1);
+                    ->columns(2);
         }
 
         // SEO Section
