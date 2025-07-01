@@ -263,30 +263,26 @@ abstract class BaseResource extends Resource
             $tableName = $relationship;
         }
 
-        return [
-            Select::make($relationship)
-                ->relationship($relationship, 'title')
-                ->multiple()
-                ->searchable()
-                ->preload()
-                ->createOptionForm(function () use ($relationship, $tableName) {
-                    $permission = 'create_' . strtolower($relationship);
 
-                    if (!auth()->user()->can($permission)) {
-                        return false;
-                    }
+        $select = Select::make($relationship)
+            ->relationship($relationship, 'title')
+            ->multiple()
+            ->searchable()
+            ->preload();
 
-                    return [
-                        Translate::make()
-                            ->columnSpanFull()
-                            ->schema(function (string $locale) use ($tableName): array {
-                                return [
-                                    ...static::formTitleSlugFields($locale, $tableName),
-                                ];
-                            }),
-                    ];
-                }),
-        ];
+        if (auth()->user()->can('create_' . strtolower($relationship))) {
+            $select->createOptionForm([
+                Translate::make()
+                    ->columnSpanFull()
+                    ->schema(function (string $locale) use ($tableName): array {
+                        return [
+                            ...static::formTitleSlugFields($locale, $tableName),
+                        ];
+                    }),
+            ]);
+        }
+
+        return [$select];
     }
 
     protected static function formParentRelationshipField(): array
