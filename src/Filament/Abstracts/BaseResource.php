@@ -202,7 +202,8 @@ abstract class BaseResource extends Resource
         if (static::modelHasColumn('content') && !static::isFieldHidden('content')) {
             $fields[] = TiptapEditor::make('content')
                 ->profile('simple')
-                ->nullable();
+                ->nullable()
+                ->extraInputAttributes(['style' => 'min-height: 12rem;']);
         }
 
         if (static::modelHasColumn('excerpt') && !static::isFieldHidden('excerpt')) {
@@ -270,7 +271,7 @@ abstract class BaseResource extends Resource
             ->searchable()
             ->preload();
 
-        if (auth()->user()->can('create_' . strtolower($relationship))) {
+        if (auth()->user()->can('create_' . \Illuminate\Support\Str::singular(strtolower($relationship)))) {
             $select->createOptionForm([
                 Translate::make()
                     ->columnSpanFull()

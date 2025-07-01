@@ -17,7 +17,8 @@ trait HasContentBlocks
                 TextInput::make('group'),
                 TiptapEditor::make('description')
                     ->profile('simple')
-                    ->columnSpan('full'),
+                    ->columnSpan('full')
+                    ->extraInputAttributes(['style' => 'min-height: 12rem;']),
                 TextInput::make('cta-label')->label('CTA label'),
                 TextInput::make('cta-url')->label('CTA URL'),
                 CuratorPicker::make('media_id')
@@ -33,7 +34,9 @@ trait HasContentBlocks
             ->schema([
                 TextInput::make('heading'),
                 TiptapEditor::make('description')
-                    ->profile('simple'),
+                    ->profile('simple')
+                    ->columnSpan('full')
+                    ->extraInputAttributes(['style' => 'min-height: 12rem;']),
             ])
             ->columns(1);
     }
@@ -46,7 +49,8 @@ trait HasContentBlocks
                 TextInput::make('group'),
                 TiptapEditor::make('description')
                     ->profile('simple')
-                    ->columnSpan('full'),
+                    ->columnSpan('full')
+                    ->extraInputAttributes(['style' => 'min-height: 12rem;']),
                 TextInput::make('video_url'),
             ])
             ->columns(2);
