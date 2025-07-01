@@ -272,7 +272,7 @@ abstract class BaseResource extends Resource
             ->preload();
 
         // Convert relationship name to Shield permission format
-        $permissionName = 'create_' . \Illuminate\Support\Str::snake(\Illuminate\Support\Str::singular($relationship), '::');
+        $permissionName = 'create_' . Str::snake(Str::singular($relationship), '::');
 
         if (auth()->user()->can($permissionName)) {
             $select->createOptionForm([
