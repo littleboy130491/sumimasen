@@ -273,7 +273,7 @@ abstract class BaseResource extends Resource
                     $permission = 'create_' . strtolower($relationship);
 
                     if (!auth()->user()->can($permission)) {
-                        return null;
+                        return false;
                     }
 
                     return [
