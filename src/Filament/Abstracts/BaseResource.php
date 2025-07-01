@@ -271,7 +271,10 @@ abstract class BaseResource extends Resource
             ->searchable()
             ->preload();
 
-        if (auth()->user()->can('create_' . \Illuminate\Support\Str::singular(strtolower($relationship)))) {
+        // Convert relationship name to Shield permission format
+        $permissionName = 'create_' . \Illuminate\Support\Str::snake(\Illuminate\Support\Str::singular($relationship), '::');
+
+        if (auth()->user()->can($permissionName)) {
             $select->createOptionForm([
                 Translate::make()
                     ->columnSpanFull()
