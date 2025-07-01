@@ -5,7 +5,7 @@ namespace Littleboy130491\Sumimasen\Filament\Abstracts;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
-abstract class BaseEditResource extends EditRecord
+abstract class BaseEditRecord extends EditRecord
 {
     protected function getHeaderActions(): array
     {
