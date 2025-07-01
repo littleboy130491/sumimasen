@@ -221,13 +221,13 @@ abstract class BaseResource extends Resource
 
     protected static function additionalTranslatableFormFields(?string $locale): array
     {
-    
+
         return []; // hook for additional translatable fields
     }
 
     protected static function additionalNonTranslatableFormFields(): array
     {
-    
+
         return []; // hook for additional non-translatable fields
     }
 
@@ -258,7 +258,8 @@ abstract class BaseResource extends Resource
 
         // if $tableName empty check whether there is table with the name $relationship
         if (empty($tableName)) {
-            if (!Schema::hasTable($relationship)) return [];
+            if (!Schema::hasTable($relationship))
+                return [];
             $tableName = $relationship;
         }
 
@@ -268,15 +269,23 @@ abstract class BaseResource extends Resource
                 ->multiple()
                 ->searchable()
                 ->preload()
-                ->createOptionForm([
-                    Translate::make()
-                        ->columnSpanFull()
-                        ->schema(function (string $locale) use ($tableName): array {
-                            return [
-                                ...static::formTitleSlugFields($locale, $tableName),
-                            ];
-                        }),
-                ]),
+                ->createOptionForm(function () use ($relationship, $tableName) {
+                    $permission = 'create_' . strtolower($relationship);
+
+                    if (!auth()->user()->can($permission)) {
+                        return null;
+                    }
+
+                    return [
+                        Translate::make()
+                            ->columnSpanFull()
+                            ->schema(function (string $locale) use ($tableName): array {
+                                return [
+                                    ...static::formTitleSlugFields($locale, $tableName),
+                                ];
+                            }),
+                    ];
+                }),
         ];
     }
 
@@ -512,7 +521,7 @@ abstract class BaseResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true);
         }
 
-        
+
 
         return $columns;
 
@@ -673,7 +682,7 @@ abstract class BaseResource extends Resource
 
     // Helper methods
 
-     /**
+    /**
      * Check if a field should be hidden
      */
     protected static function isFieldHidden(string $field): bool
