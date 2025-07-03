@@ -145,7 +145,7 @@ abstract class BaseResource extends Resource
                         KeyValue::make('custom_fields')
                             ->nullable(),
                     ])
-                    ->columns(2);
+                    ->columns(1);
         }
 
         // SEO Section
