@@ -264,7 +264,7 @@ abstract class BaseResource extends Resource
                 $tableName = $relationship;
                 // check whether there is table with the name snake_case of $relationship
             } elseif (Schema::hasTable(Str::plural(Str::snake($relationship)))) {
-                $tableName = Str::snake($relationship);
+                $tableName = Str::plural(Str::snake($relationship));
             } else {
                 return [];
             }
