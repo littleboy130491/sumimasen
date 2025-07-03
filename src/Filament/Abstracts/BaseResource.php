@@ -77,7 +77,7 @@ abstract class BaseResource extends Resource
                 ->schema([
                     // Top Left Section - Translated Fields
                     Translate::make()
-                        ->columnSpanFull()
+                        ->columns()
                         ->schema(function (string $locale): array {
                             return static::topLeftSchema($locale);
                         })
@@ -203,18 +203,21 @@ abstract class BaseResource extends Resource
             $fields[] = TiptapEditor::make('content')
                 ->profile('simple')
                 ->nullable()
-                ->extraInputAttributes(['style' => 'min-height: 12rem;']);
+                ->extraInputAttributes(['style' => 'min-height: 12rem;'])
+                ->columnSpanFull();
         }
 
         if (static::modelHasColumn('excerpt') && !static::isFieldHidden('excerpt')) {
             $fields[] = Textarea::make('excerpt')
-                ->nullable();
+                ->nullable()
+                ->columnSpanFull();
         }
 
         if (static::modelHasColumn('section') && !static::isFieldHidden('section')) {
             $fields[] = FormsBuilder::make('section')
                 ->collapsed(false)
-                ->blocks(static::getContentBlocks());
+                ->blocks(static::getContentBlocks())
+                ->columnSpanFull();
         }
 
         return $fields;
