@@ -172,6 +172,7 @@ abstract class BaseResource extends Resource
         return [
             TextInput::make('title')
                 ->live(onBlur: true)
+                ->columnSpanFull()
                 ->afterStateUpdated(function (Set $set, Get $get, ?string $state, string $operation) use ($locale) {
 
                     if ($operation === 'edit' && !empty($get('slug.' . $locale))) {
@@ -182,6 +183,7 @@ abstract class BaseResource extends Resource
                 })
                 ->required($locale === $defaultLocale),
             TextInput::make('slug')
+                ->columnSpanFull()
                 ->maxLength(255)
                 ->rules(function (Get $get) use ($tableName): array {
 
