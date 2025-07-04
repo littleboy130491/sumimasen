@@ -66,13 +66,13 @@ trait HasContentBlocks
                     ->profile('simple')
                     ->columnSpan('full')
                     ->extraInputAttributes(['style' => 'min-height: 12rem;']),
+                TextInput::make('top')
+                    ->numeric(),
+                TextInput::make('left')
+                    ->numeric(),
                 CuratorPicker::make('media_id')
                     ->label('Media')
                     ->helperText('Accepted file types: image or document'),
-                TextInput::make('top')
-                    ->numeric(),
-                TextInput::make('group')
-                    ->numeric(),
             ])
             ->columns(2);
     }
