@@ -85,7 +85,8 @@ abstract class BaseResource extends Resource
                             'sm' => 2,
                             'xl' => 3,
                             '2xl' => 3,
-                        ]),
+                        ])
+                        ->collapsible(),
 
                     // Top Right Section  
                     Section::make()
@@ -94,7 +95,8 @@ abstract class BaseResource extends Resource
                             'sm' => 1,
                             'xl' => 1,
                             '2xl' => 1,
-                        ]),
+                        ])
+                        ->collapsible(),
                 ]),
         ];
     }
@@ -145,7 +147,8 @@ abstract class BaseResource extends Resource
                         KeyValue::make('custom_fields')
                             ->nullable(),
                     ])
-                    ->columns(1);
+                    ->columns(1)
+                    ->collapsible();
         }
 
         // SEO Section
@@ -153,7 +156,8 @@ abstract class BaseResource extends Resource
             Section::make('SEO Settings')
                 ->schema([
                     SeoFields::make(),
-                ]);
+                ])
+                ->collapsible();
 
         return $sections;
 

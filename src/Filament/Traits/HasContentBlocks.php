@@ -90,7 +90,7 @@ trait HasContentBlocks
             ->columns(1);
     }
 
-    private static function getImagewithTextBlock(): FormsBuilder\Block
+    private static function getImageWithTextBlock(): FormsBuilder\Block
     {
         return FormsBuilder\Block::make('image_with_text')
             ->schema([
@@ -128,7 +128,7 @@ trait HasContentBlocks
             static::getVideoBlock(),
             static::getHotspotBlock(),
             static::getGalleryBlock(),
-            static::getImagewithTextBlock(),
+            static::getImageWithTextBlock(),
             static::getCounterBlock(),
         ];
     }
