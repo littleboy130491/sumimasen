@@ -38,7 +38,7 @@ trait CommentTrait
                     name: 'parent',
                     titleAttribute: 'id',
                     ignoreRecord: true,
-                    modifyQueryUsing: fn(Builder $query) => $query->where('status', CommentStatus::Approved)
+                    modifyQueryUsing: fn (Builder $query) => $query->where('status', CommentStatus::Approved)
                 )
                 ->label('Reply to'),
         ];
@@ -132,6 +132,7 @@ trait CommentTrait
                     if ($record->commentable && method_exists($record->commentable, 'getFilamentEditUrl')) {
                         return $record->commentable->getFilamentEditUrl();
                     }
+
                     return null;
                 }),
         ];

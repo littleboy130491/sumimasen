@@ -2,6 +2,7 @@
 
 namespace Littleboy130491\Sumimasen\Observers;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -9,7 +10,6 @@ use Littleboy130491\Sumimasen\Enums\CommentStatus;
 use Littleboy130491\Sumimasen\Mail\CommentReplyNotification;
 use Littleboy130491\Sumimasen\Mail\NewCommentNotification;
 use Littleboy130491\Sumimasen\Models\Comment;
-use App\Models\User;
 use Spatie\ResponseCache\Facades\ResponseCache;
 
 class CommentObserver
@@ -35,7 +35,7 @@ class CommentObserver
             Log::error('Error in CommentObserver created method', [
                 'comment_id' => $comment->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
@@ -66,7 +66,7 @@ class CommentObserver
             Log::error('Error in CommentObserver updated method', [
                 'comment_id' => $comment->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
@@ -81,7 +81,7 @@ class CommentObserver
         } catch (\Exception $e) {
             Log::error('Error in CommentObserver deleted method', [
                 'comment_id' => $comment->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -96,7 +96,7 @@ class CommentObserver
         } catch (\Exception $e) {
             Log::error('Error in CommentObserver restored method', [
                 'comment_id' => $comment->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -111,7 +111,7 @@ class CommentObserver
         } catch (\Exception $e) {
             Log::error('Error in CommentObserver forceDeleted method', [
                 'comment_id' => $comment->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -130,8 +130,9 @@ class CommentObserver
 
             if ($adminUsers->isEmpty()) {
                 Log::warning('No admin users found for new comment notification', [
-                    'comment_id' => $comment->id
+                    'comment_id' => $comment->id,
                 ]);
+
                 return;
             }
 
@@ -148,7 +149,7 @@ class CommentObserver
         } catch (\Exception $e) {
             Log::error('Failed to send admin comment notification', [
                 'comment_id' => $comment->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -159,7 +160,7 @@ class CommentObserver
      */
     private function sendReplyNotification(Comment $comment): void
     {
-        if (!$comment->parent_id) {
+        if (! $comment->parent_id) {
             return;
         }
 
@@ -167,19 +168,21 @@ class CommentObserver
             // Load parent comment with eager loading to avoid N+1
             $parentComment = $comment->parent()->with('commentable')->first();
 
-            if (!$parentComment) {
+            if (! $parentComment) {
                 Log::warning('Parent comment not found for reply', [
                     'reply_id' => $comment->id,
-                    'parent_id' => $comment->parent_id
+                    'parent_id' => $comment->parent_id,
                 ]);
+
                 return;
             }
 
             if (empty($parentComment->email)) {
                 Log::info('Parent comment has no email address, skipping reply notification', [
                     'reply_id' => $comment->id,
-                    'parent_id' => $parentComment->id
+                    'parent_id' => $parentComment->id,
                 ]);
+
                 return;
             }
 
@@ -197,7 +200,7 @@ class CommentObserver
             Log::error('Failed to send comment reply notification', [
                 'reply_id' => $comment->id,
                 'parent_id' => $comment->parent_id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -219,7 +222,7 @@ class CommentObserver
             Log::error('Failed to queue/send email', [
                 'email' => $email,
                 'mailable' => get_class($mailable),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -232,7 +235,7 @@ class CommentObserver
         try {
             $commentable = $comment->commentable;
 
-            if (!$commentable) {
+            if (! $commentable) {
                 return null;
             }
 
@@ -253,8 +256,9 @@ class CommentObserver
                 'comment_id' => $comment->id,
                 'commentable_type' => $comment->commentable_type,
                 'commentable_id' => $comment->commentable_id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -270,11 +274,12 @@ class CommentObserver
         // Find matching content type
         foreach ($contentModels as $key => $details) {
             if (isset($details['model']) && $details['model'] === $commentableClass) {
-                if (!isset($commentable->slug)) {
+                if (! isset($commentable->slug)) {
                     Log::warning('Commentable model has no slug property', [
                         'class' => $commentableClass,
-                        'id' => $commentable->id ?? 'unknown'
+                        'id' => $commentable->id ?? 'unknown',
                     ]);
+
                     return null;
                 }
 
@@ -288,8 +293,9 @@ class CommentObserver
                     Log::warning('Failed to generate CMS route', [
                         'content_type_key' => $key,
                         'slug' => $commentable->slug,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
+
                     return null;
                 }
             }
@@ -305,7 +311,7 @@ class CommentObserver
     {
         try {
             // Only clear cache if ResponseCache is available
-            if (!class_exists(ResponseCache::class)) {
+            if (! class_exists(ResponseCache::class)) {
                 return;
             }
 
@@ -319,8 +325,8 @@ class CommentObserver
                     $languages = array_keys(config('cms.language_available', []));
                     foreach ($languages as $lang) {
                         $localizedUrl = str_replace(
-                            '/' . app()->getLocale() . '/',
-                            '/' . $lang . '/',
+                            '/'.app()->getLocale().'/',
+                            '/'.$lang.'/',
                             $url
                         );
                         ResponseCache::forget($localizedUrl);
@@ -331,7 +337,7 @@ class CommentObserver
         } catch (\Exception $e) {
             Log::warning('Failed to clear cache for commentable', [
                 'comment_id' => $comment->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

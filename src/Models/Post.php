@@ -104,5 +104,4 @@ class Post extends Model
         // Add foreign key argument if specified in YAML
         return $this->belongsToMany(Tag::class);
     }
-
 }

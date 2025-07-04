@@ -20,8 +20,11 @@ class SumimasenPlugin implements Plugin
     use EvaluatesClosures;
 
     protected bool $hasSettingsPage = true;
+
     protected array $resources = [];
+
     protected array $pages = [];
+
     protected array $exceptResources = [];
 
     public function getId(): string
@@ -53,9 +56,7 @@ class SumimasenPlugin implements Plugin
             ->pages($this->getPages());
     }
 
-    public function boot(Panel $panel): void
-    {
-    }
+    public function boot(Panel $panel): void {}
 
     public static function make(): static
     {
@@ -70,18 +71,21 @@ class SumimasenPlugin implements Plugin
     public function exceptResources(array $resources): static
     {
         $this->exceptResources = $resources;
+
         return $this;
     }
 
     public function resources(array $resources): static
     {
         $this->resources = $resources;
+
         return $this;
     }
 
     public function pages(array $pages): static
     {
         $this->pages = $pages;
+
         return $this;
     }
 
@@ -99,6 +103,7 @@ class SumimasenPlugin implements Plugin
     public function settingsPage(bool $condition = true): static
     {
         $this->hasSettingsPage = $condition;
+
         return $this;
     }
 

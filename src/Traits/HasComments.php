@@ -31,7 +31,7 @@ trait HasComments
         $modelName = class_basename(static::class);
 
         // Try standard Laravel naming convention first
-        $expectedResourceClass = str_replace('\\Models\\', '\\Filament\\Resources\\', static::class) . 'Resource';
+        $expectedResourceClass = str_replace('\\Models\\', '\\Filament\\Resources\\', static::class).'Resource';
 
         if (class_exists($expectedResourceClass)) {
             return $expectedResourceClass;
@@ -55,7 +55,7 @@ trait HasComments
         try {
             $resourceClass = $this->getFilamentResourceClass();
 
-            if (!$resourceClass) {
+            if (! $resourceClass) {
                 return null;
             }
 
