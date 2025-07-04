@@ -56,12 +56,80 @@ trait HasContentBlocks
             ->columns(2);
     }
 
+    private static function getHotspotBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('hotspot')
+            ->schema([
+                TextInput::make('heading'),
+                TextInput::make('sub-heading'),
+                TiptapEditor::make('description')
+                    ->profile('simple')
+                    ->columnSpan('full')
+                    ->extraInputAttributes(['style' => 'min-height: 12rem;']),
+                CuratorPicker::make('media_id')
+                    ->label('Media')
+                    ->helperText('Accepted file types: image or document'),
+                TextInput::make('top')
+                    ->numeric(),
+                TextInput::make('group')
+                    ->numeric(),
+            ])
+            ->columns(2);
+    }
+
+    private static function getGalleryBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('gallery')
+            ->schema([
+                CuratorPicker::make('media_id')
+                    ->label('Media')
+                    ->multiple()
+                    ->acceptedFileTypes(['image/*'])
+                    ->helperText('Accepted file types: image'),
+            ])
+            ->columns(1);
+    }
+
+    private static function getImagewithTextBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('image_with_text')
+            ->schema([
+                TextInput::make('heading'),
+                CuratorPicker::make('media_id')
+                    ->label('Media')
+                    ->acceptedFileTypes(['image/*'])
+                    ->helperText('Accepted file types: image'),
+            ])
+            ->columns(1);
+    }
+
+    private static function getCounterBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('counter')
+            ->schema([
+                TextInput::make('heading'),
+                TextInput::make('number')
+                    ->numeric()
+                    ->label('Counter Number'),
+                TextInput::make('prefix')
+                    ->label('Counter Prefix'),
+                TextInput::make('suffix')
+                    ->label('Counter Prefix'),
+            ])
+            ->columns(2);
+    }
+
+
     protected static function getContentBlocks(): array
     {
         return [
             static::getCompleteBlock(),
             static::getSimpleBlock(),
             static::getVideoBlock(),
+            static::getHotspotBlock(),
+            static::getGalleryBlock(),
+            static::getImagewithTextBlock(),
+            static::getCounterBlock(),
         ];
     }
 }
