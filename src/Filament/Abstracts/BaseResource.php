@@ -76,20 +76,23 @@ abstract class BaseResource extends Resource
                 ])
                 ->schema([
                     // Top Left Section - Translated Fields
-                    Translate::make()
-                        ->columns()
-                        ->schema(function (string $locale): array {
-                            return static::topLeftSchema($locale);
-                        })
+                    Section::make('Main Fields')
+                        ->schema([
+                            Translate::make()
+                                ->columns(2)
+                                ->schema(function (string $locale): array {
+                                    return static::topLeftSchema($locale);
+                                })
+                                ->contained(false),
+                        ])
                         ->columnSpan([
                             'sm' => 2,
                             'xl' => 3,
                             '2xl' => 3,
                         ])
                         ->collapsible(),
-
                     // Top Right Section  
-                    Section::make()
+                    Section::make('Settings')
                         ->schema(static::topRightSchema())
                         ->columnSpan([
                             'sm' => 1,
