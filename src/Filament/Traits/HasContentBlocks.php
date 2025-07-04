@@ -94,13 +94,13 @@ trait HasContentBlocks
     {
         return FormsBuilder\Block::make('image_with_text')
             ->schema([
-                TextInput::make('heading'),
                 CuratorPicker::make('media_id')
                     ->label('Media')
                     ->acceptedFileTypes(['image/*'])
                     ->helperText('Accepted file types: image'),
+                TextInput::make('heading'),
             ])
-            ->columns(1);
+            ->columns(2);
     }
 
     private static function getCounterBlock(): FormsBuilder\Block
