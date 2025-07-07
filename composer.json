@@ -34,6 +34,7 @@
         "littleboy130491/seo-suite": "*",
         "livewire/livewire": "^3.6",
         "outerweb/filament-translatable-fields": "^2.1",
+        "ryangjchandler/laravel-cloudflare-turnstile": "^2.0",
         "shuvroroy/filament-spatie-laravel-backup": "^2.2",
         "solution-forest/filament-translate-field": "^1.4",
         "spatie/laravel-package-tools": "^1.16",

@@ -35,6 +35,24 @@ class SubmissionForm extends Component
 
     public $formSubmitted = false;
 
+    public function rules()
+    {
+        $rules = [
+            'name' => 'required|string|min:2|max:255',
+            'email' => 'required|email|max:255',
+            'message' => 'required|string|min:10|max:1000',
+            'subject' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:50',
+        ];
+
+        // Add Turnstile validation rule if enabled
+        if ($this->isBotProtectionEnabled() && $this->getBotProtectionType() === 'turnstile') {
+            $rules['turnstile'] = ['required', new Turnstile()];
+        }
+
+        return $rules;
+    }
+
     public function submit()
     {
         // Prevent multiple submissions
@@ -44,20 +62,11 @@ class SubmissionForm extends Component
 
         $this->validate();
 
-        // Validate bot protection based on configured type
-        if ($this->isBotProtectionEnabled()) {
-            $botProtectionType = $this->getBotProtectionType();
-
-            if ($botProtectionType === 'captcha') {
-                if (!NoCaptcha::verifyResponse($this->captcha, request()->ip())) {
-                    $this->addError('captcha', __('sumimasen-cms::submission-form.captcha_error'));
-                    return;
-                }
-            } elseif ($botProtectionType === 'turnstile') {
-                if (!Turnstile::verify($this->turnstile)) {
-                    $this->addError('turnstile', __('sumimasen-cms::submission-form.turnstile_error'));
-                    return;
-                }
+        // Additional bot protection validation for reCAPTCHA
+        if ($this->isBotProtectionEnabled() && $this->getBotProtectionType() === 'captcha') {
+            if (!NoCaptcha::verifyResponse($this->captcha, request()->ip())) {
+                $this->addError('captcha', __('sumimasen-cms::submission-form.captcha_error'));
+                return;
             }
         }
 
@@ -101,6 +110,9 @@ class SubmissionForm extends Component
                 }
             }
 
+            // Reset form after successful submission (optional)
+            $this->reset(['name', 'email', 'message', 'subject', 'phone', 'captcha', 'turnstile']);
+
         } catch (\Exception $e) {
             // Set error message on component
             $this->addError('form', __('sumimasen-cms::submission-form.submission_error'));
@@ -136,7 +148,12 @@ class SubmissionForm extends Component
 
     public function updated($propertyName)
     {
-        // Real-time validation
+        // Skip validation for bot protection fields during typing
+        if (in_array($propertyName, ['captcha', 'turnstile'])) {
+            return;
+        }
+
+        // Real-time validation for other fields
         $this->validateOnly($propertyName);
     }
 
