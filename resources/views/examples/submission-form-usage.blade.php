@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold mb-6">Contact Us</h1>
 
     {{-- Include the Livewire component --}}
-    <livewire:submission-form />
+    <sumimasen-cms.livewire::submission-form />
 </div>
 
 {{-- Example 2: Usage within a layout --}}
@@ -50,7 +50,7 @@
 
             {{-- Right column: Form --}}
             <div>
-                <livewire:submission-form />
+                <sumimasen-cms.livewire::submission-form />
             </div>
         </div>
     </div>
@@ -81,7 +81,7 @@
                 </div>
 
                 <div class="p-4">
-                    <livewire:submission-form />
+                    <sumimasen-cms.livewire::submission-form />
                 </div>
             </div>
         </div>
@@ -97,7 +97,7 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-xl p-8">
-            <livewire:submission-form />
+            <sumimasen-cms.livewire::submission-form />
         </div>
     </div>
 </div>

@@ -283,7 +283,7 @@
             }
 
             // Listen for reset-captcha event
-            document.addEventListener('livewire:init', () => {
+            document.addEventListener('sumimasen-cms.livewire::init', () => {
                 Livewire.on('reset-captcha', () => {
                     if (typeof grecaptcha !== 'undefined') {
                         grecaptcha.reset();
@@ -303,7 +303,7 @@
             }
 
             // Listen for reset-turnstile event
-            document.addEventListener('livewire:init', () => {
+            document.addEventListener('sumimasen-cms.livewire::init', () => {
                 Livewire.on('reset-turnstile', () => {
                     if (typeof turnstile !== 'undefined') {
                         turnstile.reset();
@@ -315,7 +315,7 @@
 @endif
 
 <script>
-    document.addEventListener('livewire:init', () => {
+    document.addEventListener('sumimasen-cms.livewire::init', () => {
         Livewire.on('hide-success-after-delay', () => {
             setTimeout(() => {
                 Livewire.dispatch('hideSuccess');

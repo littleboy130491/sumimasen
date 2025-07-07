@@ -48,7 +48,8 @@
 
             {{-- Like button section --}}
             <div class="post-actions">
-                <livewire:like-button :content="$content" :lang="$lang" :content-type="$content_type" />
+                <sumimasen-cms.livewire::like-button :content="$content" :lang="$lang"
+                    :content-type="$content_type" />
             </div>
 
             @if ($content->categories->count() > 0)

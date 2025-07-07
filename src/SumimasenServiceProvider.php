@@ -188,7 +188,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
 
     private function bootLivewireComponents(): void
     {
-        if (! class_exists(\Livewire\Livewire::class)) {
+        if (! class_exists(\Livewire\sumimasen-cms.livewire:::class)) {
             return;
         }
 
@@ -210,7 +210,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
             if (class_exists($class)) {
                 // Add package prefix to avoid conflicts
                 $alias = static::$name.'.'.\Illuminate\Support\Str::kebab(class_basename($class));
-                \Livewire\Livewire::component($alias, $class);
+                \Livewire\sumimasen-cms.livewire:::component($alias, $class);
             }
         }
     }

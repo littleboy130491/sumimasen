@@ -326,13 +326,13 @@ Built-in interactive components:
 
 ```blade
 {{-- Like button with real-time updates --}}
-<livewire:like-button :content="$post" />
+<sumimasen-cms.livewire::like-button :content="$post" />
 
 {{-- Contact form with reCAPTCHA --}}
-<livewire:submission-form />
+<sumimasen-cms.livewire::submission-form />
 
 {{-- Comment form (if implementing frontend comments) --}}
-<livewire:comment-form :commentable="$post" />
+<sumimasen-cms.livewire::comment-form :commentable="$post" />
 ```
 
 ### Settings Management

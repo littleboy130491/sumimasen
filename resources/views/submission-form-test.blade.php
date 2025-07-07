@@ -17,7 +17,7 @@
             <p class="text-gray-600">Test the form submission with real-time validation and success notifications</p>
         </div>
 
-        <livewire:submission-form />
+        <sumimasen-cms.livewire::submission-form />
 
         <div class="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Features Demonstrated:</h3>
