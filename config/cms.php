@@ -109,4 +109,33 @@ return [
         'access_token' => env('INSTAGRAM_ACCESS_TOKEN'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Form Submission Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for form submissions including email notifications
+    | and validation settings.
+    |
+    */
+    'form_submission' => [
+        'admin_email' => env('MAIL_ADMIN_EMAIL', 'admin@example.com'),
+        'require_captcha' => true,
+        'max_submissions_per_ip' => 10,
+        'rate_limit_minutes' => 60,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Bot Protection Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Choose the bot protection method for forms. Options:
+    | - 'captcha': Google reCAPTCHA (requires anhskohbo/no-captcha package)
+    | - 'turnstile': Cloudflare Turnstile (requires ryangjchandler/laravel-cloudflare-turnstile package)
+    | - 'none': Disable bot protection
+    |
+    */
+    'bot_protection_type' => env('BOT_PROTECTION_TYPE', 'captcha'),
+
 ];

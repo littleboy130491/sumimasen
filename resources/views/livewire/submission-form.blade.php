@@ -97,7 +97,8 @@
             </label>
             <textarea id="message" wire:model.live="message" rows="5"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 resize-vertical @error('message') border-red-500 focus:ring-red-500 focus:border-red-500 @enderror @if ($formSubmitted) bg-gray-100 cursor-not-allowed @endif"
-                placeholder="{{ __('sumimasen-cms::submission-form.message_placeholder') }}" @if ($formSubmitted) disabled @endif></textarea>
+                placeholder="{{ __('sumimasen-cms::submission-form.message_placeholder') }}"
+                @if ($formSubmitted) disabled @endif></textarea>
             @error('message')
                 <p class="mt-1 text-sm text-red-600 flex items-center">
                     <svg class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -110,38 +111,40 @@
             @enderror
         </div>
 
-        {{-- CAPTCHA Field - Only show if enabled --}}
-        {{-- CAPTCHA Field - Only show if enabled --}}
-        @if (!empty(config('captcha.sitekey')) && !empty(config('captcha.secret')))
+        {{-- Bot Protection Field - Show based on configuration --}}
+        @if ($this->isBotProtectionEnabled())
             <div>
                 <div class="@if ($formSubmitted) opacity-50 pointer-events-none @endif">
-                    <!-- Simple reCAPTCHA implementation -->
-                    <div class="g-recaptcha" data-sitekey="{{ config('captcha.sitekey') }}"
-                        data-callback="onCaptchaSuccess" data-expired-callback="onCaptchaExpired">
-                    </div>
-
-                    {{-- Fallback for when JavaScript is disabled --}}
-                    <noscript>
-                        <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                            <p class="text-sm text-yellow-800">
-                                {{ __('sumimasen-cms::submission-form.captcha_js_required') }}
-                            </p>
+                    @if ($this->getBotProtectionType() === 'captcha')
+                        <!-- Google reCAPTCHA implementation -->
+                        <div class="g-recaptcha" data-sitekey="{{ config('captcha.sitekey') }}"
+                            data-callback="onCaptchaSuccess" data-expired-callback="onCaptchaExpired">
                         </div>
-                    </noscript>
+
+                        {{-- Fallback for when JavaScript is disabled --}}
+                        <noscript>
+                            <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                                <p class="text-sm text-yellow-800">
+                                    {{ __('sumimasen-cms::submission-form.captcha_js_required') }}
+                                </p>
+                            </div>
+                        </noscript>
+                    @elseif($this->getBotProtectionType() === 'turnstile')
+                        <!-- Cloudflare Turnstile implementation -->
+                        <div class="cf-turnstile" data-sitekey="{{ config('turnstile.site_key') }}"
+                            data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired">
+                        </div>
+
+                        {{-- Fallback for when JavaScript is disabled --}}
+                        <noscript>
+                            <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                                <p class="text-sm text-yellow-800">
+                                    {{ __('sumimasen-cms::submission-form.turnstile_js_required') }}
+                                </p>
+                            </div>
+                        </noscript>
+                    @endif
                 </div>
-
-                <!-- Load reCAPTCHA script -->
-                <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
-                <script>
-                    function onCaptchaSuccess(response) {
-                        @this.set('captcha', response);
-                    }
-
-                    function onCaptchaExpired() {
-                        @this.set('captcha', '');
-                    }
-                </script>
 
                 @error('captcha')
                     <p class="mt-1 text-sm text-red-600 flex items-center">
@@ -151,6 +154,17 @@
                                 clip-rule="evenodd" />
                         </svg>
                         {{ $errors->first('captcha') }}
+                    </p>
+                @enderror
+
+                @error('turnstile')
+                    <p class="mt-1 text-sm text-red-600 flex items-center">
+                        <svg class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        {{ $errors->first('turnstile') }}
                     </p>
                 @enderror
             </div>
@@ -200,8 +214,10 @@
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <h3 class="text-sm font-medium text-green-800">{{ __('sumimasen-cms::submission-form.success_title') }}</h3>
-                    <p class="text-sm text-green-700 mt-1">{{ __('sumimasen-cms::submission-form.success_message') }}</p>
+                    <h3 class="text-sm font-medium text-green-800">
+                        {{ __('sumimasen-cms::submission-form.success_title') }}</h3>
+                    <p class="text-sm text-green-700 mt-1">{{ __('sumimasen-cms::submission-form.success_message') }}
+                    </p>
                 </div>
                 <div class="ml-auto pl-3">
                     <button wire:click="hideSuccess"
@@ -229,7 +245,8 @@
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <h3 class="text-sm font-medium text-red-800">{{ __('sumimasen-cms::submission-form.error_title') }}</h3>
+                    <h3 class="text-sm font-medium text-red-800">{{ __('sumimasen-cms::submission-form.error_title') }}
+                    </h3>
                     <p class="text-sm text-red-700 mt-1">{{ $errors->first('form') }}</p>
                 </div>
             </div>
@@ -251,6 +268,51 @@
         @endif
     </div>
 </div>
+
+{{-- Bot Protection Scripts --}}
+@if ($this->isBotProtectionEnabled())
+    @if ($this->getBotProtectionType() === 'captcha')
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <script>
+            function onCaptchaSuccess(response) {
+                @this.set('captcha', response);
+            }
+
+            function onCaptchaExpired() {
+                @this.set('captcha', '');
+            }
+
+            // Listen for reset-captcha event
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('reset-captcha', () => {
+                    if (typeof grecaptcha !== 'undefined') {
+                        grecaptcha.reset();
+                    }
+                });
+            });
+        </script>
+    @elseif($this->getBotProtectionType() === 'turnstile')
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+        <script>
+            function onTurnstileSuccess(token) {
+                @this.set('turnstile', token);
+            }
+
+            function onTurnstileExpired() {
+                @this.set('turnstile', '');
+            }
+
+            // Listen for reset-turnstile event
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('reset-turnstile', () => {
+                    if (typeof turnstile !== 'undefined') {
+                        turnstile.reset();
+                    }
+                });
+            });
+        </script>
+    @endif
+@endif
 
 <script>
     document.addEventListener('livewire:init', () => {

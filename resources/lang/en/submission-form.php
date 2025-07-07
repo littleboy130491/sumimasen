@@ -30,6 +30,8 @@ return [
     'error_title' => 'Error',
     'submission_error' => 'There was an error submitting your form. Please try again.',
     'captcha_error' => 'Please verify that you are not a robot.',
+    'turnstile_error' => 'Please complete the verification challenge.',
+    'turnstile_js_required' => 'JavaScript is required to complete the verification challenge.',
     'captcha_js_required' => 'JavaScript is required for the security verification. Please enable JavaScript in your browser.',
 
     // Form state

@@ -30,6 +30,8 @@ return [
     'error_title' => 'Kesalahan',
     'submission_error' => 'Terjadi kesalahan saat mengirim formulir Anda. Silakan coba lagi.',
     'captcha_error' => 'Harap verifikasi bahwa Anda bukan robot.',
+    'turnstile_error' => 'Mohon selesaikan tantangan verifikasi.',
+    'turnstile_js_required' => 'JavaScript diperlukan untuk menyelesaikan tantangan verifikasi.',
     'captcha_js_required' => 'JavaScript diperlukan untuk verifikasi keamanan. Harap aktifkan JavaScript di browser Anda.',
 
     // Form state
