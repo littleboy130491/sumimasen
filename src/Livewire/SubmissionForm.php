@@ -8,7 +8,6 @@ use Littleboy130491\Sumimasen\Mail\FormSubmissionNotification;
 use Littleboy130491\Sumimasen\Models\Submission;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
-use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
 
 class SubmissionForm extends Component
 {
