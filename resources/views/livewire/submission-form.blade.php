@@ -131,9 +131,7 @@
                         </noscript>
                     @elseif($this->getBotProtectionType() === 'turnstile')
                         <!-- Cloudflare Turnstile implementation -->
-                        <div class="cf-turnstile" data-sitekey="{{ config('turnstile.site_key') }}"
-                            data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired">
-                        </div>
+                        <x-turnstile wire:model="turnstile" />
 
                         {{-- Fallback for when JavaScript is disabled --}}
                         <noscript>
@@ -269,11 +267,47 @@
     </div>
 </div>
 
+{{-- Bot Protection Scripts --}}
+@if ($this->isBotProtectionEnabled())
+    @if ($this->getBotProtectionType() === 'captcha')
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <script>
+            function onCaptchaSuccess(response) {
+                @this.set('captcha', response);
+            }
+
+            function onCaptchaExpired() {
+                @this.set('captcha', '');
+            }
+
+            // Listen for reset-captcha event
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('reset-captcha', () => {
+                    if (typeof grecaptcha !== 'undefined') {
+                        grecaptcha.reset();
+                    }
+                });
+            });
+        </script>
+    @elseif($this->getBotProtectionType() === 'turnstile')
+        <script>
+            // Listen for reset-turnstile event
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('reset-turnstile', () => {
+                    if (typeof turnstile !== 'undefined') {
+                        turnstile.reset();
+                    }
+                });
+            });
+        </script>
+    @endif
+@endif
+
 <script>
     document.addEventListener('livewire:init', () => {
         Livewire.on('hide-success-after-delay', () => {
             setTimeout(() => {
-                Livewire.dispatch('hideSuccess');
+                @this.hideSuccess();
             }, 5000);
         });
     });

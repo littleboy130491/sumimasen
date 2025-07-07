@@ -8,7 +8,7 @@ use Littleboy130491\Sumimasen\Mail\FormSubmissionNotification;
 use Littleboy130491\Sumimasen\Models\Submission;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
-use RyanChandler\LaravelCloudflareTurnstile\Facades\Turnstile;
+use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
 
 class SubmissionForm extends Component
 {
@@ -54,7 +54,7 @@ class SubmissionForm extends Component
                     return;
                 }
             } elseif ($botProtectionType === 'turnstile') {
-                if (!Turnstile::validate($this->turnstile)) {
+                if (!Turnstile::verify($this->turnstile)) {
                     $this->addError('turnstile', __('sumimasen-cms::submission-form.turnstile_error'));
                     return;
                 }
@@ -103,18 +103,18 @@ class SubmissionForm extends Component
 
         } catch (\Exception $e) {
             // Set error message on component
-            $this->addError('form', __('submission-form.submission_error'));
+            $this->addError('form', __('sumimasen-cms::submission-form.submission_error'));
         }
     }
 
     public function isCaptchaEnabled()
     {
-        return !empty(config('captcha.sitekey')) && !empty(config('captcha.secret'));
+        return !empty(env('NOCAPTCHA_SITEKEY')) && !empty(env('NOCAPTCHA_SECRET'));
     }
 
     public function isTurnstileEnabled()
     {
-        return !empty(config('turnstile.site_key')) && !empty(config('turnstile.secret_key'));
+        return !empty(env('TURNSTILE_SITE_KEY')) && !empty(env('TURNSTILE_SECRET_KEY'));
     }
 
     public function isBotProtectionEnabled()
