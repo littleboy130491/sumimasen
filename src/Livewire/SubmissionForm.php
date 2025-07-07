@@ -47,7 +47,7 @@ class SubmissionForm extends Component
 
         // Add Turnstile validation rule if enabled
         if ($this->isBotProtectionEnabled() && $this->getBotProtectionType() === 'turnstile') {
-            $rules['turnstile'] = ['required', new Turnstile()];
+            $rules['turnstile'] = 'required|turnstile';
         }
 
         return $rules;

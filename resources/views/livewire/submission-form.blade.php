@@ -1,6 +1,3 @@
-@pushOnce('before_head_close')
-    @turnstileScripts()
-@endpushOnce
 <div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ __('sumimasen-cms::submission-form.title') }}</h2>
