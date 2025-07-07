@@ -63,8 +63,9 @@ class SubmissionForm extends Component
 
         // Additional bot protection validation for reCAPTCHA
         if ($this->isBotProtectionEnabled() && $this->getBotProtectionType() === 'captcha') {
-            if (!NoCaptcha::verifyResponse($this->captcha, request()->ip())) {
+            if (! NoCaptcha::verifyResponse($this->captcha, request()->ip())) {
                 $this->addError('captcha', __('sumimasen-cms::submission-form.captcha_error'));
+
                 return;
             }
         }
@@ -120,17 +121,18 @@ class SubmissionForm extends Component
 
     public function isCaptchaEnabled()
     {
-        return !empty(env('NOCAPTCHA_SITEKEY')) && !empty(env('NOCAPTCHA_SECRET'));
+        return ! empty(env('NOCAPTCHA_SITEKEY')) && ! empty(env('NOCAPTCHA_SECRET'));
     }
 
     public function isTurnstileEnabled()
     {
-        return !empty(env('TURNSTILE_SITE_KEY')) && !empty(env('TURNSTILE_SECRET_KEY'));
+        return ! empty(env('TURNSTILE_SITE_KEY')) && ! empty(env('TURNSTILE_SECRET_KEY'));
     }
 
     public function isBotProtectionEnabled()
     {
         $type = $this->getBotProtectionType();
+
         return ($type === 'captcha' && $this->isCaptchaEnabled()) ||
             ($type === 'turnstile' && $this->isTurnstileEnabled());
     }
