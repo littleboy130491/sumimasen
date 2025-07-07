@@ -52,9 +52,8 @@
                                 <x-sumimasen-cms::ui.page-views :count="$post->page_views" format="short"
                                     class="post-card-views" />
 
-                                <sumimasen-cms.livewire::like-button :content="$post" :lang="$lang"
-                                    :content-type="$post_type" size="sm" variant="minimal"
-                                    :key="'like-button-'.$post - > id" />
+                                <livewire:sumimasen-cms.like-button :content="$post" :lang="$lang"
+                                    :content-type="$post_type" size="sm" variant="minimal" :key="'like-button-' . $post->id" />
                             </div>
 
                             @if ($post->categories->count() > 0)

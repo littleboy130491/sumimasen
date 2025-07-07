@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
-use Littleboy130491\Sumimasen\Models\Comment;
 use Littleboy130491\Sumimasen\Observers\CommentObserver;
 use SolutionForest\FilamentTranslateField\Facades\FilamentTranslateField;
 use Spatie\LaravelPackageTools\Package;
