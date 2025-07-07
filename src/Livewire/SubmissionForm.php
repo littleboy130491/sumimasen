@@ -8,6 +8,7 @@ use Littleboy130491\Sumimasen\Mail\FormSubmissionNotification;
 use Littleboy130491\Sumimasen\Models\Submission;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use RyanChandler\LaravelCloudflareTurnstile\Facades\Turnstile;
 
 class SubmissionForm extends Component
 {
@@ -28,6 +29,8 @@ class SubmissionForm extends Component
 
     public $captcha = '';
 
+    public $turnstile = '';
+
     public $showSuccess = false;
 
     public $formSubmitted = false;
@@ -41,12 +44,20 @@ class SubmissionForm extends Component
 
         $this->validate();
 
-        // Validate CAPTCHA only if enabled
-        if ($this->isCaptchaEnabled()) {
-            if (! NoCaptcha::verifyResponse($this->captcha, request()->ip())) {
-                $this->addError('captcha', __('submission-form.captcha_error'));
+        // Validate bot protection based on configured type
+        if ($this->isBotProtectionEnabled()) {
+            $botProtectionType = $this->getBotProtectionType();
 
-                return;
+            if ($botProtectionType === 'captcha') {
+                if (!NoCaptcha::verifyResponse($this->captcha, request()->ip())) {
+                    $this->addError('captcha', __('sumimasen-cms::submission-form.captcha_error'));
+                    return;
+                }
+            } elseif ($botProtectionType === 'turnstile') {
+                if (!Turnstile::validate($this->turnstile)) {
+                    $this->addError('turnstile', __('sumimasen-cms::submission-form.turnstile_error'));
+                    return;
+                }
             }
         }
 
@@ -66,7 +77,7 @@ class SubmissionForm extends Component
             ]);
 
             // Send email notification to admin
-            $adminEmail = env('MAIL_ADMIN_EMAIL', config('mail.from.address'));
+            $adminEmail = config('cms.form_submission.admin_email');
             if ($adminEmail) {
                 Mail::to($adminEmail)->send(new FormSubmissionNotification($submission));
             }
@@ -80,9 +91,14 @@ class SubmissionForm extends Component
             // Hide success message after 5 seconds
             $this->dispatch('hide-success-after-delay');
 
-            // Reset captcha widget if enabled
-            if ($this->isCaptchaEnabled()) {
-                $this->dispatch('reset-captcha');
+            // Reset bot protection widget if enabled
+            if ($this->isBotProtectionEnabled()) {
+                $botProtectionType = $this->getBotProtectionType();
+                if ($botProtectionType === 'captcha') {
+                    $this->dispatch('reset-captcha');
+                } elseif ($botProtectionType === 'turnstile') {
+                    $this->dispatch('reset-turnstile');
+                }
             }
 
         } catch (\Exception $e) {
@@ -93,7 +109,24 @@ class SubmissionForm extends Component
 
     public function isCaptchaEnabled()
     {
-        return ! empty(config('captcha.sitekey')) && ! empty(config('captcha.secret'));
+        return !empty(config('captcha.sitekey')) && !empty(config('captcha.secret'));
+    }
+
+    public function isTurnstileEnabled()
+    {
+        return !empty(config('turnstile.site_key')) && !empty(config('turnstile.secret_key'));
+    }
+
+    public function isBotProtectionEnabled()
+    {
+        $type = $this->getBotProtectionType();
+        return ($type === 'captcha' && $this->isCaptchaEnabled()) ||
+            ($type === 'turnstile' && $this->isTurnstileEnabled());
+    }
+
+    public function getBotProtectionType()
+    {
+        return config('cms.bot_protection_type', 'captcha');
     }
 
     public function hideSuccess()

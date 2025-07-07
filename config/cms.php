@@ -119,7 +119,7 @@ return [
     |
     */
     'form_submission' => [
-        'admin_email' => env('MAIL_ADMIN_EMAIL', 'admin@example.com'),
+        'admin_email' => env('CMS_SITE_EMAIL', 'admin@example.com'),
         'require_captcha' => true,
         'max_submissions_per_ip' => 10,
         'rate_limit_minutes' => 60,

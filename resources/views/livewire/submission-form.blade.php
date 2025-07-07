@@ -131,9 +131,7 @@
                         </noscript>
                     @elseif($this->getBotProtectionType() === 'turnstile')
                         <!-- Cloudflare Turnstile implementation -->
-                        <div class="cf-turnstile" data-sitekey="{{ config('turnstile.site_key') }}"
-                            data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired">
-                        </div>
+                        <x-turnstile wire:model="turnstile" />
 
                         {{-- Fallback for when JavaScript is disabled --}}
                         <noscript>
@@ -292,16 +290,7 @@
             });
         </script>
     @elseif($this->getBotProtectionType() === 'turnstile')
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
         <script>
-            function onTurnstileSuccess(token) {
-                @this.set('turnstile', token);
-            }
-
-            function onTurnstileExpired() {
-                @this.set('turnstile', '');
-            }
-
             // Listen for reset-turnstile event
             document.addEventListener('sumimasen-cms.livewire::init', () => {
                 Livewire.on('reset-turnstile', () => {
