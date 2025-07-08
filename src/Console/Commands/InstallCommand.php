@@ -83,6 +83,12 @@ class InstallCommand extends Command
             '--tag' => 'seo-suite-config',
         ]);
 
+        // Publish Filament Menu Builder migrations
+        $this->call('vendor:publish', [
+            '--provider' => 'Datlechin\FilamentMenuBuilder\FilamentMenuBuilderServiceProvider',
+            '--tag' => 'filament-menu-builder-config',
+        ]);
+
         $this->info('Publishing CMS migrations...');
         $this->call('vendor:publish', ['--tag' => 'sumimasen-cms-migrations']);
 
