@@ -58,7 +58,7 @@ return [
             'has_single' => true,
             'archive_SEO_title' => 'Archive: Posts',
             'archive_SEO_description' => 'Archive of all posts',
-
+            'eager_load' => ['categories', 'tags']
         ],
         'categories' => [
             'model' => Littleboy130491\Sumimasen\Models\Category::class,
@@ -67,7 +67,6 @@ return [
             'has_archive' => true,
             'has_single' => false,
             'display_content_from' => 'posts', // the relationship name in the model
-
         ],
         'tags' => [
             'model' => Littleboy130491\Sumimasen\Models\Tag::class,
@@ -76,7 +75,6 @@ return [
             'has_archive' => true,
             'has_single' => false,
             'display_content_from' => 'posts', // the relationship name in the model
-
         ],
     ],
 
