@@ -72,6 +72,17 @@ class InstallCommand extends Command
             '--tag' => 'migrations',
         ]);
 
+        // Publish SEO Tools config
+        $this->call('vendor:publish', [
+            '--provider' => 'Artesaos\SEOTools\Providers\SEOToolsServiceProvider',
+        ]);
+
+        // Publish SEO Suite config
+        $this->call('vendor:publish', [
+            '--provider' => 'Littleboy130491\SeoSuite\SeoSuiteServiceProvider',
+            '--tag' => 'seo-suite-config',
+        ]);
+
         $this->info('Publishing CMS migrations...');
         $this->call('vendor:publish', ['--tag' => 'sumimasen-cms-migrations']);
 
