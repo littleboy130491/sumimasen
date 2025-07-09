@@ -455,7 +455,7 @@ class ContentController extends Controller
     private function createArchiveObjectFromStaticPage($staticPage, string $contentTypeKey, array $config): object
     {
         return (object) [
-            'content' => $staticPage, // the full page object
+            'static_page' => $staticPage, // the full page object
             'post_type' => $contentTypeKey,
             'source' => 'static_page',
             'config' => $config,
@@ -492,8 +492,8 @@ class ContentController extends Controller
      */
     private function setArchiveSeoMetadata(string $contentTypeKey, object $archive): void
     {
-        $title = $archive->seo_title ?? $archive->title;
-        $description = $archive->seo_description ?? $archive->description;
+        $title = $archive->seo_title ?? $archive->static_page->title;
+        $description = $archive->seo_description ?? $archive->static_page->excerpt;
 
         if ($title) {
             SEOTools::setTitle($title);
