@@ -455,18 +455,11 @@ class ContentController extends Controller
     private function createArchiveObjectFromStaticPage($staticPage, string $contentTypeKey, array $config): object
     {
         return (object) [
-            'title' => $staticPage->title,
-            'subtitle' => $staticPage->subtitle ?? null,
-            'description' => $staticPage->excerpt ?? strip_tags(Str::limit($staticPage->content, 200)),
-            'content' => $staticPage->content,
-            'featured_image' => $staticPage->featured_image ?? null,
-            'seo_title' => $staticPage->seo_title ?? $staticPage->title,
-            'seo_description' => $staticPage->seo_description ?? $staticPage->excerpt,
+            'content' => $staticPage, // the full page object
             'post_type' => $contentTypeKey,
             'source' => 'static_page',
-            'static_page' => $staticPage, // Include the full page object
             'config' => $config,
-            'per_page' => $staticPage->per_page ?? $config['per_page'] ?? $this->paginationLimit,
+            'per_page' => $config['per_page'] ?? $this->paginationLimit,
         ];
     }
 
