@@ -174,13 +174,15 @@ class ContentController extends Controller
         $originalKey = $this->getOriginalContentTypeKey($content_type_archive_key);
         $eagerLoadRelationships = $this->getEagerLoadRelationships($originalKey);
 
+        $archive = $this->createArchiveObject($content_type_archive_key, $lang);
+        $paginationLimit = $archive->per_page ?? $this->paginationLimit;
+
         $posts = $modelClass::with($eagerLoadRelationships)
             ->where('status', ContentStatus::Published)
             ->orderBy('created_at', 'desc')
             ->paginate($this->paginationLimit);
 
-        $archive = $this->createArchiveObject($content_type_archive_key);
-        $this->setArchiveSeoMetadata($content_type_archive_key);
+        $this->setArchiveSeoMetadata($content_type_archive_key, $archive);
 
         return $this->renderContentView(
             template: $this->resolveArchiveTemplate($content_type_archive_key),
@@ -190,7 +192,7 @@ class ContentController extends Controller
             viewData: [
                 'post_type' => $content_type_archive_key,
                 'archive' => $archive,
-                'title' => 'Archive: ' . Str::title(str_replace('-', ' ', $content_type_archive_key)),
+                'title' => $archive->title ?? 'Archive: ' . Str::title(str_replace('-', ' ', $content_type_archive_key)),
                 'posts' => $posts,
             ]
         );
@@ -400,36 +402,117 @@ class ContentController extends Controller
     }
 
     /**
-     * Create an archive object for archive pages
+     * Create an archive object for archive pages, with static page content if configured
      */
-    private function createArchiveObject(string $contentTypeKey): object
+    private function createArchiveObject(string $contentTypeKey, string $lang): object
+    {
+        $originalKey = $this->getOriginalContentTypeKey($contentTypeKey);
+        $config = Config::get("cms.content_models.{$originalKey}", []);
+
+        // Check if archive_page_slug is configured
+        $pageSlug = $config['archive_page_slug'] ?? null;
+
+        if ($pageSlug) {
+            $staticPage = $this->findStaticPageBySlug($pageSlug, $lang);
+            if ($staticPage) {
+                return $this->createArchiveObjectFromStaticPage($staticPage, $contentTypeKey, $config);
+            }
+        }
+
+        // Fallback to default archive object
+        return $this->createDefaultArchiveObject($contentTypeKey, $config);
+    }
+
+    /**
+     * Find static page by slug with language fallback
+     */
+    private function findStaticPageBySlug(string $slug, string $lang): ?\Illuminate\Database\Eloquent\Model
+    {
+        $modelClass = $this->getValidModelClass($this->staticPageClass);
+
+        // Try requested language first
+        $page = $modelClass::where('status', ContentStatus::Published)
+            ->whereJsonContainsLocale('slug', $lang, $slug)
+            ->first();
+
+        if ($page) {
+            return $page;
+        }
+
+        // Try default language as fallback
+        if ($lang !== $this->defaultLanguage) {
+            $page = $modelClass::where('status', ContentStatus::Published)
+                ->whereJsonContainsLocale('slug', $this->defaultLanguage, $slug)
+                ->first();
+        }
+
+        return $page;
+    }
+
+    /**
+     * Create archive object from static page
+     */
+    private function createArchiveObjectFromStaticPage($staticPage, string $contentTypeKey, array $config): object
     {
         return (object) [
-            'name' => Str::title(str_replace('-', ' ', $contentTypeKey)),
+            'title' => $staticPage->title,
+            'subtitle' => $staticPage->subtitle ?? null,
+            'description' => $staticPage->excerpt ?? strip_tags(Str::limit($staticPage->content, 200)),
+            'content' => $staticPage->content,
+            'featured_image' => $staticPage->featured_image ?? null,
+            'seo_title' => $staticPage->seo_title ?? $staticPage->title,
+            'seo_description' => $staticPage->seo_description ?? $staticPage->excerpt,
             'post_type' => $contentTypeKey,
-            'description' => 'Archive of all ' . Str::title(str_replace('-', ' ', $contentTypeKey)) . ' content.',
+            'source' => 'static_page',
+            'static_page' => $staticPage, // Include the full page object
+            'config' => $config,
+            'per_page' => $staticPage->per_page ?? $config['per_page'] ?? $this->paginationLimit,
         ];
     }
 
     /**
-     * Set SEO metadata for archive pages using original config key
+     * Create default archive object when no static page is found
      */
-    private function setArchiveSeoMetadata(string $contentTypeKey): void
+    private function createDefaultArchiveObject(string $contentTypeKey, array $config): object
     {
-        $originalKey = $this->getOriginalContentTypeKey($contentTypeKey);
-        $archiveTitle = Config::get("cms.content_models.{$originalKey}.archive_SEO_title");
-        $archiveDescription = Config::get("cms.content_models.{$originalKey}.archive_SEO_description");
+        $name = $config['name'] ?? Str::title(str_replace('-', ' ', $contentTypeKey));
 
-        if ($archiveTitle) {
-            SEOTools::setTitle($archiveTitle);
-        } else {
-            SEOTools::setTitle('Archive: ' . Str::title(str_replace('-', ' ', $contentTypeKey)));
+        return (object) [
+            'title' => $name,
+            'subtitle' => null,
+            'description' => 'Archive of all ' . $name . ' content.',
+            'content' => null,
+            'featured_image' => null,
+            'seo_title' => $config['archive_SEO_title'] ?? "Archive: {$name}",
+            'seo_description' => $config['archive_SEO_description'] ?? "Archive of all {$name}",
+            'post_type' => $contentTypeKey,
+            'source' => 'config',
+            'static_page' => null,
+            'config' => $config,
+            'per_page' => $config['per_page'] ?? $this->paginationLimit,
+        ];
+    }
+
+
+    /**
+     * Set SEO metadata for archive pages with static page support
+     */
+    private function setArchiveSeoMetadata(string $contentTypeKey, object $archive): void
+    {
+        $title = $archive->seo_title ?? $archive->title;
+        $description = $archive->seo_description ?? $archive->description;
+
+        if ($title) {
+            SEOTools::setTitle($title);
         }
 
-        if ($archiveDescription) {
-            SEOTools::setDescription($archiveDescription);
-        } else {
-            SEOTools::setDescription('Archive of all ' . $contentTypeKey);
+        if ($description) {
+            SEOTools::setDescription($description);
+        }
+
+        // Set additional SEO if static page has more data
+        if ($archive->static_page && method_exists($this, 'setsSeo')) {
+            $this->setsSeo($archive->static_page);
         }
     }
 
