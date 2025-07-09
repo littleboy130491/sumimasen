@@ -58,35 +58,52 @@ Route::prefix('{lang}')
     ->middleware(['setLocale', 'web'])
     ->group(function () {
 
-        $allModelConfigs = Config::get('cms.content_models', []);
+         // Cache the slug arrays to avoid looping on every request, for 1 day = 86400 sec
+        $slugArrays = cache()->remember('cms.route_slugs', 86400, function () {
+            $allModelConfigs = Config::get('cms.content_models', []);
 
-        $contentArchiveKeys = [];
-        $contentSingleKeys = [];
-        $taxonomyArchiveKeys = [];
+            $contentArchiveKeys = [];
+            $contentSingleKeys = [];
+            $taxonomyArchiveKeys = [];
 
-        foreach ($allModelConfigs as $key => $details) {
-            // Skip the '' key
-            if (empty($key)) {
-                continue;
+            foreach ($allModelConfigs as $key => $details) {
+                // Skip the '' key
+                if (empty($key)) {
+                    continue;
+                }
+
+                $type = $details['type'] ?? null;
+                $hasArchive = $details['has_archive'] ?? false;
+                $hasSingle = $details['has_single'] ?? false;
+                
+                // Use custom slug if provided, otherwise fallback to key
+                $slug = $details['slug'] ?? $key;
+
+                if ($type === 'content') {
+                    if ($hasArchive) {
+                        $contentArchiveKeys[] = $slug;
+                    }
+                    if ($hasSingle) {
+                        $contentSingleKeys[] = $slug;
+                    }
+                } elseif ($type === 'taxonomy') {
+                    if ($hasArchive) {
+                        $taxonomyArchiveKeys[] = $slug;
+                    }
+                }
             }
 
-            $type = $details['type'] ?? null;
-            $hasArchive = $details['has_archive'] ?? false;
-            $hasSingle = $details['has_single'] ?? false;
+            return [
+                'content_archive' => $contentArchiveKeys,
+                'content_single' => $contentSingleKeys,
+                'taxonomy_archive' => $taxonomyArchiveKeys,
+            ];
+        });
 
-            if ($type === 'content') {
-                if ($hasArchive) {
-                    $contentArchiveKeys[] = $key;
-                }
-                if ($hasSingle) {
-                    $contentSingleKeys[] = $key;
-                }
-            } elseif ($type === 'taxonomy') {
-                if ($hasArchive) {
-                    $taxonomyArchiveKeys[] = $key;
-                }
-            }
-        }
+        $contentArchiveKeys = $slugArrays['content_archive'];
+        $contentSingleKeys = $slugArrays['content_single'];
+        $taxonomyArchiveKeys = $slugArrays['taxonomy_archive'];
+
 
         // Regex for matching valid keys from your config.
         // preg_quote is important for special characters in keys.

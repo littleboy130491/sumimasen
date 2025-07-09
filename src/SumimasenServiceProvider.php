@@ -83,6 +83,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
             \Littleboy130491\Sumimasen\Console\Commands\RefreshInstagramToken::class,
             \Littleboy130491\Sumimasen\Console\Commands\SyncCuratorMedia::class,
             \Littleboy130491\Sumimasen\Console\Commands\TestLoginNotification::class,
+            \Littleboy130491\Sumimasen\Console\Commands\ClearCmsRoutes::class,
         ];
     }
 
