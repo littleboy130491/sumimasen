@@ -18,10 +18,15 @@ class ContentController extends Controller
     use SetsSeoSuite;
 
     protected string $templateBase = 'templates';
+
     protected string $packageNamespace = 'sumimasen-cms';
+
     protected string $defaultLanguage;
+
     protected int $paginationLimit;
+
     protected string $staticPageClass;
+
     protected string $frontPageSlug;
 
     public function __construct()
@@ -47,12 +52,12 @@ class ContentController extends Controller
             ->first();
 
         // Fallback to first available page if home not found
-        if (!$content) {
+        if (! $content) {
             $content = $modelClass::where('status', ContentStatus::Published)
                 ->orderBy('id', 'asc')
                 ->first();
 
-            if (!$content) {
+            if (! $content) {
                 abort(404, 'Home page content not found.');
             }
         }
@@ -92,7 +97,7 @@ class ContentController extends Controller
         }
 
         // Try fallback content model if page not found
-        if (!$content) {
+        if (! $content) {
             $fallbackResult = $this->tryFallbackContentModel($lang, $page_slug, $request);
             if ($fallbackResult) {
                 return $fallbackResult;
@@ -137,7 +142,7 @@ class ContentController extends Controller
             }
         }
 
-        if (!$content) {
+        if (! $content) {
             throw (new ModelNotFoundException)->setModel(
                 $modelClass,
                 "No content found for slug '{$content_slug}'"
@@ -193,7 +198,7 @@ class ContentController extends Controller
                 'post_type' => $content_type_archive_key,
                 'archive' => $archive,
                 'content' => $archive->static_page ?? null,
-                'title' => $archive->static_page->title ?? 'Archive: ' . Str::title(str_replace('-', ' ', $content_type_archive_key)),
+                'title' => $archive->static_page->title ?? 'Archive: '.Str::title(str_replace('-', ' ', $content_type_archive_key)),
                 'posts' => $posts,
             ]
         );
@@ -214,7 +219,7 @@ class ContentController extends Controller
             }
         }
 
-        if (!$taxonomyModel) {
+        if (! $taxonomyModel) {
             throw (new ModelNotFoundException)->setModel(
                 $modelClass,
                 "Taxonomy not found for slug '{$taxonomy_slug}'"
@@ -238,7 +243,7 @@ class ContentController extends Controller
                 'taxonomy_slug' => $taxonomy_slug,
                 'taxonomy_model' => $taxonomyModel,
                 'title' => $taxonomyModel->title ??
-                    Str::title(str_replace('-', ' ', $taxonomy_key)) . ': ' .
+                    Str::title(str_replace('-', ' ', $taxonomy_key)).': '.
                     Str::title(str_replace('-', ' ', $taxonomy_slug)),
                 'posts' => $posts,
             ]
@@ -281,6 +286,7 @@ class ContentController extends Controller
     private function getOriginalContentTypeKey(string $slug): string
     {
         $slugToKeyMap = $this->getSlugToKeyMap();
+
         return $slugToKeyMap[$slug] ?? $slug;
     }
 
@@ -294,14 +300,14 @@ class ContentController extends Controller
 
         $modelKey = $slugToKeyMap[$contentTypeKey] ?? null;
 
-        if (!$modelKey) {
+        if (! $modelKey) {
             abort(404, "Content type '{$contentTypeKey}' not found in configuration.");
         }
 
         $modelConfig = $keyToConfigMap[$modelKey];
         $modelClass = $modelConfig['model'];
 
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             abort(404, "Model for content type '{$contentTypeKey}' not found or not configured correctly.");
         }
 
@@ -323,7 +329,7 @@ class ContentController extends Controller
             ->first();
 
         // Fallback to default locale if not found
-        if (!$content && $requestedLocale !== $defaultLanguage) {
+        if (! $content && $requestedLocale !== $defaultLanguage) {
             $content = $modelClass::where('status', ContentStatus::Published)
                 ->whereJsonContainsLocale('slug', $defaultLanguage, $slug)
                 ->first();
@@ -340,7 +346,7 @@ class ContentController extends Controller
         $fallbackContentType = Config::get('cms.fallback_content_type', 'posts');
         $modelClass = Config::get("cms.content_models.{$fallbackContentType}.model");
 
-        if (!$modelClass || !class_exists($modelClass)) {
+        if (! $modelClass || ! class_exists($modelClass)) {
             return null;
         }
 
@@ -385,7 +391,7 @@ class ContentController extends Controller
      */
     private function getValidModelClass(string $modelClass): string
     {
-        if (!$modelClass || !class_exists($modelClass)) {
+        if (! $modelClass || ! class_exists($modelClass)) {
             return Page::class;
         }
 
@@ -474,7 +480,7 @@ class ContentController extends Controller
         return (object) [
             'title' => $name,
             'subtitle' => null,
-            'description' => 'Archive of all ' . $name . ' content.',
+            'description' => 'Archive of all '.$name.' content.',
             'content' => null,
             'featured_image' => null,
             'seo_title' => $config['archive_SEO_title'] ?? "Archive: {$name}",
@@ -486,7 +492,6 @@ class ContentController extends Controller
             'per_page' => $config['per_page'] ?? $this->paginationLimit,
         ];
     }
-
 
     /**
      * Set SEO metadata for archive pages with static page support
@@ -518,7 +523,7 @@ class ContentController extends Controller
         $originalKey = $this->getOriginalContentTypeKey($taxonomyKey);
         $relationshipName = Config::get("cms.content_models.{$originalKey}.display_content_from", 'posts');
 
-        if (!method_exists($taxonomyModel, $relationshipName)) {
+        if (! method_exists($taxonomyModel, $relationshipName)) {
             \Illuminate\Support\Facades\Log::warning("Configured relationship '{$relationshipName}' not found for taxonomy '{$taxonomyKey}'. Falling back to 'posts'.");
             $relationshipName = 'posts';
         }
@@ -727,13 +732,13 @@ class ContentController extends Controller
     {
         $templates = [];
 
-        if (!empty($taxonomyModel->template)) {
+        if (! empty($taxonomyModel->template)) {
             $templates[] = "{$this->templateBase}.archives.{$taxonomyModel->template}";
         }
 
         if (method_exists($taxonomyModel, 'getTranslation')) {
             $defaultSlug = $taxonomyModel->getTranslation('slug', $this->defaultLanguage);
-            if (!empty($defaultSlug)) {
+            if (! empty($defaultSlug)) {
                 $templates[] = "{$this->templateBase}.archives.{$defaultSlug}";
             }
         }
@@ -748,13 +753,13 @@ class ContentController extends Controller
     {
         $templates = [];
 
-        if (!empty($content->template)) {
+        if (! empty($content->template)) {
             $templates[] = "{$this->templateBase}.{$content->template}";
         }
 
         if (method_exists($content, 'getTranslation')) {
             $defaultSlug = $content->getTranslation('slug', $this->defaultLanguage);
-            if (!empty($defaultSlug)) {
+            if (! empty($defaultSlug)) {
                 $templates[] = "{$this->templateBase}.{$defaultSlug}";
             }
         }
@@ -807,7 +812,7 @@ class ContentController extends Controller
 
         if ($content) {
             if ($content instanceof Model) {
-                $classes[] = 'type-' . ($contentTypeKey ?? Str::kebab(Str::singular($content->getTable())));
+                $classes[] = 'type-'.($contentTypeKey ?? Str::kebab(Str::singular($content->getTable())));
 
                 $slugForClass = '';
                 if (method_exists($content, 'getTranslation')) {
@@ -817,25 +822,25 @@ class ContentController extends Controller
                 }
 
                 if ($slugForClass) {
-                    $classes[] = 'slug-' . $slugForClass;
+                    $classes[] = 'slug-'.$slugForClass;
                 }
 
-                if (!empty($content->template)) {
-                    $classes[] = 'template-' . Str::kebab($content->template);
+                if (! empty($content->template)) {
+                    $classes[] = 'template-'.Str::kebab($content->template);
                 }
             } elseif (is_object($content)) {
                 if (isset($content->post_type)) {
-                    $classes[] = 'archive-' . $content->post_type;
+                    $classes[] = 'archive-'.$content->post_type;
                 } elseif (isset($content->taxonomy)) {
-                    $classes[] = 'taxonomy-' . $content->taxonomy;
+                    $classes[] = 'taxonomy-'.$content->taxonomy;
                     if (isset($content->taxonomy_slug)) {
-                        $classes[] = 'term-' . $content->taxonomy_slug;
+                        $classes[] = 'term-'.$content->taxonomy_slug;
                     }
                 }
             }
         } else {
             if ($contentTypeKey) {
-                $classes[] = 'page-' . $contentTypeKey;
+                $classes[] = 'page-'.$contentTypeKey;
             }
         }
 
