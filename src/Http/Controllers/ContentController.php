@@ -602,7 +602,9 @@ class ContentController extends Controller
 
         $templates = [
             "{$this->templateBase}.archives.archive-{$content_type_archive_key}",
+            "{$this->templateBase}.archives.archive-{$originalKey}",
             "{$this->templateBase}.archive-{$content_type_archive_key}",
+            "{$this->templateBase}.archive-{$originalKey}",
             "{$this->templateBase}.archives.archive",
             "{$this->templateBase}.archive",
         ];
