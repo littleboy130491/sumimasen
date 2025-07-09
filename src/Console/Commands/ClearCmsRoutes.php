@@ -3,8 +3,8 @@
 namespace Littleboy130491\Sumimasen\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 
 class ClearCmsRoutes extends Command
 {
@@ -30,13 +30,13 @@ class ClearCmsRoutes extends Command
         // Clear Laravel's route cache
         $this->info('Clearing Laravel route cache...');
         Artisan::call('route:clear');
-        
+
         // Clear CMS route cache
         $this->info('Clearing CMS route cache...');
         Cache::forget('cms.route_slugs');
-        
+
         $this->info('All route caches cleared successfully!');
-        
+
         return Command::SUCCESS;
     }
 }

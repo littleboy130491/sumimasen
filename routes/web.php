@@ -58,7 +58,7 @@ Route::prefix('{lang}')
     ->middleware(['setLocale', 'web'])
     ->group(function () {
 
-         // Cache the slug arrays to avoid looping on every request, for 1 day = 86400 sec
+        // Cache the slug arrays to avoid looping on every request, for 1 day = 86400 sec
         $slugArrays = cache()->remember('cms.route_slugs', 86400, function () {
             $allModelConfigs = Config::get('cms.content_models', []);
 
@@ -75,7 +75,7 @@ Route::prefix('{lang}')
                 $type = $details['type'] ?? null;
                 $hasArchive = $details['has_archive'] ?? false;
                 $hasSingle = $details['has_single'] ?? false;
-                
+
                 // Use custom slug if provided, otherwise fallback to key
                 $slug = $details['slug'] ?? $key;
 
@@ -103,7 +103,6 @@ Route::prefix('{lang}')
         $contentArchiveKeys = $slugArrays['content_archive'];
         $contentSingleKeys = $slugArrays['content_single'];
         $taxonomyArchiveKeys = $slugArrays['taxonomy_archive'];
-
 
         // Regex for matching valid keys from your config.
         // preg_quote is important for special characters in keys.
