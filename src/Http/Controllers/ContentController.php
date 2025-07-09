@@ -180,7 +180,7 @@ class ContentController extends Controller
         $posts = $modelClass::with($eagerLoadRelationships)
             ->where('status', ContentStatus::Published)
             ->orderBy('created_at', 'desc')
-            ->paginate($this->paginationLimit);
+            ->paginate($paginationLimit);
 
         $this->setArchiveSeoMetadata($content_type_archive_key, $archive);
 
