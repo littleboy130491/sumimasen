@@ -192,7 +192,8 @@ class ContentController extends Controller
             viewData: [
                 'post_type' => $content_type_archive_key,
                 'archive' => $archive,
-                'title' => $archive->title ?? 'Archive: ' . Str::title(str_replace('-', ' ', $content_type_archive_key)),
+                'content' => $archive->static_page ?? null,
+                'title' => $archive->static_page->title ?? 'Archive: ' . Str::title(str_replace('-', ' ', $content_type_archive_key)),
                 'posts' => $posts,
             ]
         );
