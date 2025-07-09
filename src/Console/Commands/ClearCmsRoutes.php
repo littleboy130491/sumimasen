@@ -31,9 +31,15 @@ class ClearCmsRoutes extends Command
         $this->info('Clearing Laravel route cache...');
         Artisan::call('route:clear');
 
-        // Clear CMS route cache
+        // Clear CMS route caches
         $this->info('Clearing CMS route cache...');
         Cache::forget('cms.route_slugs');
+
+        $this->info('Clearing CMS slug-to-key mapping cache...');
+        Cache::forget('cms.slug_to_key_map');
+
+        $this->info('Clearing CMS key-to-config mapping cache...');
+        Cache::forget('cms.key_to_config_map');
 
         $this->info('All route caches cleared successfully!');
 

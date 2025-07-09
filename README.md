@@ -2,9 +2,6 @@
 
 A powerful, multilingual Laravel CMS package built with Filament v3. Features hierarchical content management, role-based permissions, dynamic components, and extensive customization options.
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/littleboy130491/cms.svg?style=flat-square)](https://packagist.org/packages/littleboy130491/cms)
-[![Total Downloads](https://img.shields.io/packagist/dt/littleboy130491/cms.svg?style=flat-square)](https://packagist.org/packages/littleboy130491/cms)
-
 ## Features
 
 🌐 **Multilingual Content** - Full translation support with smart fallback and URL redirection  
@@ -13,12 +10,12 @@ A powerful, multilingual Laravel CMS package built with Filament v3. Features hi
 🧩 **Dynamic Components** - Flexible component system for reusable content blocks  
 📊 **SEO Optimized** - Built-in SEO suite integration and sitemap generation  
 📱 **Responsive Admin** - Beautiful Filament-powered admin interface  
-🎨 **Template System** - WordPress-like template hierarchy for complete design control  
+🎨 **Template System** - WordPress-like template hierarchy with custom slug support  
 📧 **Form System** - Built-in contact forms with email notifications and reCAPTCHA  
 📈 **Analytics** - Page views and likes tracking with real-time updates  
 🔄 **Scheduled Publishing** - Automatic content publishing with cron integration  
 📷 **Media Management** - Advanced media handling with Curator integration  
-🎯 **Performance** - Optimized queries, caching, and queue support  
+🎯 **Performance** - Optimized queries, caching, and route resolution  
 💬 **Comments System** - Hierarchical comments with moderation and approval workflow
 
 ## Requirements
@@ -102,24 +99,66 @@ Navigate to **Settings > General** in the admin panel to configure:
 
 ### Content Models Configuration
 
-The CMS supports multiple content types defined in `config/cms.php`:
+The CMS supports multiple content types with custom slug support defined in `config/cms.php`:
 
 ```php
 'content_models' => [
     'pages' => [
         'model' => \Littleboy130491\Sumimasen\Models\Page::class,
-        'route_prefix' => '',
-        'translatable' => true,
+        'name' => 'Pages',
+        'type' => 'content',
+        'has_archive' => false,
+        'has_single' => true,
     ],
     'posts' => [
-        'model' => \Littleboy130491\Sumimasen\Models\Post::class,
-        'route_prefix' => 'blog',
-        'translatable' => true,
-        'archive_view' => 'templates.archives.posts',
+        'model' => \App\Models\Post::class,
+        'name' => 'Posts',
+        'type' => 'content',
+        'has_archive' => true,
+        'has_single' => true,
+        'archive_SEO_title' => 'Blog Posts',
+        'archive_SEO_description' => 'Latest news and articles',
+        'eager_load' => ['categories', 'tags'],
+    ],
+    'categories' => [
+        'model' => \Littleboy130491\Sumimasen\Models\Category::class,
+        'name' => 'Categories',
+        'type' => 'taxonomy',
+        'has_archive' => true,
+        'has_single' => false,
+        'display_content_from' => 'posts',
+    ],
+    'facilities' => [
+        'model' => \App\Models\Facility::class,
+        'name' => 'Facilities',
+        'type' => 'content',
+        'slug' => 'fasilitas', // Custom slug override
+        'has_archive' => true,
+        'has_single' => true,
+    ],
+    'commercials' => [
+        'model' => \App\Models\Commercial::class,
+        'name' => 'Commercials',
+        'type' => 'content',
+        'slug' => 'area-komersil', // Custom slug override
+        'has_archive' => false,
+        'has_single' => true,
     ],
     // Add your custom content types here
 ],
 ```
+
+#### Custom Slug Support
+
+The CMS supports custom URL slugs different from the configuration key:
+
+- **Without custom slug**: `/facilities` (uses the config key)
+- **With custom slug**: `/fasilitas` (uses the custom slug value)
+
+This allows you to have:
+- Clean, localized URLs
+- SEO-friendly paths
+- Maintain internal code organization
 
 ### Multilingual Setup
 
@@ -157,62 +196,188 @@ Comments support:
 - **Admin Management**: Full CRUD operations in Filament admin
 - **Frontend Integration**: Ready-to-use comment components
 
-### Template System
+## Template System
 
-Create custom templates in `resources/views/templates/`:
+The CMS uses a sophisticated template hierarchy system with WordPress-like template resolution and custom slug support.
+
+### Template Hierarchy
+
+Templates are resolved in order of specificity, checking both your application views and the package's fallback views:
+
+#### 1. Home Page Templates
+
+For the home page (`/`):
+
+```
+1. user defined template from CMS
+2. templates/home.blade.php                      (content slug in default language)
+3. templates/singles/home.blade.php              (specific home template)
+4. templates/singles/front-page.blade.php        (front page template)
+5. templates/front-page.blade.php                (front page template)
+6. templates/singles/default.blade.php           (default single)
+7. templates/default.blade.php                   (global default)
+```
+
+#### 2. Static Page Templates
+
+For static pages (e.g., `/about`):
+
+```
+1. user defined template from CMS
+2. templates/about.blade.php                     (content slug in default language)
+3. templates/singles/about.blade.php             (specific page by slug)
+4. templates/singles/page.blade.php              (all pages)
+5. templates/page.blade.php                      (all pages)
+6. templates/singles/default.blade.php           (default single)
+7. templates/default.blade.php                   (global default)
+```
+
+#### 3. Single Content Templates
+
+For single content items with custom slug support (e.g., `/fasilitas/pool-area`):
+
+```
+1. user defined template from CMS
+2. templates/pool-area.blade.php                      (content slug in default language)
+3. templates/singles/fasilitas-pool-area.blade.php    (specific content by slug)
+4. templates/singles/fasilitas.blade.php              (all content of this type by slug)
+5. templates/fasilitas.blade.php                      (all content of this type)
+6. templates/singles/facility-pool-area.blade.php     (fallback by config key)
+7. templates/singles/facility.blade.php               (fallback by config key)
+8. templates/facility.blade.php                       (fallback by config key)
+9. templates/singles/default.blade.php                (default single)
+10. templates/default.blade.php                       (global default)
+```
+
+#### 4. Archive Templates
+
+For content archives (e.g., `/fasilitas`):
+
+```
+1. templates/archives/archive-fasilitas.blade.php     (specific archive by slug)
+2. templates/archive-fasilitas.blade.php              (specific archive by slug)
+3. templates/archives/archive.blade.php               (default archive)
+4. templates/archive.blade.php                        (default archive)
+```
+
+#### 5. Taxonomy Templates
+
+For taxonomy archives (e.g., `/categories/technology`):
+
+```
+1. user defined template from CMS
+2. templates/technology.blade.php                     (taxonomy slug in default language)
+3. templates/archives/categories-technology.blade.php (specific taxonomy-term)
+4. templates/archives/categories.blade.php            (all terms in taxonomy)
+5. templates/categories-technology.blade.php          (specific taxonomy-term)
+6. templates/categories.blade.php                     (all terms in taxonomy)
+7. templates/archives/archive.blade.php               (default archive)
+8. templates/archive.blade.php                        (default archive)
+```
+
+### Template Structure
+
+Create your templates in `resources/views/templates/`:
 
 ```
 templates/
-├── default.blade.php           # Default template
-├── home.blade.php             # Home page template
+├── default.blade.php                          # Global fallback
+├── home.blade.php                             # Home page
+├── page.blade.php                             # All static pages
+├── custom-hero-layout.blade.php               # User-defined template
+├── custom-about-layout.blade.php              # User-defined template
+├── about.blade.php                            # Content slug template
+├── contact.blade.php                          # Content slug template
 ├── singles/
-│   ├── page.blade.php         # All pages
-│   ├── post.blade.php         # All posts
-│   └── page-about.blade.php   # Specific page
-└── archives/
-    ├── archive.blade.php      # Default archive
-    └── posts.blade.php        # Posts archive
+│   ├── default.blade.php                     # Default single template
+│   ├── page.blade.php                        # All static pages
+│   ├── page-about.blade.php                  # Specific page
+│   ├── post.blade.php                        # All posts
+│   ├── post-featured.blade.php               # Specific post
+│   ├── fasilitas.blade.php                   # Custom slug content type
+│   └── facility.blade.php                    # Fallback for original key
+├───archives/
+    ├─── archive.blade.php                     # Default archive
+    ├─── archive-posts.blade.php               # Posts archive
+    ├─── archive-fasilitas.blade.php           # Custom slug archive
+    ├─── categories.blade.php                  # Category taxonomy
+    └─── categories-technology.blade.php       # Specific category
 ```
 
-## Available Commands
+### Template Context
 
-### Content Management
-```bash
-# Install CMS
-php artisan cms:install
+Each template receives specific variables:
 
-# Generate permission roles
-php artisan cms:generate-roles
-
-# Publish scheduled content
-php artisan cms:publish-scheduled-content
-
-# Generate sitemap
-php artisan cms:generate-sitemap
+#### All Templates
+```php
+$lang           // Current language
+$bodyClasses    // Generated CSS classes
 ```
 
-### Development Tools
-```bash
-# Create new model
-php artisan cms:create-model
-
-# Create new migration
-php artisan cms:create-migration
-
-# Create new exporter
-php artisan cms:create-exporter
-
-# Create new importer
-php artisan cms:create-importer
+#### Single Content Templates
+```php
+$content        // The content model
+$content_type   // Content type slug
+$content_slug   // Content slug
+$title          // Content title
 ```
 
-### Media & External Services
-```bash
-# Sync Curator media files
-php artisan cms:sync-curator-media
+#### Archive Templates
+```php
+$posts          // Paginated collection
+$archive        // Archive object with metadata
+$post_type      // Content type slug
+$title          // Archive title
+```
 
-# Refresh Instagram token
-php artisan cms:refresh-instagram-token
+#### Taxonomy Templates
+```php
+$posts           // Related content (paginated)
+$taxonomy        // Taxonomy key
+$taxonomy_slug   // Taxonomy slug
+$taxonomy_model  // Taxonomy model
+$title           // Taxonomy title
+```
+
+
+##### Template Body Classes
+
+The system automatically generates CSS classes for styling:
+
+```php
+// Example body classes
+"lang-en type-post slug-my-post-title"
+"lang-id type-fasilitas slug-pool-area"
+"lang-en archive-posts archive-page"
+"lang-id taxonomy-categories term-technology"
+```
+
+Use these in your CSS:
+
+```css
+.lang-en .post { /* English posts */ }
+.lang-id .fasilitas { /* Indonesian facilities */ }
+.archive-posts { /* Posts archive styling */ }
+.taxonomy-categories { /* Category taxonomy styling */ }
+```
+
+### Performance Optimization
+
+The template system includes several performance optimizations:
+
+1. **Cached Route Resolution**: Routes are cached for 24 hours
+2. **Cached Config Lookups**: Content model configs are cached
+3. **Eager Loading**: Automatically loads configured relationships
+4. **Template Caching**: Laravel's view caching applies to all templates
+
+To clear caches:
+
+```bash
+# Clear all CMS caches
+php artisan cms:routes-clear
+
+# Clear view cache
+php artisan view:clear
 ```
 
 ## Advanced Features
@@ -407,6 +572,7 @@ Automated tasks include:
 - Database indexing
 - Asset minification
 - Optimized comment queries with relationship loading
+- Cached route resolution for custom slugs
 
 ## Customization
 
@@ -438,79 +604,6 @@ SumimasenPlugin::make()
     ])
 ```
 
-### Custom Comment Integration
-
-Create custom comment forms and displays:
-
-```php
-// Custom comment resource
-class CustomCommentResource extends CommentResource
-{
-    use CommentTrait;
-    
-    public static function form(Form $form): Form
-    {
-        return $form->schema(self::getCommentFormSchema());
-    }
-    
-    public static function table(Table $table): Table
-    {
-        return $table->columns(self::getResourceTableColumns());
-    }
-}
-```
-
-### Custom Templates
-
-Create specialized templates:
-- `page-{slug}.blade.php` - Specific pages
-- `single-{type}.blade.php` - Content types
-- `archive-{type}.blade.php` - Archive pages
-- `taxonomy-{taxonomy}.blade.php` - Taxonomy archives
-
-## Testing
-
-Run the test suite:
-
-```bash
-composer test
-```
-
-Run specific test types:
-
-```bash
-composer test-coverage  # With coverage report
-composer analyse        # Static analysis
-composer format         # Code formatting
-```
-
-## Troubleshooting
-
-### Common Issues
-
-**Plugin not showing resources:**
-- Ensure plugin is registered in panel provider
-- Clear Filament cache: `php artisan filament:optimize-clear`
-
-**Migrations failing:**
-- Check database permissions
-- Ensure all required packages are installed
-- Run: `php artisan migrate:status`
-
-**Assets not loading:**
-- Publish assets: `php artisan vendor:publish --tag=cms-views`
-- Clear view cache: `php artisan view:clear`
-
-**reCAPTCHA not working:**
-- Verify site and secret keys
-- Check domain registration in Google Console
-- Ensure HTTPS in production
-
-**Comments not showing:**
-- Ensure model uses `HasComments` trait
-- Check comment status (must be approved to show)
-- Verify relationship is properly loaded
-
 ### Debug Mode
 
 Enable debug mode for detailed error information:
@@ -518,39 +611,6 @@ Enable debug mode for detailed error information:
 ```env
 CMS_DEBUG_MODE_ENABLED=true
 APP_DEBUG=true
-```
-
-## API Reference
-
-### Comment Model Methods
-
-```php
-// Relationship methods
-$comment->commentable  // Get the parent model (post, page, etc.)
-$comment->parent      // Get parent comment (for replies)
-$comment->replies     // Get child comments
-
-// Status methods
-$comment->isApproved()
-$comment->isPending()
-$comment->isRejected()
-
-// Utility methods
-$comment->getDepth()           // Get nesting level
-$comment->isReply()           // Check if it's a reply
-$comment->hasReplies()        // Check if has replies
-```
-
-### HasComments Trait Methods
-
-```php
-// Relationship methods
-$model->comments                    // All comments
-$model->approvedComments           // Only approved comments
-
-// Utility methods
-$model->getFilamentResourceClass() // Get associated Filament resource
-$model->getFilamentEditUrl()       // Get admin edit URL
 ```
 
 ## Contributing
@@ -564,7 +624,6 @@ If you discover any security vulnerabilities, please email security@yourproject.
 ## Credits
 
 - [Henry](https://github.com/littleboy130491)
-- [All Contributors](../../contributors)
 
 ## License
 
