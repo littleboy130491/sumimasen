@@ -125,8 +125,12 @@ class ContentController extends Controller
      */
     public function singleContent(Request $request, string $lang, string $content_type_key, string $content_slug)
     {
+
+        // Get the original content type key from the slug (handles custom slug overrides)
+        $originalContentTypeKey = $this->getOriginalContentTypeKey($content_type_key);
+
         // Redirect to static page route if this is a static page
-        if ($content_type_key === Config::get('cms.static_page_slug')) {
+        if ($originalContentTypeKey === 'pages' || $content_type_key === Config::get('cms.static_page_slug')) {
             return redirect()->route('cms.static.page', array_merge(
                 ['lang' => $lang, 'page_slug' => $content_slug],
                 $request->query()
@@ -165,6 +169,7 @@ class ContentController extends Controller
             viewData: [
                 'content_type' => $content_type_key,
                 'content_slug' => $content_slug,
+                'original_content_type' => $originalContentTypeKey,
                 'item' => $item,
                 'title' => $item->title,
             ]
