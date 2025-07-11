@@ -324,19 +324,30 @@ class ContentController extends Controller
     {
         $defaultLanguage = $this->defaultLanguage;
 
-        // Try the requested locale first
-        $item = $modelClass::where('status', ContentStatus::Published)
-            ->whereJsonContainsLocale('slug', $requestedLocale, $slug)
-            ->first();
+        // Check if the model has a 'status' column
+        $hasStatusColumn = \Schema::hasColumn((new $modelClass)->getTable(), 'status');
 
-        // Fallback to default locale if not found
-        if (!$item && $requestedLocale !== $defaultLanguage) {
-            $item = $modelClass::where('status', ContentStatus::Published)
-                ->whereJsonContainsLocale('slug', $defaultLanguage, $slug)
-                ->first();
+        // Try the requested locale first
+        $query = $modelClass::query();
+
+        if ($hasStatusColumn) {
+            $query->where('status', ContentStatus::Published);
         }
 
-        return $item;
+        $content = $query->whereJsonContainsLocale('slug', $requestedLocale, $slug)->first();
+
+        // Fallback to default locale if not found
+        if (!$content && $requestedLocale !== $defaultLanguage) {
+            $query = $modelClass::query();
+
+            if ($hasStatusColumn) {
+                $query->where('status', ContentStatus::Published);
+            }
+
+            $content = $query->whereJsonContainsLocale('slug', $defaultLanguage, $slug)->first();
+        }
+
+        return $content;
     }
 
     /**
