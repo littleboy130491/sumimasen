@@ -325,7 +325,7 @@ $title          // Content title
 #### Archive Templates
 ```php
 $items          // Paginated collection
-$static_page    // Record from static page assigned as archive
+$record         // Record from static page assigned as archive
 $archive        // Archive object with metadata
 $post_type      // Content type slug
 $title          // Archive title
