@@ -316,7 +316,7 @@ $bodyClasses    // Generated CSS classes
 
 #### Single Content Templates
 ```php
-$content        // The content model
+$item        // The content model
 $content_type   // Content type slug
 $content_slug   // Content slug
 $title          // Content title
@@ -324,7 +324,8 @@ $title          // Content title
 
 #### Archive Templates
 ```php
-$posts          // Paginated collection
+$items          // Paginated collection
+$static_page    // Record from static page assigned as archive
 $archive        // Archive object with metadata
 $post_type      // Content type slug
 $title          // Archive title
@@ -332,7 +333,7 @@ $title          // Archive title
 
 #### Taxonomy Templates
 ```php
-$posts           // Related content (paginated)
+$items           // Related content (paginated)
 $taxonomy        // Taxonomy key
 $taxonomy_slug   // Taxonomy slug
 $taxonomy_model  // Taxonomy model
