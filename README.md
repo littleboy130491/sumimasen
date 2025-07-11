@@ -266,13 +266,12 @@ For taxonomy archives (e.g., `/categories/technology`):
 
 ```
 1. user defined template from CMS
-2. templates/technology.blade.php                     (taxonomy slug in default language)
-3. templates/archives/categories-technology.blade.php (specific taxonomy-term)
-4. templates/archives/categories.blade.php            (all terms in taxonomy)
-5. templates/categories-technology.blade.php          (specific taxonomy-term)
-6. templates/categories.blade.php                     (all terms in taxonomy)
-7. templates/archives/archive.blade.php               (default archive)
-8. templates/archive.blade.php                        (default archive)
+2. templates/archives/categories-technology.blade.php (specific taxonomy-term)
+3. templates/archives/categories.blade.php            (all terms in taxonomy)
+4. templates/categories-technology.blade.php          (specific taxonomy-term)
+5. templates/categories.blade.php                     (all terms in taxonomy)
+6. templates/archives/archive.blade.php               (default archive)
+7. templates/archive.blade.php                        (default archive)
 ```
 
 ### Template Structure
@@ -316,7 +315,7 @@ $bodyClasses    // Generated CSS classes
 
 #### Single Content Templates
 ```php
-$item        // The content model
+$item           // The record from CMS
 $content_type   // Content type slug
 $content_slug   // Content slug
 $title          // Content title
@@ -325,7 +324,7 @@ $title          // Content title
 #### Archive Templates
 ```php
 $items          // Paginated collection
-$record         // Record from static page assigned as archive
+$record         // Record from static page CMS assigned as archive
 $archive        // Archive object with metadata
 $post_type      // Content type slug
 $title          // Archive title
@@ -336,7 +335,7 @@ $title          // Archive title
 $items           // Related content (paginated)
 $taxonomy        // Taxonomy key
 $taxonomy_slug   // Taxonomy slug
-$taxonomy_model  // Taxonomy model
+$record          // Taxonomy record from CMS
 $title           // Taxonomy title
 ```
 

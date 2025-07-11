@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\ItemNotFoundException;
 use Illuminate\Support\Str;
 use Littleboy130491\SeoSuite\Traits\SetsSeoSuite;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
@@ -241,7 +242,7 @@ class ContentController extends Controller
             viewData: [
                 'taxonomy' => $taxonomy_key,
                 'taxonomy_slug' => $taxonomy_slug,
-                'taxonomy_model' => $taxonomyModel,
+                'record' => $taxonomyModel,
                 'title' => $taxonomyModel->title ??
                     Str::title(str_replace('-', ' ', $taxonomy_key)) . ': ' .
                     Str::title(str_replace('-', ' ', $taxonomy_slug)),
@@ -534,7 +535,6 @@ class ContentController extends Controller
 
             return $taxonomyModel->{$relationshipName}()
                 ->with($relatedContentEagerLoad)
-                ->where('status', ContentStatus::Published)
                 ->orderBy('created_at', 'desc')
                 ->paginate($this->paginationLimit);
         }
