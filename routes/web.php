@@ -39,11 +39,24 @@ Route::get('/', function () {
     return redirect()->to($defaultLang);
 })->middleware(['setLocale', 'web']);
 
+
 // Redirect routes without language prefix to current language
 Route::get('/{path}', function (Illuminate\Http\Request $request, $path) {
-    $currentLang = app()->getLocale();
+    $availableLanguages = array_keys(Config::get('cms.language_available', ['en' => 'English']));
+    // Get language from referer's second path segment
+    $referer = $request->headers->get('referer');
+    $currentLang = config('cms.default_language', 'en'); // default
+
+    if ($referer) {
+        $refererPath = parse_url($referer, PHP_URL_PATH);
+        $refererSegments = explode('/', trim($refererPath, '/'));
+
+        if (isset($refererSegments[0]) && in_array($refererSegments[0], $availableLanguages)) {
+            $currentLang = $refererSegments[0];
+        }
+    }
     $queryString = $request->getQueryString();
-    $redirectUrl = "{$currentLang}/{$path}";
+    $redirectUrl = "/{$currentLang}/{$path}";
     if ($queryString) {
         $redirectUrl .= "?{$queryString}";
     }
