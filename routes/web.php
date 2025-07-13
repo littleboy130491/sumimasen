@@ -39,11 +39,11 @@ Route::get('/', function () {
     return redirect()->to($defaultLang);
 })->middleware(['setLocale', 'web']);
 
-// Redirect routes without language prefix to default language
+// Redirect routes without language prefix to current language
 Route::get('/{path}', function (Illuminate\Http\Request $request, $path) {
-    $defaultLang = Config::get('cms.default_language', 'en');
+    $currentLang = app()->getLocale();
     $queryString = $request->getQueryString();
-    $redirectUrl = "{$defaultLang}/{$path}";
+    $redirectUrl = "{$currentLang}/{$path}";
     if ($queryString) {
         $redirectUrl .= "?{$queryString}";
     }
@@ -51,7 +51,7 @@ Route::get('/{path}', function (Illuminate\Http\Request $request, $path) {
     return redirect()->to($redirectUrl);
 })
     ->middleware(['setLocale', 'web'])
-    ->where('path', '^(?!'.implode('|', array_keys(Config::get('cms.language_available', ['en' => 'English']))).'/).*');
+    ->where('path', '^(?!' . implode('|', array_keys(Config::get('cms.language_available', ['en' => 'English']))) . '/).*');
 
 Route::prefix('{lang}')
     ->whereIn('lang', array_keys(Config::get('cms.language_available', ['en' => 'English'])))
@@ -106,10 +106,10 @@ Route::prefix('{lang}')
 
         // Regex for matching valid keys from your config.
         // preg_quote is important for special characters in keys.
-        $contentArchiveKeysRegex = ! empty($contentArchiveKeys) ? implode('|', array_map('preg_quote', $contentArchiveKeys)) : '^\b$'; // Matches nothing if empty
-        $contentSingleKeysRegex = ! empty($contentSingleKeys) ? implode('|', array_map('preg_quote', $contentSingleKeys)) : '^\b$'; // Matches nothing if empty
-        $taxonomyArchiveKeysRegex = ! empty($taxonomyArchiveKeys) ? implode('|', array_map('preg_quote', $taxonomyArchiveKeys)) : '^\b$'; // Matches nothing if empty
-
+        $contentArchiveKeysRegex = !empty($contentArchiveKeys) ? implode('|', array_map('preg_quote', $contentArchiveKeys)) : '^\b$'; // Matches nothing if empty
+        $contentSingleKeysRegex = !empty($contentSingleKeys) ? implode('|', array_map('preg_quote', $contentSingleKeys)) : '^\b$'; // Matches nothing if empty
+        $taxonomyArchiveKeysRegex = !empty($taxonomyArchiveKeys) ? implode('|', array_map('preg_quote', $taxonomyArchiveKeys)) : '^\b$'; // Matches nothing if empty
+    
         // General slug regex
         $slugRegex = '[a-zA-Z0-9-_]+';
 
