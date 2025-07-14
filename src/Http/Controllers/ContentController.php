@@ -23,6 +23,8 @@ class ContentController extends Controller
 
     protected string $defaultLanguage;
 
+    protected int $paginationLimit;
+
     protected string $staticPageClass;
 
     protected string $frontPageSlug;
@@ -30,6 +32,7 @@ class ContentController extends Controller
     public function __construct()
     {
         $this->defaultLanguage = Config::get('cms.default_language');
+        $this->paginationLimit = Config::get('cms.pagination_limit', 12);
         $this->staticPageClass = Config::get('cms.static_page_model', Page::class);
         $this->frontPageSlug = Config::get('cms.front_page_slug', 'home');
         $this->templateBase = Config::get('cms.template_base', 'templates');
@@ -186,11 +189,12 @@ class ContentController extends Controller
         $eagerLoadRelationships = $this->getEagerLoadRelationships($originalKey);
 
         $archive = $this->createArchiveObject($content_type_archive_key, $lang);
+        $paginationLimit = config('cms.content_models.' . $originalKey . '.per_page') ?? $this->paginationLimit;
 
         $items = $modelClass::with($eagerLoadRelationships)
             ->where('status', ContentStatus::Published)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate($paginationLimit);
 
         $this->setArchiveSeoMetadata($content_type_archive_key, $archive);
 
@@ -492,6 +496,7 @@ class ContentController extends Controller
             'post_type' => $contentTypeKey,
             'source' => 'static_page',
             'config' => $config,
+            'per_page' => $config['per_page'] ?? $this->paginationLimit,
         ];
     }
 
@@ -514,6 +519,7 @@ class ContentController extends Controller
             'source' => 'config',
             'static_page' => null,
             'config' => $config,
+            'per_page' => $config['per_page'] ?? $this->paginationLimit,
         ];
     }
 
@@ -540,7 +546,7 @@ class ContentController extends Controller
     }
 
     /**
-     * Get content related to a taxonomy term
+     * Get content related to a taxonomy term with pagination
      */
     private function getTaxonomyRelatedContent(Model $taxonomyModel, string $taxonomyKey)
     {
@@ -556,10 +562,12 @@ class ContentController extends Controller
             // Get eager load relationships for the related content type
             $relatedContentEagerLoad = $this->getEagerLoadRelationships($relationshipName);
 
+            $paginationLimit = config('cms.content_models.' . $originalKey . '.per_page') ?? $this->paginationLimit;
+
             return $taxonomyModel->{$relationshipName}()
                 ->with($relatedContentEagerLoad)
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->paginate($paginationLimit);
         }
 
         \Illuminate\Support\Facades\Log::warning("Relationship method '{$relationshipName}' ultimately not found for taxonomy '{$taxonomyKey}'. Serving empty collection.");
