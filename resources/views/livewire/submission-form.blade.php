@@ -110,6 +110,9 @@
                 </p>
             @enderror
         </div>
+        
+        {{-- Hidden field to track source page --}}
+        <input type="hidden" wire:model="source_page">
 
         {{-- Bot Protection Field - Show based on configuration --}}
         @if ($this->isBotProtectionEnabled())

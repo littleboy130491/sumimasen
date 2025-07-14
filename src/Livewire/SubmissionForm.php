@@ -34,6 +34,14 @@ class SubmissionForm extends Component
 
     public $formSubmitted = false;
 
+    public $source_page = '';
+
+    public function mount()
+    {
+        // Capture the current page URL as the source
+        $this->source_page = request()->url();
+    }
+
     public function rules()
     {
         $rules = [
@@ -42,6 +50,7 @@ class SubmissionForm extends Component
             'message' => 'required|string|min:10|max:1000',
             'subject' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:50',
+            'source_page' => 'nullable|string|max:500',
         ];
 
         // Add Turnstile validation rule if enabled
@@ -79,7 +88,8 @@ class SubmissionForm extends Component
                     'message' => $this->message,
                     'subject' => $this->subject,
                     'phone' => $this->phone,
-                    'submitted_at' => now()->toISOString(),
+                    'source_page' => $this->source_page,
+                    'submitted_at' => now()->setTimezone('Asia/Jakarta')->toISOString(),
                     'ip_address' => request()->ip(),
                     'user_agent' => request()->userAgent(),
                 ],
