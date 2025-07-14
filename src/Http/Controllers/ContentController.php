@@ -401,6 +401,7 @@ class ContentController extends Controller
         // Share data globally so all components can access it
         View::share('lang', $lang);
         View::share('bodyClasses', $bodyClasses);
+        View::share('contentTypeKey', $contentTypeKey);
 
         if ($item) {
             View::share('globalItem', $item);
