@@ -62,6 +62,8 @@ class ContentController extends Controller
             }
         }
 
+        $this->incrementPageViewsIfSupported($item);
+
         if (method_exists($this, 'setsSeo')) {
             $this->setsSeo($item);
         }
@@ -429,7 +431,8 @@ class ContentController extends Controller
      */
     private function incrementPageViewsIfSupported(Model $item): void
     {
-        if (in_array(\Littleboy130491\Sumimasen\Traits\HasPageViews::class, class_uses_recursive($item))) {
+        // Only increment for guests (unauthorized users)
+        if (!auth()->check() && in_array(\Littleboy130491\Sumimasen\Traits\HasPageViews::class, class_uses_recursive($item))) {
             $item->incrementPageViews();
         }
     }
