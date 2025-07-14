@@ -32,6 +32,7 @@ use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Filament\Forms\Components\SeoFields;
 use Littleboy130491\Sumimasen\Filament\Traits\HasContentBlocks;
 use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
+use Filament\Forms\Components\Actions\Action;
 
 abstract class BaseResource extends Resource
 {
@@ -137,14 +138,14 @@ abstract class BaseResource extends Resource
         $sections = [];
 
         // Hook Additional Non-Translatable Fields Section
-        if (! empty(static::additionalNonTranslatableFormFields())) {
+        if (!empty(static::additionalNonTranslatableFormFields())) {
             $sections[] = Section::make('Additional Fields')
                 ->schema(static::additionalNonTranslatableFormFields())
                 ->columns(2);
         }
 
         // Custom Fields Section
-        if (static::modelHasColumn('custom_fields') && ! static::isFieldHidden('custom_fields')) {
+        if (static::modelHasColumn('custom_fields') && !static::isFieldHidden('custom_fields')) {
             $sections[] =
                 Section::make('Custom Fields')
                     ->schema([
@@ -181,11 +182,11 @@ abstract class BaseResource extends Resource
                 ->columnSpanFull()
                 ->afterStateUpdated(function (Set $set, Get $get, ?string $state, string $operation) use ($locale) {
 
-                    if ($operation === 'edit' && ! empty($get('slug.'.$locale))) {
+                    if ($operation === 'edit' && !empty($get('slug.' . $locale))) {
                         return;
                     }
 
-                    $set('slug.'.$locale, $state ? Str::slug($state) : null);
+                    $set('slug.' . $locale, $state ? Str::slug($state) : null);
                 })
                 ->required($locale === $defaultLocale),
             TextInput::make('slug')
@@ -199,7 +200,18 @@ abstract class BaseResource extends Resource
                         'alpha_dash',
                     ];
                 })
-                ->required($locale === $defaultLocale),
+                ->required($locale === $defaultLocale)
+                ->suffixAction(
+                    Action::make('generate')
+                        ->icon('heroicon-o-arrow-path')
+                        ->action(function (Set $set, Get $get) use ($locale) {
+                            $titleValue = $get('title.' . $locale);
+                            if ($titleValue) {
+                                $slug = Str::slug($titleValue);
+                                $set('slug.' . $locale, $slug);
+                            }
+                        })
+                ),
         ];
     }
 
@@ -207,7 +219,7 @@ abstract class BaseResource extends Resource
     {
         $fields = [];
 
-        if (static::modelHasColumn('content') && ! static::isFieldHidden('content')) {
+        if (static::modelHasColumn('content') && !static::isFieldHidden('content')) {
             $fields[] = TiptapEditor::make('content')
                 ->profile('simple')
                 ->nullable()
@@ -215,13 +227,13 @@ abstract class BaseResource extends Resource
                 ->columnSpanFull();
         }
 
-        if (static::modelHasColumn('excerpt') && ! static::isFieldHidden('excerpt')) {
+        if (static::modelHasColumn('excerpt') && !static::isFieldHidden('excerpt')) {
             $fields[] = Textarea::make('excerpt')
                 ->nullable()
                 ->columnSpanFull();
         }
 
-        if (static::modelHasColumn('section') && ! static::isFieldHidden('section')) {
+        if (static::modelHasColumn('section') && !static::isFieldHidden('section')) {
             $fields[] = FormsBuilder::make('section')
                 ->collapsed(false)
                 ->blocks(static::getContentBlocks())
@@ -245,7 +257,7 @@ abstract class BaseResource extends Resource
 
     protected static function formFeaturedImageField(): array
     {
-        if (! static::modelHasColumn('featured_image') || static::isFieldHidden('featured_image')) {
+        if (!static::modelHasColumn('featured_image') || static::isFieldHidden('featured_image')) {
             return [];
         }
 
@@ -264,7 +276,7 @@ abstract class BaseResource extends Resource
     protected static function formTaxonomyRelationshipField(string $relationship, ?string $tableName = ''): array
     {
         // Check if the relationship exists on the model
-        if (! static::modelHasRelationship($relationship) || static::isFieldHidden($relationship)) {
+        if (!static::modelHasRelationship($relationship) || static::isFieldHidden($relationship)) {
             return [];
         }
 
@@ -288,7 +300,7 @@ abstract class BaseResource extends Resource
             ->preload();
 
         // Convert relationship name to Shield permission format
-        $permissionName = 'create_'.Str::snake(Str::singular($relationship), '::');
+        $permissionName = 'create_' . Str::snake(Str::singular($relationship), '::');
 
         if (auth()->user()->can($permissionName)) {
             $select->createOptionForm([
@@ -307,7 +319,7 @@ abstract class BaseResource extends Resource
 
     protected static function formParentRelationshipField(): array
     {
-        if (! static::modelHasColumn('parent_id') || static::isFieldHidden('parent_id')) {
+        if (!static::modelHasColumn('parent_id') || static::isFieldHidden('parent_id')) {
             return [];
         }
 
@@ -319,7 +331,7 @@ abstract class BaseResource extends Resource
 
     protected static function formAuthorRelationshipField(): array
     {
-        if (! static::modelHasColumn('author_id') || static::isFieldHidden('author_id')) {
+        if (!static::modelHasColumn('author_id') || static::isFieldHidden('author_id')) {
             return [];
         }
 
@@ -329,13 +341,13 @@ abstract class BaseResource extends Resource
                 ->required()
                 ->searchable()
                 ->preload()
-                ->default(fn () => auth()->id()),
+                ->default(fn() => auth()->id()),
         ];
     }
 
     protected static function formStatusField(): array
     {
-        if (! static::modelHasColumn('status') || static::isFieldHidden('status')) {
+        if (!static::modelHasColumn('status') || static::isFieldHidden('status')) {
             return [];
         }
 
@@ -350,7 +362,7 @@ abstract class BaseResource extends Resource
 
     protected static function formTemplateField(string $subPath = ''): array
     {
-        if (! static::modelHasColumn('template') || static::isFieldHidden('template')) {
+        if (!static::modelHasColumn('template') || static::isFieldHidden('template')) {
             return [];
         }
 
@@ -377,7 +389,7 @@ abstract class BaseResource extends Resource
                 ->label('Template')
                 ->dehydrateStateUsing(function ($state) use ($subPath) {
                     // $state is the value of the 'template' field just before saving.
-
+        
                     // If the state is already null (meaning "Default System Template" was selected
                     // or it was already null), keep it as null.
                     if ($state === null) {
@@ -408,7 +420,7 @@ abstract class BaseResource extends Resource
     protected static function fetchRawTemplateData(string $subPath = ''): array
     {
         $options = [];
-        $fullPath = 'views/templates/'.($subPath ? ltrim($subPath, '/') : '');
+        $fullPath = 'views/templates/' . ($subPath ? ltrim($subPath, '/') : '');
         $templatesPath = resource_path(rtrim($fullPath, '/'));
 
         if (File::isDirectory($templatesPath)) {
@@ -416,7 +428,7 @@ abstract class BaseResource extends Resource
             foreach ($files as $file) {
                 $filename = $file->getFilenameWithoutExtension();
                 // Ensure filename is not empty and use it as both key and value
-                if (! empty($filename)) {
+                if (!empty($filename)) {
                     $options[$filename] = $filename;
                 }
             }
@@ -427,7 +439,7 @@ abstract class BaseResource extends Resource
 
     protected static function formFeaturedField(): array
     {
-        if (! static::modelHasColumn('featured') || static::isFieldHidden('featured')) {
+        if (!static::modelHasColumn('featured') || static::isFieldHidden('featured')) {
             return [];
         }
 
@@ -439,7 +451,7 @@ abstract class BaseResource extends Resource
 
     protected static function formPublishedDateField(): array
     {
-        if (! static::modelHasColumn('published_at') || static::isFieldHidden('published_at')) {
+        if (!static::modelHasColumn('published_at') || static::isFieldHidden('published_at')) {
             return [];
         }
 
@@ -451,7 +463,7 @@ abstract class BaseResource extends Resource
 
     protected static function formMenuOrderField(): array
     {
-        if (! static::modelHasColumn('menu_order') || static::isFieldHidden('menu_order')) {
+        if (!static::modelHasColumn('menu_order') || static::isFieldHidden('menu_order')) {
             return [];
         }
 
@@ -505,19 +517,19 @@ abstract class BaseResource extends Resource
                     ->limit(50);
         }
 
-        if (static::modelHasColumn('featured') && ! static::isFieldHidden('featured')) {
+        if (static::modelHasColumn('featured') && !static::isFieldHidden('featured')) {
             $columns[] =
                 ToggleColumn::make('featured');
         }
 
-        if (static::modelHasColumn('status') && ! static::isFieldHidden('status')) {
+        if (static::modelHasColumn('status') && !static::isFieldHidden('status')) {
             $columns[] =
                 TextColumn::make('status')
                     ->badge()
                     ->sortable();
         }
 
-        if (static::modelHasRelationship('author') && ! static::isFieldHidden('author_id')) {
+        if (static::modelHasRelationship('author') && !static::isFieldHidden('author_id')) {
             $columns[] =
                 TextColumn::make('author.name')
                     ->sortable()
@@ -529,7 +541,7 @@ abstract class BaseResource extends Resource
 
         $columns = [...$columns, ...static::tableDateColumns()];
 
-        if (static::modelHasColumn('menu_order') && ! static::isFieldHidden('menu_order')) {
+        if (static::modelHasColumn('menu_order') && !static::isFieldHidden('menu_order')) {
             $columns[] =
                 TextColumn::make('menu_order')
                     ->label('Order')
@@ -545,14 +557,14 @@ abstract class BaseResource extends Resource
     {
         $columns = [];
 
-        if (static::modelHasColumn('published_at') && ! static::isFieldHidden('published_at')) {
+        if (static::modelHasColumn('published_at') && !static::isFieldHidden('published_at')) {
             $columns[] =
                 TextColumn::make('published_at')
                     ->dateTime()
                     ->sortable();
         }
 
-        if (static::modelHasColumn('created_at') && ! static::isFieldHidden('created_at')) {
+        if (static::modelHasColumn('created_at') && !static::isFieldHidden('created_at')) {
             $columns[] =
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -560,7 +572,7 @@ abstract class BaseResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true);
         }
 
-        if (static::modelHasColumn('updated_at') && ! static::isFieldHidden('updated_at')) {
+        if (static::modelHasColumn('updated_at') && !static::isFieldHidden('updated_at')) {
             $columns[] =
                 TextColumn::make('updated_at')
                     ->dateTime()
@@ -568,7 +580,7 @@ abstract class BaseResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true);
         }
 
-        if (static::modelHasColumn('deleted_at') && ! static::isFieldHidden('deleted_at')) {
+        if (static::modelHasColumn('deleted_at') && !static::isFieldHidden('deleted_at')) {
             $columns[] =
                 TextColumn::make('deleted_at')
                     ->dateTime()
@@ -720,7 +732,7 @@ abstract class BaseResource extends Resource
         $modelClass = app(static::$model);
 
         // Check if the method exists on the model
-        if (! method_exists($modelClass, $relationship)) {
+        if (!method_exists($modelClass, $relationship)) {
             return false;
         }
 
@@ -824,14 +836,14 @@ abstract class BaseResource extends Resource
                     // Handle BelongsToMany relationships
                     if ($relationship instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
                         $relatedIds = $original->{$relationshipName}()->pluck($relationship->getRelatedKeyName())->toArray();
-                        if (! empty($relatedIds)) {
+                        if (!empty($relatedIds)) {
                             $replica->{$relationshipName}()->attach($relatedIds);
                         }
                     }
 
                 } catch (\Exception $e) {
                     // Log the error or handle it gracefully
-                    \Log::warning("Failed to replicate relationship '{$relationshipName}': ".$e->getMessage());
+                    \Log::warning("Failed to replicate relationship '{$relationshipName}': " . $e->getMessage());
                 }
             }
         }
