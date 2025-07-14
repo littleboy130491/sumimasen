@@ -1,14 +1,12 @@
 <?php
 
-namespace Littleboy130491\Sumimasen\Livewire;
+namespace App\Livewire;
 
-use Illuminate\Database\Eloquent\Model;
 use Littleboy130491\Sumimasen\Traits\HasPageLikes;
 use Livewire\Component;
-
 class LikeButton extends Component
 {
-    public Model $content;
+    public $content;
 
     public string $lang;
 
@@ -24,17 +22,15 @@ class LikeButton extends Component
 
     public int $likesCount = 0;
 
-    public function mount(Model $content, string $lang, string $contentType, bool $showCount = true, string $size = 'md', string $variant = 'default')
+    public function mount($content = null, bool $showCount = true, string $size = 'md', string $variant = 'default')
     {
-        $this->content = $content;
-        $this->lang = $lang;
-        $this->contentType = $contentType;
+        $this->content = $content ?? view()->shared('globalItem');
         $this->showCount = $showCount;
         $this->size = $size;
         $this->variant = $variant;
 
         // Check if the model uses HasPageLikes trait
-        if (! in_array(HasPageLikes::class, class_uses_recursive($content))) {
+        if (!in_array(HasPageLikes::class, class_uses_recursive($this->content))) {
             throw new \Exception('Content model must use HasPageLikes trait');
         }
 
@@ -43,14 +39,14 @@ class LikeButton extends Component
 
     public function initializeLikeState()
     {
-        $cookieName = "liked_content_{$this->content->id}";
+        $cookieName = "liked_content_{$this->content->getTable()}_{$this->content->id}";
         $this->hasLiked = request()->cookie($cookieName) === 'true';
         $this->likesCount = $this->content->page_likes ?? 0;
     }
 
     public function toggleLike()
     {
-        $cookieName = "liked_content_{$this->content->id}";
+        $cookieName = "liked_content_{$this->content->getTable()}_{$this->content->id}";
 
         if ($this->hasLiked) {
             // Unlike: decrement likes and remove cookie
