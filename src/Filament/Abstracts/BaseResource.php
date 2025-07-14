@@ -273,7 +273,7 @@ abstract class BaseResource extends Resource
         return []; // relationships are handled in the child class
     }
 
-    protected static function formTaxonomyRelationshipField(string $relationship, ?string $tableName = ''): array
+    protected static function formTaxonomyRelationshipField(string $relationship, ?string $tableName = '', bool $multiple = true): array
     {
         // Check if the relationship exists on the model
         if (! static::modelHasRelationship($relationship) || static::isFieldHidden($relationship)) {
@@ -295,7 +295,7 @@ abstract class BaseResource extends Resource
 
         $select = Select::make($relationship)
             ->relationship($relationship, 'title')
-            ->multiple()
+            ->multiple($multiple)
             ->searchable()
             ->preload();
 
