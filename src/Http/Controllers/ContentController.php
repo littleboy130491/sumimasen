@@ -189,7 +189,8 @@ class ContentController extends Controller
 
         $items = $modelClass::with($eagerLoadRelationships)
             ->where('status', ContentStatus::Published)
-            ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $this->setArchiveSeoMetadata($content_type_archive_key, $archive);
 
@@ -557,7 +558,8 @@ class ContentController extends Controller
 
             return $taxonomyModel->{$relationshipName}()
                 ->with($relatedContentEagerLoad)
-                ->orderBy('created_at', 'desc');
+                ->orderBy('created_at', 'desc')
+                ->get();
         }
 
         \Illuminate\Support\Facades\Log::warning("Relationship method '{$relationshipName}' ultimately not found for taxonomy '{$taxonomyKey}'. Serving empty collection.");
