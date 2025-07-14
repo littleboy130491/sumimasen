@@ -504,11 +504,36 @@ abstract class BaseResource extends Resource
         $columns = [];
 
         if (static::modelHasColumn('title')) {
-            $columns[] =
-                TextColumn::make('title')
-                    ->searchable(['title', 'content'])
-                    ->sortable()
-                    ->limit(50);
+            $currentLocale = app()->getLocale();
+
+            $columns[] = TextColumn::make('title')
+                ->searchable(query: function (Builder $query, string $search): Builder {
+                    $currentLocale = app()->getLocale();
+
+                    return $query->where(function (Builder $subQuery) use ($search, $currentLocale) {
+                        // Search in title for current locale
+                        $subQuery->whereRaw(
+                            "LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, '$.{$currentLocale}'))) LIKE LOWER(?)",
+                            ["%{$search}%"]
+                        );
+
+                        // Also search in content if it exists
+                        if (static::modelHasColumn('content')) {
+                            $subQuery->orWhereRaw(
+                                "LOWER(JSON_UNQUOTE(JSON_EXTRACT(content, '$.{$currentLocale}'))) LIKE LOWER(?)",
+                                ["%{$search}%"]
+                            );
+                        }
+
+                        // Try Laravel's JSON path syntax as alternative
+                        $subQuery->orWhere('title->' . $currentLocale, 'like', "%{$search}%");
+                    });
+                })
+                ->sortable()
+                ->limit(50)
+                ->getStateUsing(function ($record) use ($currentLocale) {
+                    return $record->getTranslation('title', $currentLocale);
+                });
         }
 
         if (static::modelHasColumn('slug')) {
