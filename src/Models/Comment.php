@@ -72,12 +72,59 @@ class Comment extends Model
     }
 
     /**
-     * Get all children recursively
+     * Recursively eager-load children comments.
      *
-     * @return Illuminate\Database\Eloquent\Relations\HasMany
+     * This relationship allows you to retrieve the comment tree while keeping
+     * the hierarchical structure intact (each child comment will contain its
+     * own `childrenRecursive` relation).
      */
     public function childrenRecursive(): HasMany
     {
         return $this->children()->with('childrenRecursive');
+    }
+
+    // ----------------------------------------------------------------------
+    // Helpers
+    // ----------------------------------------------------------------------
+
+    /**
+     * Retrieve *all* descendant comments (flattened collection).
+     *
+     * Example:
+     * ┌─ c1
+     * │  ├─ c2
+     * │  │  ├─ c6
+     * │  │  ├─ c7
+     * │  │  │  ├─ c9
+     * │  │  │  └─ c10
+     * │  │  └─ c8
+     * │  ├─ c3
+     * │  ├─ c4
+     * │  └─ c5
+     *
+     * `$comment->descendants()` will return a collection containing
+     * [c2,c6,c7,c9,c10,c8,c3,c4,c5] (order depends on the internal traversal).
+     */
+    public function descendants(): \Illuminate\Support\Collection
+    {
+        // Lazily load children to avoid the N+1 problem when possible.
+        $children = $this->children()->with('children')->get();
+
+        return $children->flatMap(function (self $child) {
+            return collect([$child])->merge($child->descendants());
+        });
+    }
+
+    /**
+     * Scope a query to order comments by their `created_at` timestamp.
+     *
+     * Usage examples:
+     * Comment::orderByDate()->get();                // newest first
+     * Comment::orderByDate('asc')->get();           // oldest first
+     * $post->comments()->orderByDate()->get();      // on relations
+     */
+    public function scopeOrderByDate($query, string $direction = 'desc')
+    {
+        return $query->orderBy('created_at', $direction);
     }
 }
