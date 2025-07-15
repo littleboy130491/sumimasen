@@ -6,6 +6,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Littleboy130491\Sumimasen\Enums\CommentStatus;
 use Littleboy130491\Sumimasen\Filament\Resources\CommentResource\Pages;
 use Littleboy130491\Sumimasen\Filament\Traits\CommentTrait;
 use Littleboy130491\Sumimasen\Models\Comment;
@@ -60,5 +61,10 @@ class CommentResource extends Resource
     public static function canCreate(): bool
     {
         return false;
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status', CommentStatus::Approved)->count();
     }
 }
