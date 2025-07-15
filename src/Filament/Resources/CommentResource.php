@@ -65,6 +65,6 @@ class CommentResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', CommentStatus::Approved)->count();
+        return static::getModel()::where('status', CommentStatus::Pending)->count();
     }
 }
