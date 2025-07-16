@@ -31,7 +31,7 @@ class ArchiveController extends BaseContentController
         return $this->renderContentView(
             template: $this->resolveArchiveTemplate($content_type_archive_key),
             lang: $lang,
-            item: $archive,
+            item: $archive->record,
             contentTypeKey: $content_type_archive_key,
             viewData: [
                 'archive' => $archive,
