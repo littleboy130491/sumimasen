@@ -16,7 +16,6 @@ class ArchiveResource extends BaseContentResource
 
     protected static ?int $navigationSort = 5;
 
-
     public static function getRelations(): array
     {
         return [

@@ -131,7 +131,7 @@ class GenerateRolesCommand extends Command
         // Define which resources editors should NOT have access to
         $excludedResources = [
             'user',
-            'role', 
+            'role',
             'archive',
         ];
 
@@ -171,7 +171,7 @@ class GenerateRolesCommand extends Command
 
         return collect($excludedResources)->some(function ($resource) use ($permissionLower) {
             $resourcePatterns = $this->generateResourcePermissionPatterns($resource);
-            
+
             return collect($resourcePatterns)->some(function ($pattern) use ($permissionLower) {
                 return Str::contains($permissionLower, $pattern);
             });
@@ -185,7 +185,7 @@ class GenerateRolesCommand extends Command
     {
         $actions = [
             'view_any', 'view', 'create', 'update', 'delete', 'restore', 'force_delete',
-            'delete_any', 'force_delete_any', 'restore_any', 'replicate', 'reorder'
+            'delete_any', 'force_delete_any', 'restore_any', 'replicate', 'reorder',
         ];
 
         $patterns = [];
