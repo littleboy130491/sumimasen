@@ -3,8 +3,12 @@
 use Filament\Http\Middleware\Authenticate;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
-use Littleboy130491\Sumimasen\Http\Controllers\ContentController;
+use Littleboy130491\Sumimasen\Http\Controllers\ArchiveController;
+use Littleboy130491\Sumimasen\Http\Controllers\HomeController;
 use Littleboy130491\Sumimasen\Http\Controllers\PreviewEmailController;
+use Littleboy130491\Sumimasen\Http\Controllers\SingleContentController;
+use Littleboy130491\Sumimasen\Http\Controllers\StaticPageController;
+use Littleboy130491\Sumimasen\Http\Controllers\TaxonomyController;
 
 // Routes for previewing emails and components
 Route::prefix('/{lang}/preview')
@@ -125,30 +129,30 @@ Route::prefix('{lang}')
         // General slug regex
         $slugRegex = '[a-zA-Z0-9-_]+';
 
-        Route::get('/', [ContentController::class, 'home'])->name('cms.home');
+        Route::get('/', HomeController::class)->name('cms.home');
 
         // Content single route. Two segments; first must be a content type key with single views.
         // Redirect to static page if content_type_key matches static_page_slug.
-        Route::get('/{content_type_key}/{content_slug}', [ContentController::class, 'singleContent'])
+        Route::get('/{content_type_key}/{content_slug}', SingleContentController::class)
             ->where('content_type_key', $contentSingleKeysRegex)
             ->where('content_slug', $slugRegex)
             ->name('cms.single.content');
 
         // Taxonomy archive route. Two segments; first must be a taxonomy key.
-        Route::get('/{taxonomy_key}/{taxonomy_slug}', [ContentController::class, 'taxonomyArchive'])
+        Route::get('/{taxonomy_key}/{taxonomy_slug}', TaxonomyController::class)
             ->where('taxonomy_key', $taxonomyArchiveKeysRegex)
             ->where('taxonomy_slug', $slugRegex)
             ->name('cms.taxonomy.archive');
 
         // One segment, must be a content type key with an archive. Comes BEFORE static pages.
         // Controller receives $content_type_archive_key.
-        Route::get('/{content_type_archive_key}', [ContentController::class, 'archiveContent'])
+        Route::get('/{content_type_archive_key}', ArchiveController::class)
             ->where('content_type_archive_key', $contentArchiveKeysRegex)
             ->name('cms.archive.content');
 
         // Static page route.
         // Most generic (single slug) and MUST be defined LAST.
-        Route::get('/{page_slug}', [ContentController::class, 'staticPage'])
+        Route::get('/{page_slug}', StaticPageController::class)
             ->where('page_slug', $slugRegex)
             ->name('cms.static.page');
     });

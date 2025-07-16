@@ -29,6 +29,8 @@ class ContentController extends Controller
 
     protected string $frontPageSlug;
 
+    protected array $statusColumnCache = [];
+
     public function __construct()
     {
         $this->defaultLanguage = Config::get('cms.default_language');
@@ -47,13 +49,13 @@ class ContentController extends Controller
         $modelClass = $this->getValidModelClass($this->staticPageClass);
 
         // Find home page by configured slug
-        $item = $modelClass::where('status', ContentStatus::Published)
+        $item = $this->buildQueryWithStatusFilter($modelClass)
             ->whereJsonContainsLocale('slug', $this->defaultLanguage, $this->frontPageSlug)
             ->first();
 
         // Fallback to first available page if home not found
         if (! $item) {
-            $item = $modelClass::where('status', ContentStatus::Published)
+            $item = $this->buildQueryWithStatusFilter($modelClass)
                 ->orderBy('id', 'asc')
                 ->first();
 
@@ -191,8 +193,8 @@ class ContentController extends Controller
         $archive = $this->createArchiveObject($content_type_archive_key, $lang);
         $paginationLimit = config('cms.content_models.'.$originalKey.'.per_page') ?? $this->paginationLimit;
 
-        $items = $modelClass::with($eagerLoadRelationships)
-            ->where('status', ContentStatus::Published)
+        $items = $this->buildQueryWithStatusFilter($modelClass)
+            ->with($eagerLoadRelationships)
             ->orderBy('created_at', 'desc')
             ->paginate($paginationLimit);
 
@@ -332,27 +334,16 @@ class ContentController extends Controller
     {
         $defaultLanguage = $this->defaultLanguage;
 
-        // Check if the model has a 'status' column
-        $hasStatusColumn = \Schema::hasColumn((new $modelClass)->getTable(), 'status');
-
         // Try the requested locale first
-        $query = $modelClass::query();
-
-        if ($hasStatusColumn) {
-            $query->where('status', ContentStatus::Published);
-        }
-
-        $content = $query->whereJsonContainsLocale('slug', $requestedLocale, $slug)->first();
+        $content = $this->buildQueryWithStatusFilter($modelClass)
+            ->whereJsonContainsLocale('slug', $requestedLocale, $slug)
+            ->first();
 
         // Fallback to default locale if not found
         if (! $content && $requestedLocale !== $defaultLanguage) {
-            $query = $modelClass::query();
-
-            if ($hasStatusColumn) {
-                $query->where('status', ContentStatus::Published);
-            }
-
-            $content = $query->whereJsonContainsLocale('slug', $defaultLanguage, $slug)->first();
+            $content = $this->buildQueryWithStatusFilter($modelClass)
+                ->whereJsonContainsLocale('slug', $defaultLanguage, $slug)
+                ->first();
         }
 
         return $content;
@@ -384,6 +375,32 @@ class ContentController extends Controller
     }
 
     // ===== HELPER METHODS =====
+
+    /**
+     * Check if a model class has a 'status' column (cached per model class)
+     */
+    private function hasStatusColumn(string $modelClass): bool
+    {
+        if (! isset($this->statusColumnCache[$modelClass])) {
+            $this->statusColumnCache[$modelClass] = \Schema::hasColumn((new $modelClass)->getTable(), 'status');
+        }
+
+        return $this->statusColumnCache[$modelClass];
+    }
+
+    /**
+     * Build a query with status filtering if the model has a status column
+     */
+    private function buildQueryWithStatusFilter(string $modelClass): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = $modelClass::query();
+
+        if ($this->hasStatusColumn($modelClass)) {
+            $query->where('status', ContentStatus::Published);
+        }
+
+        return $query;
+    }
 
     /**
      * Render a view with common data and body classes
@@ -463,12 +480,12 @@ class ContentController extends Controller
     /**
      * Find static page by slug with language fallback
      */
-    private function findStaticPageBySlug(string $slug, string $lang): ?\Illuminate\Database\Eloquent\Model
+    private function findStaticPageBySlug(string $slug, string $lang): ?Model
     {
         $modelClass = $this->getValidModelClass($this->staticPageClass);
 
         // Try requested language first
-        $page = $modelClass::where('status', ContentStatus::Published)
+        $page = $this->buildQueryWithStatusFilter($modelClass)
             ->whereJsonContainsLocale('slug', $lang, $slug)
             ->first();
 
@@ -478,7 +495,7 @@ class ContentController extends Controller
 
         // Try default language as fallback
         if ($lang !== $this->defaultLanguage) {
-            $page = $modelClass::where('status', ContentStatus::Published)
+            $page = $this->buildQueryWithStatusFilter($modelClass)
                 ->whereJsonContainsLocale('slug', $this->defaultLanguage, $slug)
                 ->first();
         }
@@ -589,7 +606,8 @@ class ContentController extends Controller
 
         // Check if this slug corresponds to the front page in any language
         $modelClass = $this->getValidModelClass($this->staticPageClass);
-        $item = $modelClass::where('status', ContentStatus::Published)
+
+        $item = $this->buildQueryWithStatusFilter($modelClass)
             ->whereJsonContainsLocale('slug', $lang, $slug)
             ->first();
 
