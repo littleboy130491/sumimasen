@@ -124,74 +124,81 @@ class GenerateRolesCommand extends Command
     }
 
     /**
-     * Editor gets limited permissions (no user/role management, but includes components)
+     * Editor gets limited permissions - exclude specified resources
      */
     private function getEditorPermissions(array $allPermissions): array
     {
-        return collect($allPermissions)->filter(function ($permission) {
+        // Define which resources editors should NOT have access to
+        $excludedResources = [
+            'user',
+            'role', 
+            'archive',
+        ];
+
+        // Define special patterns that don't follow standard resource naming
+        $specialExcludedPatterns = [
+            'backup',           // Catches any permission containing 'backup'
+            'Backup',           // Case sensitive backup
+            'laravel-backup',   // Spatie Laravel Backup package
+            'spatie-backup',    // Alternative naming
+            'filament-spatie-backup', // Filament plugin naming
+            'shieldroleresource::', // Covers BezhanSalleh\FilamentShield\Resources\RoleResource::*
+            'shield::role',     // Covers BezhanSalleh\FilamentShield\Pages\ViewShieldSettings
+        ];
+
+        return collect($allPermissions)->filter(function ($permission) use ($excludedResources, $specialExcludedPatterns) {
             $permissionLower = strtolower($permission);
 
-            // Define patterns for User related permissions
-            $userPermissionPatterns = [
-                'view_any_user',
-                'view_user',
-                'create_user',
-                'update_user',
-                'delete_user',
-                'restore_user',
-                'force_delete_user',
-                'delete_any_user',
-                'force_delete_any_user',
-                'restore_any_user',
-                'replicate_user',
-                'reorder_user',
-                'userresource::', // Covers Littleboy130491\Sumimasen\Filament\Resources\UserResource::*
-            ];
+            // Check if permission matches any excluded resource patterns
+            $isExcludedResource = $this->isPermissionForExcludedResource($permission, $excludedResources);
 
-            $rolePermissionPatterns = [
-                'view_any_role',
-                'view_role',
-                'create_role',
-                'update_role',
-                'delete_role',
-                'restore_role',
-                'force_delete_role',
-                'delete_any_role',
-                'force_delete_any_role',
-                'restore_any_role',
-                'replicate_role',
-                'reorder_role',
-                'roleresource::', // Covers Littleboy130491\Sumimasen\Filament\Resources\RoleResource::*
-                'shieldroleresource::', // Covers BezhanSalleh\FilamentShield\Resources\RoleResource::*
-                'shield::role', // Covers BezhanSalleh\FilamentShield\Pages\ViewShieldSettings
-            ];
-
-            $backupPermissionPatterns = [
-                'backup',           // Catches any permission containing 'backup'
-                'Backup',           // Case sensitive backup
-                'laravel-backup',   // Spatie Laravel Backup package
-                'spatie-backup',    // Alternative naming
-                'filament-spatie-backup', // Filament plugin naming
-            ];
-
-            // Check if permission matches user patterns
-            $isUserPermission = collect($userPermissionPatterns)->some(function ($pattern) use ($permissionLower) {
+            // Check if permission matches special excluded patterns
+            $isSpecialExcluded = collect($specialExcludedPatterns)->some(function ($pattern) use ($permissionLower) {
                 return Str::contains($permissionLower, $pattern);
             });
 
-            // Check if permission matches role patterns
-            $isRolePermission = collect($rolePermissionPatterns)->some(function ($pattern) use ($permissionLower) {
-                return Str::contains($permissionLower, $pattern);
-            });
-
-            // Check if permission matches backup patterns
-            $isBackupPermission = collect($backupPermissionPatterns)->some(function ($pattern) use ($permissionLower) {
-                return Str::contains($permissionLower, $pattern);
-            });
-
-            // Include permission if it's not user, role, or backup related (this includes components)
-            return ! $isUserPermission && ! $isRolePermission && ! $isBackupPermission;
+            // Include permission if it's not excluded
+            return ! $isExcludedResource && ! $isSpecialExcluded;
         })->toArray();
+    }
+
+    /**
+     * Check if a permission belongs to an excluded resource
+     */
+    private function isPermissionForExcludedResource(string $permission, array $excludedResources): bool
+    {
+        $permissionLower = strtolower($permission);
+
+        return collect($excludedResources)->some(function ($resource) use ($permissionLower) {
+            $resourcePatterns = $this->generateResourcePermissionPatterns($resource);
+            
+            return collect($resourcePatterns)->some(function ($pattern) use ($permissionLower) {
+                return Str::contains($permissionLower, $pattern);
+            });
+        });
+    }
+
+    /**
+     * Generate all possible permission patterns for a resource
+     */
+    private function generateResourcePermissionPatterns(string $resource): array
+    {
+        $actions = [
+            'view_any', 'view', 'create', 'update', 'delete', 'restore', 'force_delete',
+            'delete_any', 'force_delete_any', 'restore_any', 'replicate', 'reorder'
+        ];
+
+        $patterns = [];
+
+        // Standard action_resource patterns
+        foreach ($actions as $action) {
+            $patterns[] = "{$action}_{$resource}";
+        }
+
+        // Resource class patterns (e.g., userresource::, archiveresource::)
+        $patterns[] = "{$resource}resource::";
+
+        return $patterns;
     }
 
     /**
@@ -199,7 +206,7 @@ class GenerateRolesCommand extends Command
      */
     private function getDefaultCmsPermissions(): array
     {
-        $resources = ['category', 'comment', 'component', 'page', 'post', 'submission', 'tag', 'user', 'role'];
+        $resources = ['archive', 'category', 'comment', 'component', 'page', 'post', 'submission', 'tag', 'user', 'role'];
         $actions = ['view', 'view_any', 'create', 'update', 'delete', 'restore', 'force_delete', 'delete_any', 'force_delete_any', 'restore_any', 'replicate', 'reorder'];
 
         $permissions = [];
