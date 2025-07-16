@@ -6,6 +6,7 @@ use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Littleboy130491\Sumimasen\Filament\Pages\ManageGeneralSettings;
+use Littleboy130491\Sumimasen\Filament\Resources\ArchiveResource;
 use Littleboy130491\Sumimasen\Filament\Resources\CategoryResource;
 use Littleboy130491\Sumimasen\Filament\Resources\CommentResource;
 use Littleboy130491\Sumimasen\Filament\Resources\ComponentResource;
@@ -35,6 +36,7 @@ class SumimasenPlugin implements Plugin
     public function register(Panel $panel): void
     {
         $defaultResources = [
+            'archive' => ArchiveResource::class,
             'category' => CategoryResource::class,
             'comment' => CommentResource::class,
             'component' => ComponentResource::class,
