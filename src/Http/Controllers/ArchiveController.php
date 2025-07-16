@@ -82,6 +82,8 @@ class ArchiveController extends BaseContentController
         if ($archive) {
             return $archive;
         }
+
+        return null;
     }
 
     /**
