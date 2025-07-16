@@ -9,11 +9,17 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Littleboy130491\Sumimasen\Filament\Exports\SubmissionExporter;
 use Littleboy130491\Sumimasen\Filament\Resources\SubmissionResource\Pages;
-use Littleboy130491\Sumimasen\Models\Submission;
 
 class SubmissionResource extends Resource
 {
-    protected static ?string $model = Submission::class;
+    protected static ?string $model = null;
+
+    public static function getModel(): string
+    {
+        return static::$model ??= class_exists(\App\Models\Submission::class)
+            ? \App\Models\Submission::class
+            : \Littleboy130491\Sumimasen\Models\Submission::class;
+    }
 
     protected static ?string $navigationIcon = 'heroicon-o-envelope';
 

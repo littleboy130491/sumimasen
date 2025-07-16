@@ -9,13 +9,19 @@ use Filament\Tables\Table;
 use Littleboy130491\Sumimasen\Enums\CommentStatus;
 use Littleboy130491\Sumimasen\Filament\Resources\CommentResource\Pages;
 use Littleboy130491\Sumimasen\Filament\Traits\CommentTrait;
-use Littleboy130491\Sumimasen\Models\Comment;
 
 class CommentResource extends Resource
 {
     use CommentTrait;
 
-    protected static ?string $model = Comment::class;
+    protected static ?string $model = null;
+
+    public static function getModel(): string
+    {
+        return static::$model ??= class_exists(\App\Models\Comment::class)
+            ? \App\Models\Comment::class
+            : \Littleboy130491\Sumimasen\Models\Comment::class;
+    }
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-ellipsis';
 

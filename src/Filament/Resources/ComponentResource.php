@@ -13,14 +13,20 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Littleboy130491\Sumimasen\Filament\Resources\ComponentResource\Pages;
 use Littleboy130491\Sumimasen\Filament\Traits\HasContentBlocks;
-use Littleboy130491\Sumimasen\Models\Component;
 use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
 
 class ComponentResource extends Resource
 {
     use HasContentBlocks;
 
-    protected static ?string $model = Component::class;
+    protected static ?string $model = null;
+
+    public static function getModel(): string
+    {
+        return static::$model ??= class_exists(\App\Models\Component::class)
+            ? \App\Models\Component::class
+            : \Littleboy130491\Sumimasen\Models\Component::class;
+    }
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

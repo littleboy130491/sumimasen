@@ -4,11 +4,17 @@ namespace Littleboy130491\Sumimasen\Filament\Resources;
 
 use Littleboy130491\Sumimasen\Filament\Abstracts\BaseContentResource;
 use Littleboy130491\Sumimasen\Filament\Resources\ArchiveResource\Pages;
-use Littleboy130491\Sumimasen\Models\Archive;
 
 class ArchiveResource extends BaseContentResource
 {
-    protected static ?string $model = Archive::class;
+    protected static ?string $model = null;
+
+    public static function getModel(): string
+    {
+        return static::$model ??= class_exists(\App\Models\Archive::class)
+            ? \App\Models\Archive::class
+            : \Littleboy130491\Sumimasen\Models\Archive::class;
+    }
 
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
 

@@ -2,7 +2,6 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources;
 
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,7 +13,14 @@ use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
 class UserResource extends Resource
 {
-    protected static ?string $model = User::class;
+    protected static ?string $model = null;
+
+    public static function getModel(): string
+    {
+        return static::$model ??= class_exists(\App\Models\User::class)
+            ? \App\Models\User::class
+            : \Littleboy130491\Sumimasen\Models\User::class;
+    }
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
