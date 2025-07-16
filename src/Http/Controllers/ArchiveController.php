@@ -34,10 +34,10 @@ class ArchiveController extends BaseContentController
             item: $archive,
             contentTypeKey: $content_type_archive_key,
             viewData: [
-                'post_type' => $content_type_archive_key,
                 'archive' => $archive,
-                'title' => $archive->archive->title ?? $archive->title,
-                'description' => $archive->archive->content ?? $archive->content,
+                'record' => $archive->record,
+                'title' => $archive->record->title ?? $archive->title,
+                'description' => $archive->record->content ?? $archive->content,
                 'items' => $items,
             ]
         );
@@ -97,7 +97,7 @@ class ArchiveController extends BaseContentController
         }
 
         return (object) [
-            'archive' => $archive, // the full archive object
+            'record' => $archive, // the full archive object
             'post_type' => $contentTypeKey,
             'source' => 'archive',
             'config' => $config,
