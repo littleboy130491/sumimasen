@@ -15,10 +15,10 @@ class ListPages extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ImportAction::make()
-                ->importer(PageImporter::class),
-            Actions\ExportAction::make()
-                ->exporter(PageExporter::class),
+            // Actions\ImportAction::make()
+            //     ->importer(PageImporter::class),
+            // Actions\ExportAction::make()
+            //     ->exporter(PageExporter::class),
             Actions\CreateAction::make(),
         ];
     }
