@@ -20,7 +20,7 @@ class ArchiveController extends BaseContentController
         $eagerLoadRelationships = $this->getEagerLoadRelationships($originalKey);
 
         $archive = $this->createArchiveObject($content_type_archive_key, $lang);
-        $paginationLimit = config('cms.content_models.'.$originalKey.'.per_page') ?? $this->paginationLimit;
+        $paginationLimit = config('cms.content_models.' . $originalKey . '.per_page') ?? $this->paginationLimit;
 
         $items = $this->buildQueryWithStatusFilter($modelClass)
             ->with($eagerLoadRelationships)
@@ -118,7 +118,15 @@ class ArchiveController extends BaseContentController
         SEOTools::setTitle($title);
         SEOTools::setDescription($description);
 
+        // Create a mock record object or set record to null explicitly
+        $mockRecord = (object) [
+            'title' => $title,
+            'content' => $description,
+            'slug' => $contentTypeKey,
+        ];
+
         return (object) [
+            'record' => $mockRecord,
             'title' => $title,
             'content' => $description,
             'post_type' => $contentTypeKey,
