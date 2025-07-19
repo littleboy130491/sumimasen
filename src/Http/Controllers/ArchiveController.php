@@ -20,7 +20,7 @@ class ArchiveController extends BaseContentController
         $eagerLoadRelationships = $this->getEagerLoadRelationships($originalKey);
 
         $archive = $this->createArchiveObject($content_type_archive_key, $lang);
-        $paginationLimit = config('cms.content_models.' . $originalKey . '.per_page') ?? $this->paginationLimit;
+        $paginationLimit = config('cms.content_models.'.$originalKey.'.per_page') ?? $this->paginationLimit;
 
         $items = $this->buildQueryWithStatusFilter($modelClass)
             ->with($eagerLoadRelationships)
