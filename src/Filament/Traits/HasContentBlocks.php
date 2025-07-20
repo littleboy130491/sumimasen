@@ -811,7 +811,7 @@ trait HasContentBlocks
 
                 Textarea::make('description')
                     ->label('Section Description')
-                    ->columnSpanFull(),,
+                    ->columnSpanFull(),
 
                 CuratorPicker::make('image')
                     ->label('Image')
@@ -849,6 +849,7 @@ trait HasContentBlocks
             static::getGalleryBlock(),
             static::getImageWithTextBlock(),
             static::getCounterBlock(),
+            static::getSectionWithImageBlock(),
         ];
     }
 
