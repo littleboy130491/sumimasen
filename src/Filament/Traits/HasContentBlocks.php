@@ -371,7 +371,12 @@ trait HasContentBlocks
         return FormsBuilder\Block::make('simple')
             ->label('Simple Text')
             ->schema([
-                TextInput::make('heading'),
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->helperText('Identifier for the block')
+                    ->columnSpanFull(),
+                TextInput::make('title'),
+                TextInput::make('subtitle'),
                 TiptapEditor::make('description')
                     ->profile('simple')
                     ->columnSpan('full')
@@ -759,7 +764,7 @@ trait HasContentBlocks
                     ->label('Block ID')
                     ->required()
                     ->placeholder('contact-form')
-                    ->helperText('Unique identifier for this block'),
+                    ->helperText('Identifier for the block'),
 
                 TextInput::make('title')
                     ->label('Form Title'),
@@ -800,25 +805,33 @@ trait HasContentBlocks
             ->schema([
                 TextInput::make('block_id')
                     ->label('Block ID')
-                    ->helperText('Unique identifier for this block')
+                    ->helperText('Identifier for the block')
                     ->columnSpanFull(),
-
-                TextInput::make('title')
-                    ->label('Section Title'),
-
-                TextInput::make('subtitle')
-                    ->label('Section Subtitle'),
-
+                TextInput::make('title'),
+                TextInput::make('subtitle'),
                 Textarea::make('description')
-                    ->label('Section Description')
                     ->columnSpanFull(),
-
                 CuratorPicker::make('image')
-                    ->label('Image')
                     ->acceptedFileTypes(['image/*']),
-
             ])
             ->columns(2);
+    }
+
+    private static function getSimpleBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('simple')
+            ->label('Simple Text')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->helperText('Identifier for the block')
+                    ->columnSpanFull(),
+                TextInput::make('title'),
+                TextInput::make('subtitle'),
+                Textarea::make('description')
+                    ->columnSpanFull(),
+            ])
+            ->columns(1);
     }
 
     // Update the getContentBlocks method to include new blocks
