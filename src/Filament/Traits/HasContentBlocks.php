@@ -793,6 +793,34 @@ trait HasContentBlocks
             ->columns(2);
     }
 
+    private static function getSectionWithImageBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('section_with_image')
+            ->label('Section with Image')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->helperText('Unique identifier for this block')
+                    ->columnSpanFull(),
+
+                TextInput::make('title')
+                    ->label('Section Title'),
+
+                TextInput::make('subtitle')
+                    ->label('Section Subtitle'),
+
+                Textarea::make('description')
+                    ->label('Section Description')
+                    ->columnSpanFull(),,
+
+                CuratorPicker::make('image')
+                    ->label('Image')
+                    ->acceptedFileTypes(['image/*']),
+
+            ])
+            ->columns(2);
+    }
+
     // Update the getContentBlocks method to include new blocks
     protected static function getContentBlocks(): array
     {
