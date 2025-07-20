@@ -366,25 +366,6 @@ trait HasContentBlocks
             ->columns(2);
     }
 
-    private static function getSimpleBlock(): FormsBuilder\Block
-    {
-        return FormsBuilder\Block::make('simple')
-            ->label('Simple Text')
-            ->schema([
-                TextInput::make('block_id')
-                    ->label('Block ID')
-                    ->helperText('Identifier for the block')
-                    ->columnSpanFull(),
-                TextInput::make('title'),
-                TextInput::make('subtitle'),
-                TiptapEditor::make('description')
-                    ->profile('simple')
-                    ->columnSpan('full')
-                    ->extraInputAttributes(['style' => 'min-height: 12rem;']),
-            ])
-            ->columns(1);
-    }
-
     private static function getVideoBlock(): FormsBuilder\Block
     {
         return FormsBuilder\Block::make('video')
