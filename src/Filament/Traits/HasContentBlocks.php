@@ -798,10 +798,29 @@ trait HasContentBlocks
             ->columns(2);
     }
 
+    private static function getSectionWithLinkBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('section_with_link')
+            ->label('Section with Link')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->helperText('Identifier for the block')
+                    ->columnSpanFull(),
+                TextInput::make('title'),
+                TextInput::make('subtitle'),
+                Textarea::make('description')
+                    ->columnSpanFull(),
+                TextInput::make('url'),
+                TextInput::make('button_label'),
+            ])
+            ->columns(2);
+    }
+
     private static function getSimpleBlock(): FormsBuilder\Block
     {
         return FormsBuilder\Block::make('simple')
-            ->label('Simple Text')
+            ->label('Simple Block')
             ->schema([
                 TextInput::make('block_id')
                     ->label('Block ID')
@@ -812,7 +831,7 @@ trait HasContentBlocks
                 Textarea::make('description')
                     ->columnSpanFull(),
             ])
-            ->columns(1);
+            ->columns(2);
     }
 
     // Update the getContentBlocks method to include new blocks
@@ -844,6 +863,7 @@ trait HasContentBlocks
             static::getImageWithTextBlock(),
             static::getCounterBlock(),
             static::getSectionWithImageBlock(),
+            static::getSectionWithLinkBlock(),
         ];
     }
 
