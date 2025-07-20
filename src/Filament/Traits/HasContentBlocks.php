@@ -13,9 +13,6 @@ use FilamentTiptapEditor\TiptapEditor;
 
 trait HasContentBlocks
 {
-    // ==========================================
-    // REUSABLE FIELD SET BLOCKS
-    // ==========================================
 
     private static function getSliderBlock(): FormsBuilder\Block
     {
@@ -476,6 +473,327 @@ trait HasContentBlocks
             ->columns(2);
     }
 
+    private static function getInteractiveMapBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('interactive_map')
+            ->label('Interactive Map with Hotspots')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->required()
+                    ->placeholder('lahan-industri-map')
+                    ->helperText('Unique identifier for this block'),
+
+                TextInput::make('title')
+                    ->label('Map Title'),
+
+                CuratorPicker::make('map_image')
+                    ->label('Map/Floor Plan Image')
+                    ->acceptedFileTypes(['image/*'])
+                    ->required(),
+
+                Repeater::make('hotspots')
+                    ->label('Hotspot Points')
+                    ->schema([
+                        TextInput::make('label')
+                            ->label('Hotspot Label')
+                            ->required(),
+
+                        TextInput::make('top_position')
+                            ->label('Top Position (%)')
+                            ->numeric()
+                            ->required()
+                            ->suffix('%')
+                            ->minValue(0)
+                            ->maxValue(100),
+
+                        TextInput::make('left_position')
+                            ->label('Left Position (%)')
+                            ->numeric()
+                            ->required()
+                            ->suffix('%')
+                            ->minValue(0)
+                            ->maxValue(100),
+
+                        TextInput::make('popup_title')
+                            ->label('Popup Title'),
+
+                        Textarea::make('popup_description')
+                            ->label('Popup Description'),
+
+                        CuratorPicker::make('popup_image')
+                            ->label('Popup Image')
+                            ->acceptedFileTypes(['image/*']),
+
+                        TextInput::make('additional_info')
+                            ->label('Additional Info (e.g., Area size)')
+                            ->helperText('e.g., "4.50 Ha"'),
+                    ])
+                    ->defaultItems(3)
+                    ->collapsible()
+                    ->columnSpanFull()
+            ])
+            ->columns(2);
+    }
+
+    private static function getTimelineBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('timeline')
+            ->label('Timeline/History')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->required()
+                    ->placeholder('company-timeline')
+                    ->helperText('Unique identifier for this block'),
+
+                TextInput::make('section_label')
+                    ->label('Section Label'),
+
+                TextInput::make('title')
+                    ->label('Timeline Title')
+                    ->required(),
+
+                Textarea::make('description')
+                    ->label('Timeline Description'),
+
+                CuratorPicker::make('background_image')
+                    ->label('Background Image')
+                    ->acceptedFileTypes(['image/*']),
+
+                Repeater::make('timeline_items')
+                    ->label('Timeline Events')
+                    ->schema([
+                        TextInput::make('year')
+                            ->label('Year/Date')
+                            ->required(),
+
+                        TextInput::make('title')
+                            ->label('Event Title'),
+
+                        Textarea::make('description')
+                            ->label('Event Description')
+                            ->required(),
+
+                        CuratorPicker::make('image')
+                            ->label('Event Image (optional)')
+                            ->acceptedFileTypes(['image/*']),
+                    ])
+                    ->defaultItems(4)
+                    ->collapsible()
+                    ->columnSpanFull()
+            ])
+            ->columns(2);
+    }
+
+    private static function getAccordionBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('accordion')
+            ->label('Accordion/Expandable Content')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->required()
+                    ->placeholder('faq-section')
+                    ->helperText('Unique identifier for this block'),
+
+                TextInput::make('title')
+                    ->label('Section Title'),
+
+                Select::make('style')
+                    ->label('Accordion Style')
+                    ->options([
+                        'default' => 'Default',
+                        'with_images' => 'With Images',
+                        'numbered' => 'Numbered Items',
+                    ])
+                    ->default('default'),
+
+                Repeater::make('accordion_items')
+                    ->label('Accordion Items')
+                    ->schema([
+                        TextInput::make('title')
+                            ->label('Item Title')
+                            ->required(),
+
+                        TiptapEditor::make('content')
+                            ->label('Item Content')
+                            ->profile('simple')
+                            ->required()
+                            ->columnSpanFull(),
+
+                        CuratorPicker::make('image')
+                            ->label('Item Image')
+                            ->acceptedFileTypes(['image/*'])
+                            ->visible(fn(Get $get) => $get('../../style') === 'with_images'),
+
+                        TextInput::make('button_text')
+                            ->label('Button Text'),
+
+                        TextInput::make('button_url')
+                            ->label('Button URL'),
+                    ])
+                    ->defaultItems(3)
+                    ->collapsible()
+                    ->columnSpanFull()
+            ])
+            ->columns(2);
+    }
+
+    private static function getContactInfoBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('contact_info')
+            ->label('Contact Information')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->required()
+                    ->placeholder('contact-section')
+                    ->helperText('Unique identifier for this block'),
+
+                TextInput::make('title')
+                    ->label('Section Title')
+                    ->required(),
+
+                Textarea::make('description')
+                    ->label('Section Description'),
+
+                Repeater::make('contact_cards')
+                    ->label('Contact Cards')
+                    ->schema([
+                        Select::make('type')
+                            ->label('Contact Type')
+                            ->options([
+                                'address' => 'Address',
+                                'phone' => 'Phone',
+                                'email' => 'Email',
+                                'social' => 'Social Media',
+                                'custom' => 'Custom',
+                            ])
+                            ->required(),
+
+                        TextInput::make('title')
+                            ->label('Card Title')
+                            ->required(),
+
+                        Textarea::make('content')
+                            ->label('Contact Details')
+                            ->required(),
+
+                        TextInput::make('link')
+                            ->label('Link URL')
+                            ->url()
+                            ->helperText('For clickable contact info'),
+
+                        TextInput::make('icon')
+                            ->label('Icon Class')
+                            ->helperText('Optional icon class name'),
+                    ])
+                    ->defaultItems(4)
+                    ->columnSpanFull(),
+
+                TextInput::make('map_embed')
+                    ->label('Map Embed URL')
+                    ->url()
+                    ->helperText('Google Maps embed URL'),
+            ])
+            ->columns(1);
+    }
+
+    private static function getValuePropositionBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('value_proposition')
+            ->label('Value Proposition Cards')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->required()
+                    ->placeholder('tata-nilai')
+                    ->helperText('Unique identifier for this block'),
+
+                TextInput::make('title')
+                    ->label('Section Title'),
+
+                Select::make('layout')
+                    ->label('Card Layout')
+                    ->options([
+                        'horizontal' => 'Horizontal Cards',
+                        'vertical' => 'Vertical Cards',
+                        'grid' => 'Grid Layout',
+                    ])
+                    ->default('horizontal'),
+
+                Repeater::make('value_cards')
+                    ->label('Value Cards')
+                    ->schema([
+                        TextInput::make('letter')
+                            ->label('Large Letter/Number')
+                            ->maxLength(3)
+                            ->helperText('Large display character'),
+
+                        TextInput::make('title')
+                            ->label('Card Title')
+                            ->required(),
+
+                        Textarea::make('description')
+                            ->label('Card Description')
+                            ->required(),
+
+                        TextInput::make('color_scheme')
+                            ->label('Color Scheme')
+                            ->helperText('Optional: Custom color class'),
+                    ])
+                    ->defaultItems(6)
+                    ->collapsible()
+                    ->columnSpanFull()
+            ])
+            ->columns(2);
+    }
+
+    private static function getFormBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('form')
+            ->label('Contact/Inquiry Form')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->required()
+                    ->placeholder('contact-form')
+                    ->helperText('Unique identifier for this block'),
+
+                TextInput::make('title')
+                    ->label('Form Title'),
+
+                Textarea::make('description')
+                    ->label('Form Description'),
+
+                Select::make('form_type')
+                    ->label('Form Type')
+                    ->options([
+                        'contact' => 'Contact Form',
+                        'inquiry' => 'Business Inquiry',
+                        'newsletter' => 'Newsletter Signup',
+                        'custom' => 'Custom Form',
+                    ])
+                    ->default('contact'),
+
+                TextInput::make('submit_button_text')
+                    ->label('Submit Button Text')
+                    ->default('Submit'),
+
+                TextInput::make('success_message')
+                    ->label('Success Message')
+                    ->default('Thank you for your submission!'),
+
+                // Note: Actual form fields would be handled by Livewire component
+                Textarea::make('form_note')
+                    ->label('Form Note')
+                    ->helperText('Additional note or disclaimer below the form'),
+            ])
+            ->columns(2);
+    }
+
+    // Update the getContentBlocks method to include new blocks
     protected static function getContentBlocks(): array
     {
         return [
@@ -488,6 +806,12 @@ trait HasContentBlocks
             static::getLogoGridBlock(),
             static::getTextSectionBlock(),
             static::getTabbedContentBlock(),
+            static::getInteractiveMapBlock(),
+            static::getTimelineBlock(),
+            static::getAccordionBlock(),
+            static::getContactInfoBlock(),
+            static::getValuePropositionBlock(),
+            static::getFormBlock(),
 
             // General Purpose Blocks
             static::getCompleteBlock(),
@@ -499,4 +823,6 @@ trait HasContentBlocks
             static::getCounterBlock(),
         ];
     }
+
+
 }
