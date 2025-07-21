@@ -3,13 +3,13 @@
 namespace Littleboy130491\Sumimasen\Models;
 
 use Awcodes\Curator\Models\Media;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Littleboy130491\SeoSuite\Models\Traits\InteractsWithSeoSuite;
 use Spatie\Translatable\HasTranslations;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Page extends Model
 {
@@ -63,11 +63,8 @@ class Page extends Model
         'title',
     ];
 
-
     /**
      * Get the section attribute with fallback for empty values
-     *
-     * @return \Illuminate\Database\Eloquent\Casts\Attribute
      */
     protected function section(): Attribute
     {
@@ -87,13 +84,13 @@ class Page extends Model
                     // Try default language
                     $defaultLocale = config('cms.default_language');
 
-                    if (isset($translations[$defaultLocale]) && !empty($translations[$defaultLocale])) {
+                    if (isset($translations[$defaultLocale]) && ! empty($translations[$defaultLocale])) {
                         return $translations[$defaultLocale];
                     }
 
                     // Return first non-empty translation
                     foreach ($translations as $locale => $localeValue) {
-                        if (!empty($localeValue)) {
+                        if (! empty($localeValue)) {
                             return $localeValue;
                         }
                     }

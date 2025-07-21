@@ -4,16 +4,15 @@ namespace Littleboy130491\Sumimasen\Filament\Traits;
 
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Filament\Forms\Components\Builder as FormsBuilder;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use FilamentTiptapEditor\TiptapEditor;
 
 trait HasContentBlocks
 {
-
     private static function getSliderBlock(): FormsBuilder\Block
     {
         return FormsBuilder\Block::make('slider')
@@ -32,7 +31,7 @@ trait HasContentBlocks
                             ->label('Slide Type')
                             ->options([
                                 'video' => 'Video Background',
-                                'image' => 'Image Background'
+                                'image' => 'Image Background',
                             ])
                             ->required()
                             ->default('image'),
@@ -52,7 +51,7 @@ trait HasContentBlocks
 
                         TextInput::make('video_url')
                             ->label('Video URL')
-                            ->visible(fn(Get $get) => $get('type') === 'video'),
+                            ->visible(fn (Get $get) => $get('type') === 'video'),
 
                         CuratorPicker::make('fallback_image')
                             ->label('Fallback/Thumbnail Image')
@@ -61,7 +60,7 @@ trait HasContentBlocks
                         CuratorPicker::make('background_image')
                             ->label('Background Image')
                             ->acceptedFileTypes(['image/*'])
-                            ->visible(fn(Get $get) => $get('type') === 'image'),
+                            ->visible(fn (Get $get) => $get('type') === 'image'),
                     ])
                     ->defaultItems(1)
                     ->collapsible()
@@ -112,7 +111,7 @@ trait HasContentBlocks
                             ->acceptedFileTypes(['image/*']),
                     ])
                     ->defaultItems(3)
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -200,7 +199,7 @@ trait HasContentBlocks
                             ->label('Suffix'),
                     ])
                     ->defaultItems(4)
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ])
             ->columns(1);
     }
@@ -265,7 +264,7 @@ trait HasContentBlocks
                             ->label('Link URL (optional)'),
                     ])
                     ->defaultItems(6)
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -337,7 +336,7 @@ trait HasContentBlocks
                             ->columnSpanFull(),
                     ])
                     ->defaultItems(3)
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ])
             ->columns(1);
     }
@@ -517,7 +516,7 @@ trait HasContentBlocks
                     ])
                     ->defaultItems(3)
                     ->collapsible()
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -567,7 +566,7 @@ trait HasContentBlocks
                     ])
                     ->defaultItems(4)
                     ->collapsible()
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -611,7 +610,7 @@ trait HasContentBlocks
                         CuratorPicker::make('image')
                             ->label('Item Image')
                             ->acceptedFileTypes(['image/*'])
-                            ->visible(fn(Get $get) => $get('../../style') === 'with_images'),
+                            ->visible(fn (Get $get) => $get('../../style') === 'with_images'),
 
                         TextInput::make('button_text')
                             ->label('Button Text'),
@@ -621,7 +620,7 @@ trait HasContentBlocks
                     ])
                     ->defaultItems(3)
                     ->collapsible()
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -731,7 +730,7 @@ trait HasContentBlocks
                     ])
                     ->defaultItems(6)
                     ->collapsible()
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -866,6 +865,4 @@ trait HasContentBlocks
             static::getSectionWithLinkBlock(),
         ];
     }
-
-
 }

@@ -2,10 +2,10 @@
 
 namespace Littleboy130491\Sumimasen\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Component extends Model
 {
@@ -42,8 +42,6 @@ class Component extends Model
 
     /**
      * Get the section attribute with fallback for empty values
-     *
-     * @return \Illuminate\Database\Eloquent\Casts\Attribute
      */
     protected function data(): Attribute
     {
@@ -63,13 +61,13 @@ class Component extends Model
                     // Try default language
                     $defaultLocale = config('cms.default_language');
 
-                    if (isset($translations[$defaultLocale]) && !empty($translations[$defaultLocale])) {
+                    if (isset($translations[$defaultLocale]) && ! empty($translations[$defaultLocale])) {
                         return $translations[$defaultLocale];
                     }
 
                     // Return first non-empty translation
                     foreach ($translations as $locale => $localeValue) {
-                        if (!empty($localeValue)) {
+                        if (! empty($localeValue)) {
                             return $localeValue;
                         }
                     }
