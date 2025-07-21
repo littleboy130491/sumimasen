@@ -40,21 +40,43 @@ class Component extends Model
         'data',
     ];
 
-    protected $appends = ['blocks'];
-
-    /**
-     * Return the raw data blocks, but with image URLs injected.
+     /**
+     * Get the section attribute with fallback for empty values
+     *
+     * @return \Illuminate\Database\Eloquent\Casts\Attribute
      */
-    public function getBlocksAttribute(): array
+    protected function data(): Attribute
     {
-        return collect($this->data)->map(function (array $block) {
-            // if this block has an "media" key, fetch its URL
-            if (isset($block['data']['media_id'])) {
-                $media = Media::find($block['data']['media_id']);
-                $block['data']['media_url'] = $media?->url;
-            }
+        return Attribute::make(
+            get: function ($value, $attributes) {
+                // Get the raw JSON translations from attributes
+                $translations = json_decode($attributes['section'] ?? '{}', true);
 
-            return $block;
-        })->all();
+                // Get current locale
+                $currentLocale = $this->getLocale();
+
+                // Get current locale's value
+                $currentValue = $translations[$currentLocale] ?? [];
+
+                // If current locale is empty, use fallback
+                if (empty($currentValue)) {
+                    // Try default language
+                    $defaultLocale = config('cms.default_language');
+
+                    if (isset($translations[$defaultLocale]) && !empty($translations[$defaultLocale])) {
+                        return $translations[$defaultLocale];
+                    }
+
+                    // Return first non-empty translation
+                    foreach ($translations as $locale => $localeValue) {
+                        if (!empty($localeValue)) {
+                            return $localeValue;
+                        }
+                    }
+                }
+
+                return $currentValue;
+            }
+        );
     }
 }
