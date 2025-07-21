@@ -2,10 +2,10 @@
 
 namespace Littleboy130491\Sumimasen\Models;
 
-use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Component extends Model
 {
@@ -40,7 +40,7 @@ class Component extends Model
         'data',
     ];
 
-     /**
+    /**
      * Get the section attribute with fallback for empty values
      *
      * @return \Illuminate\Database\Eloquent\Casts\Attribute
