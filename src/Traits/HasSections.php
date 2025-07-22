@@ -40,9 +40,9 @@ trait HasSections
 
                 // Inject media URLs into blocks
                 return collect($currentValue)->map(function (array $block) {
-                    // if this block has an "media_id" key, fetch its URL
-                    if (isset($block['data']['media_id'])) {
-                        $media = Media::find($block['data']['media_id']);
+                    // if this block has an "image" key, fetch its URL
+                    if (isset($block['data']['image'])) {
+                        $media = Media::find($block['data']['image']);
                         $block['data']['media_url'] = $media?->url;
                     }
 
