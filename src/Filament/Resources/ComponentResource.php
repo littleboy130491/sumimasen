@@ -36,7 +36,7 @@ class ComponentResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')
+                TextInput::make('title')
                     ->required()
                     ->rule('regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/i') // basic slug regex
                     ->unique(ignoreRecord: true)
@@ -47,7 +47,7 @@ class ComponentResource extends Resource
                     ->columnSpanFull()
                     ->schema(function (string $locale): array {
                         return [
-                            FormsBuilder::make('data')
+                            FormsBuilder::make('section')
                                 ->collapsed(false)
                                 ->blocks(static::getContentBlocks()),
                         ];
@@ -60,7 +60,7 @@ class ComponentResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('title')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('notes')
                     ->searchable(),

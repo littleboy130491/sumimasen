@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('components', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->json('data')->nullable();
+            $table->string('title')->unique();
+            $table->json('section')->nullable();
             $table->string('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
