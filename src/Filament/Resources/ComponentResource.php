@@ -49,6 +49,7 @@ class ComponentResource extends Resource
                         return [
                             FormsBuilder::make('section')
                                 ->collapsed(false)
+                                ->cloneable()
                                 ->blocks(static::getContentBlocks()),
                         ];
                     }),
