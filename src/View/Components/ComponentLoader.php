@@ -45,7 +45,7 @@ class ComponentLoader extends Component
     {
         $this->name = $name;
         // Fetch the first component with the given slug and retrieve its 'data' property, or null if not found.
-        $this->componentData = ComponentModel::where('name', $name)->first() ?? null;
+        $this->componentData = ComponentModel::where('title', $name)->first() ?? null;
     }
 
     /**
