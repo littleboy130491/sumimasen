@@ -37,7 +37,7 @@ use Littleboy130491\Sumimasen\Filament\Traits\HasCopyFromDefaultLangButton;
 
 abstract class BaseResource extends Resource
 {
-    use HasContentBlocks, HasCopyFromDefaultLangButton;
+    use HasContentBlocks, HasCopyFromDefaultLangButton, HasCopyAllFromDefaultLang;
 
     protected static ?string $recordTitleAttribute = 'title';
 
@@ -86,7 +86,21 @@ abstract class BaseResource extends Resource
                                 ->schema(function (string $locale): array {
                                     return static::topLeftSchema($locale);
                                 })
-                                ->contained(false),
+                                ->contained(false)
+                                ->hintAction(
+                                    \Filament\Forms\Components\Actions\Action::make('copyAllFromDefaultLang')
+                                        ->label('Copy from Default Language')
+                                        ->icon('heroicon-m-language')
+                                        ->color('gray')
+                                        ->action(function (Get $get, Set $set, $livewire) {
+                                            $currentLocale = $get('activeLocale') ?? $get('__livewire.locale') ?? config('cms.default_language', 'en');
+                                            static::copyAllTranslatableFieldsFromDefaultLanguage(
+                                                $currentLocale,
+                                                $livewire,
+                                                $set
+                                            );
+                                        })
+                                ),
                         ])
                         ->columnSpan([
                             'sm' => 2,
