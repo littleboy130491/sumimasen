@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Littleboy130491\SeoSuite\Models\Traits\InteractsWithSeoSuite;
 use Spatie\Translatable\HasTranslations;
 use Littleboy130491\Sumimasen\Traits\HasSections;
+use Littleboy130491\Sumimasen\Traits\HasCopyFromDefaultLangButton;
 
 class Archive extends Model
 {
-    use HasFactory, HasTranslations, InteractsWithSeoSuite, SoftDeletes, HasSections;
+    use HasFactory, HasTranslations, InteractsWithSeoSuite, SoftDeletes, HasSections, HasCopyFromDefaultLangButton;
 
     /**
      * The attributes that are mass assignable.

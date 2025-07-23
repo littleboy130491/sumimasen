@@ -52,7 +52,10 @@ class ComponentResource extends Resource
                                 ->cloneable()
                                 ->blocks(static::getContentBlocks()),
                         ];
-                    }),
+                    })
+                    ->actions([
+                        static::copyFromDefaultLangAction(),
+                    ]),
             ])
             ->columns(1);
     }

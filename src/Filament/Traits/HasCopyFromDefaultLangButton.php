@@ -6,28 +6,67 @@ use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
+use Filament\Forms\Components\Field;
 
 trait HasCopyFromDefaultLangButton
 {
 
     /**
+     * Attach this to Translate fields from SolutionForest actions method.
+     *
+     * Example usage:
+     * 
+     * Translate::make()
+     *     ->columns(2)
+     *     ->schema(function (string $locale): array {
+     *         return static::topLeftSchema($locale);
+     *     })
+     *     ->contained(false)
+     *     ->actions([
+     *         static::copyFromDefaultLangAction(), // Add this line to include the copy action
+     *     ]);
+     *
      * @return Action
      */
-    protected static function copyFromDefaultLangAction($locale): Action
+    protected static function copyFromDefaultLangAction(): Action
     {
         return Action::make('copyFromDefaultLang')
-            ->label('Copy from Default Language')
+            ->label('Copy Content from Default Language')
             ->icon('heroicon-m-language')
             ->color('gray')
-            ->action(function (Get $get, Set $set, $livewire) use ($locale) {
-                static::copySectionsFromDefaultLanguage($locale, $livewire, $set);
-            });
-    }
+            ->visible(fn($arguments) => $arguments['locale'] !== config('cms.default_language'))
+            ->action(function (Get $get, Set $set, $livewire, $arguments) {
+                $locale = $arguments['locale'] ?? null;
+                if (!$locale) {
+                    return;
+                }
 
-    /**
-     * Copy sections from default language to target locale
-     */
-    protected static function copySectionsFromDefaultLanguage(string $targetLocale, \Livewire\Component $livewire, ?\Filament\Forms\Set $set = null): void
+                $locales = collect(array_keys(config('cms.language_available')));
+                $pattern = '/^(.+)\.(' . $locales->join('|') . ')$/';
+
+                $translatableFields = collect($livewire->getForm('form')->getFlatComponents())
+                    ->filter(fn($c) => $c instanceof Field)
+                    ->filter(fn($c) => preg_match($pattern, $c->getName()))
+                    ->map->getName()
+                    ->values()
+                    ->all();
+
+                $baseFieldsNames = collect($translatableFields)
+                    ->map(fn($name) => explode('.', $name)[0])
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                static::copyAllTranslatableFieldsFromDefaultLanguage(
+                    $locale,
+                    $livewire,
+                    $set,
+                    $baseFieldsNames
+                );
+            })
+            ->link();
+    }
+    protected static function copyAllTranslatableFieldsFromDefaultLanguage(string $targetLocale, \Livewire\Component $livewire, ?Set $set = null, array $translatableFields): void
     {
         $defaultLocale = config('cms.default_language', 'en');
 
@@ -37,13 +76,13 @@ trait HasCopyFromDefaultLangButton
                 ->title('Cannot copy to default language')
                 ->warning()
                 ->send();
+
             return;
         }
 
         try {
-            // Get the SPECIFIC record with safety checks
+            // Get the record
             $record = null;
-
             if (method_exists($livewire, 'getRecord')) {
                 $record = $livewire->getRecord();
             } elseif (property_exists($livewire, 'record')) {
@@ -55,41 +94,51 @@ trait HasCopyFromDefaultLangButton
                     ->title('No record found')
                     ->danger()
                     ->send();
+
                 return;
             }
 
-            // Get sections from the default locale FOR THIS SPECIFIC RECORD
-            $defaultSections = $record->getTranslation('section', $defaultLocale, false) ?? [];
 
-            if (empty($defaultSections)) {
+            $copiedData = [];
+            $hasContent = false;
+
+            foreach ($translatableFields as $field) {
+                if (static::modelHasColumn($field)) {
+                    $defaultValue = $record->getTranslation($field, $defaultLocale, false);
+                    if ($defaultValue !== null && $defaultValue !== '') {
+                        $processedValue = $field === 'section'
+                            ? static::processCuratorFields($defaultValue)
+                            : $defaultValue;
+
+                        $copiedData[$field] = $processedValue;
+                        $hasContent = true;
+                    }
+                }
+            }
+
+            if (!$hasContent) {
                 Notification::make()
                     ->title('No default content found')
                     ->warning()
                     ->send();
+
                 return;
             }
 
-            $processedSections = static::processCuratorFields($defaultSections);
-
-            // Only update the form field if Set callback is provided
-            // Do NOT directly modify the record's translation
+            // Update form fields
             if ($set) {
-                $set('section.' . $targetLocale, $processedSections);
+                foreach ($copiedData as $field => $value) {
+                    $set($field . '.' . $targetLocale, $value);
+                }
             }
 
             Notification::make()
-                ->title('Content copied')
-                ->body('The content has been copied to the form. Remember to save the form to persist the changes.')
+                ->title('All fields copied successfully')
+                ->body('Content has been copied from default language. Remember to save the form.')
                 ->success()
                 ->send();
 
         } catch (\Exception $e) {
-            logger('Error copying from default language', [
-                'error' => $e->getMessage(),
-                'record_id' => $record->id ?? 'unknown',
-                'target_locale' => $targetLocale
-            ]);
-
             Notification::make()
                 ->title('Copy failed')
                 ->body('Error: ' . $e->getMessage())
@@ -114,6 +163,7 @@ trait HasCopyFromDefaultLangButton
             foreach ($data as $key => $value) {
                 $processed[$key] = static::processCuratorFields($value, $depth + 1);
             }
+
             return $processed;
         }
 
@@ -125,6 +175,7 @@ trait HasCopyFromDefaultLangButton
                 if ($media) {
                     // Create UUID-keyed structure like curator picker expects
                     $uuid = (string) \Illuminate\Support\Str::uuid();
+
                     return [
                         $uuid => [
                             'id' => $media->id,
@@ -154,7 +205,7 @@ trait HasCopyFromDefaultLangButton
                             'resizable' => $media->resizable,
                             'size_for_humans' => $media->size_for_humans,
                             'pretty_name' => $media->pretty_name,
-                        ]
+                        ],
                     ];
                 }
             } catch (\Exception $e) {
@@ -166,4 +217,5 @@ trait HasCopyFromDefaultLangButton
         // Return other data types as-is
         return $data;
     }
+
 }
