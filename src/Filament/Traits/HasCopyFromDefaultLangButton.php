@@ -7,8 +7,6 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\Field;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Awcodes\Curator\Models\Media;
 
 trait HasCopyFromDefaultLangButton
