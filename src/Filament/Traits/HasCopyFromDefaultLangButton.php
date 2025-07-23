@@ -7,27 +7,17 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\Field;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+use Awcodes\Curator\Models\Media;
 
 trait HasCopyFromDefaultLangButton
 {
-
-    /**
-     * Attach this to Translate fields from SolutionForest actions method.
-     *
-     * Example usage:
-     * 
-     * Translate::make()
-     *     ->columns(2)
-     *     ->schema(function (string $locale): array {
-     *         return static::topLeftSchema($locale);
-     *     })
-     *     ->contained(false)
-     *     ->actions([
-     *         static::copyFromDefaultLangAction(), // Add this line to include the copy action
-     *     ]);
-     *
-     * @return Action
+    /* -----------------------------------------------------------------
+     |  Public helper
+     | -----------------------------------------------------------------
      */
+
     protected static function copyFromDefaultLangAction(): Action
     {
         return Action::make('copyFromDefaultLang')
@@ -41,116 +31,108 @@ trait HasCopyFromDefaultLangButton
                     return;
                 }
 
-                $locales = collect(array_keys(config('cms.language_available')));
-                $pattern = '/^(.+)\.(' . $locales->join('|') . ')$/';
-
-                $translatableFields = collect($livewire->getForm('form')->getFlatComponents())
-                    ->filter(fn($c) => $c instanceof Field)
-                    ->filter(fn($c) => preg_match($pattern, $c->getName()))
-                    ->map->getName()
-                    ->values()
-                    ->all();
-
-                $baseFieldsNames = collect($translatableFields)
-                    ->map(fn($name) => explode('.', $name)[0])
-                    ->unique()
-                    ->values()
-                    ->all();
+                // Build list of base translatable fields
+                $baseFields = static::extractTranslatableBaseFields($livewire);
 
                 static::copyAllTranslatableFieldsFromDefaultLanguage(
-                    $locale,
-                    $livewire,
-                    $set,
-                    $baseFieldsNames
+                    locale: $locale,
+                    livewire: $livewire,
+                    set: $set,
+                    baseFields: $baseFields,
                 );
             })
             ->link();
     }
-    protected static function copyAllTranslatableFieldsFromDefaultLanguage(string $targetLocale, \Livewire\Component $livewire, ?Set $set = null, array $translatableFields): void
-    {
-        $defaultLocale = config('cms.default_language', 'en');
 
-        // Don't copy if target locale is the same as default locale
-        if ($targetLocale === $defaultLocale) {
+    /* -----------------------------------------------------------------
+     |  Internal helpers
+     | -----------------------------------------------------------------
+     */
+
+    /**
+     * Returns ['title', 'slug', 'content', ...] by inspecting the form.
+     */
+    protected static function extractTranslatableBaseFields($livewire): array
+    {
+        $locales = collect(array_keys(config('cms.language_available')));
+        $pattern = '/^(.+)\.(' . $locales->join('|') . ')$/';
+
+        return collect($livewire->getForm('form')->getFlatComponents())
+            ->filter(fn($c) => $c instanceof Field && preg_match($pattern, $c->getName()))
+            ->map(fn($c) => explode('.', $c->getName())[0])
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Copies values for the given base fields from the default locale
+     * into the target locale and pushes them into the form state.
+     */
+    protected static function copyAllTranslatableFieldsFromDefaultLanguage(
+        string $locale,
+        $livewire,
+        ?Set $set,
+        array $baseFields,
+    ): void {
+        $default = config('cms.default_language', 'en');
+
+        if ($locale === $default) {
             Notification::make()
                 ->title('Cannot copy to default language')
                 ->warning()
                 ->send();
-
             return;
         }
 
-        try {
-            // Get the record
-            $record = null;
-            if (method_exists($livewire, 'getRecord')) {
-                $record = $livewire->getRecord();
-            } elseif (property_exists($livewire, 'record')) {
-                $record = $livewire->record;
+        $record = method_exists($livewire, 'getRecord')
+            ? $livewire->getRecord()
+            : ($livewire->record ?? null);
+
+        if (!$record) {
+            Notification::make()->title('No record found')->danger()->send();
+            return;
+        }
+
+        $copied = false;
+
+        foreach ($baseFields as $field) {
+            if (!static::modelHasColumn($field)) {
+                continue;
             }
 
-            if (!$record) {
-                Notification::make()
-                    ->title('No record found')
-                    ->danger()
-                    ->send();
+            $value = $record->getTranslation($field, $default, false);
 
-                return;
+            if (blank($value)) {
+                continue;
             }
 
+            $value = $field === 'section'
+                ? static::resolveCuratorValue($value)
+                : $value;
 
-            $copiedData = [];
-            $hasContent = false;
-
-            foreach ($translatableFields as $field) {
-                if (static::modelHasColumn($field)) {
-                    $defaultValue = $record->getTranslation($field, $defaultLocale, false);
-                    if ($defaultValue !== null && $defaultValue !== '') {
-                        $processedValue = $field === 'section'
-                            ? static::processCuratorFields($defaultValue)
-                            : $defaultValue;
-
-                        $copiedData[$field] = $processedValue;
-                        $hasContent = true;
-                    }
-                }
-            }
-
-            if (!$hasContent) {
-                Notification::make()
-                    ->title('No default content found')
-                    ->warning()
-                    ->send();
-
-                return;
-            }
-
-            // Update form fields
             if ($set) {
-                foreach ($copiedData as $field => $value) {
-                    $set($field . '.' . $targetLocale, $value);
-                }
+                $set("{$field}.{$locale}", $value);
             }
+            $copied = true;
+        }
 
-            Notification::make()
+        $copied
+            ? Notification::make()
                 ->title('All fields copied successfully')
                 ->body('Content has been copied from default language. Remember to save the form.')
                 ->success()
+                ->send()
+            : Notification::make()
+                ->title('No default content found')
+                ->warning()
                 ->send();
-
-        } catch (\Exception $e) {
-            Notification::make()
-                ->title('Copy failed')
-                ->body('Error: ' . $e->getMessage())
-                ->danger()
-                ->send();
-        }
     }
 
     /**
      * Recursively process data to convert curator field integers to proper structure
      */
-    protected static function processCuratorFields($data, int $depth = 0): mixed
+    protected static function resolveCuratorValue($data, int $depth = 0): mixed
     {
         // Prevent infinite recursion
         if ($depth > 20) {
@@ -161,7 +143,7 @@ trait HasCopyFromDefaultLangButton
         if (is_array($data)) {
             $processed = [];
             foreach ($data as $key => $value) {
-                $processed[$key] = static::processCuratorFields($value, $depth + 1);
+                $processed[$key] = static::resolveCuratorValue($value, $depth + 1);
             }
 
             return $processed;
@@ -171,7 +153,7 @@ trait HasCopyFromDefaultLangButton
         // Convert them to UUID-keyed array structure expected by curator picker
         if (is_int($data) && $data > 0) {
             try {
-                $media = \Awcodes\Curator\Models\Media::find($data);
+                $media = Media::find($data);
                 if ($media) {
                     // Create UUID-keyed structure like curator picker expects
                     $uuid = (string) \Illuminate\Support\Str::uuid();
@@ -218,14 +200,17 @@ trait HasCopyFromDefaultLangButton
         return $data;
     }
 
-    // Check if the model has a specific column
+    /* -----------------------------------------------------------------
+     |  Utility
+     | -----------------------------------------------------------------
+     */
+
     protected static function modelHasColumn(string $column): bool
     {
-        $modelClass = app(static::$model);
+        $model = app(static::$model);
 
-        return in_array($column, $modelClass->getFillable()) ||
-            array_key_exists($column, $modelClass->getCasts()) ||
-            $modelClass->hasAttribute($column);
+        return in_array($column, $model->getFillable())
+            || array_key_exists($column, $model->getCasts())
+            || $model->hasAttribute($column);
     }
-
 }
