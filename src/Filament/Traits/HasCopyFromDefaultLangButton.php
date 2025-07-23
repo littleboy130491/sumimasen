@@ -218,4 +218,14 @@ trait HasCopyFromDefaultLangButton
         return $data;
     }
 
+    // Check if the model has a specific column
+    protected static function modelHasColumn(string $column): bool
+    {
+        $modelClass = app(static::$model);
+
+        return in_array($column, $modelClass->getFillable()) ||
+            array_key_exists($column, $modelClass->getCasts()) ||
+            $modelClass->hasAttribute($column);
+    }
+
 }
