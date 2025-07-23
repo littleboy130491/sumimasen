@@ -34,6 +34,7 @@ use Littleboy130491\Sumimasen\Filament\Forms\Components\SeoFields;
 use Littleboy130491\Sumimasen\Filament\Traits\HasContentBlocks;
 use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
 use Littleboy130491\Sumimasen\Filament\Traits\HasCopyFromDefaultLangButton;
+use Littleboy130491\Sumimasen\Filament\Traits\HasCopyAllFromDefaultLang;
 
 abstract class BaseResource extends Resource
 {
