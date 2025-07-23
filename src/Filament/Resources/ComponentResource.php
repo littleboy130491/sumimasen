@@ -14,10 +14,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Littleboy130491\Sumimasen\Filament\Resources\ComponentResource\Pages;
 use Littleboy130491\Sumimasen\Filament\Traits\HasContentBlocks;
 use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
+use Littleboy130491\Sumimasen\Filament\Traits\HasCopyFromDefaultLangButton;
 
 class ComponentResource extends Resource
 {
-    use HasContentBlocks;
+    use HasContentBlocks, HasCopyFromDefaultLangButton;
 
     protected static ?string $model = null;
 
