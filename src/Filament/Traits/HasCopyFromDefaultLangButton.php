@@ -13,13 +13,13 @@ trait HasCopyFromDefaultLangButton
     /**
      * @return Action
      */
-    protected static function copyFromDefaultLangAction(): Action
+    protected static function copyFromDefaultLangAction($locale): Action
     {
         return Action::make('copyFromDefaultLang')
             ->label('Copy from Default Language')
             ->icon('heroicon-m-language')
             ->color('gray')
-            ->action(function (Get $get, Set $set, $livewire, string $locale) {
+            ->action(function (Get $get, Set $set, $livewire) use ($locale) {
                 static::copySectionsFromDefaultLanguage($locale, $livewire, $set);
             });
     }

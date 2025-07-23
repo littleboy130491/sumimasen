@@ -241,7 +241,7 @@ abstract class BaseResource extends Resource
                 ->cloneable()
                 ->columnSpanFull()
                 ->hintActions([
-                    static::copyFromDefaultLangAction()->with(['locale' => $locale]),
+                    static::copyFromDefaultLangAction($locale),
                 ]);
         }
 
