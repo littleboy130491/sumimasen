@@ -32,14 +32,12 @@ use Illuminate\Support\Str;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Filament\Forms\Components\SeoFields;
 use Littleboy130491\Sumimasen\Filament\Traits\HasContentBlocks;
-use Littleboy130491\Sumimasen\Filament\Traits\HasCopyFromDefaultLangButton;
 use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
-use Filament\Notifications\Notification;
+use Littleboy130491\Sumimasen\Filament\Traits\HasCopyFromDefaultLangButton;
 
 abstract class BaseResource extends Resource
 {
-    use HasContentBlocks;
-    use HasCopyFromDefaultLangButton;
+    use HasContentBlocks, HasCopyFromDefaultLangButton;
 
     protected static ?string $recordTitleAttribute = 'title';
 
@@ -192,7 +190,6 @@ abstract class BaseResource extends Resource
                     $set('slug.' . $locale, $state ? Str::slug($state) : null);
                 })
                 ->required($locale === $defaultLocale),
-
             TextInput::make('slug')
                 ->columnSpanFull()
                 ->maxLength(255)
@@ -498,82 +495,140 @@ abstract class BaseResource extends Resource
                 ...static::tableBulkActions(),
             ])
             ->headerActions(
-                ...static::tableHeaderActions(),
-            );
+                [
+                    ...static::tableHeaderActions(),
+                ]
+            )
+            ->reorderable('menu_order')
+            ->defaultSort('created_at', 'desc');
+
     }
 
     protected static function tableColumns(): array
     {
-        $columns = [
-            TextColumn::make('title')
-                ->searchable()
-                ->sortable(),
+        $columns = [];
 
-            TextColumn::make('author.name')
-                ->searchable()
-                ->sortable()
-                ->toggleable(),
+        if (static::modelHasColumn('title')) {
+            $currentLocale = app()->getLocale();
 
-            ...static::tableDateColumns(),
+            $columns[] = TextColumn::make('title')
+                ->searchable(query: function (Builder $query, string $search): Builder {
+                    $currentLocale = app()->getLocale();
 
-            ToggleColumn::make('status')
-                ->updateStateUsing(function ($record, $state) {
-                    $record->status = $state ? ContentStatus::Published : ContentStatus::Draft;
-                    $record->save();
+                    return $query->where(function (Builder $subQuery) use ($search, $currentLocale) {
+                        // Search in title for current locale
+                        $subQuery->whereRaw(
+                            "LOWER(JSON_UNQUOTE(JSON_EXTRACT(title, '$.{$currentLocale}'))) LIKE LOWER(?)",
+                            ["%{$search}%"]
+                        );
+
+                        // Also search in content if it exists
+                        if (static::modelHasColumn('content')) {
+                            $subQuery->orWhereRaw(
+                                "LOWER(JSON_UNQUOTE(JSON_EXTRACT(content, '$.{$currentLocale}'))) LIKE LOWER(?)",
+                                ["%{$search}%"]
+                            );
+                        }
+
+                        // Try Laravel's JSON path syntax as alternative
+                        $subQuery->orWhere('title->' . $currentLocale, 'like', "%{$search}%");
+                    });
                 })
-                ->getStateUsing(function ($record) {
-                    return $record->status === ContentStatus::Published;
-                })
-                ->sortable(),
-
-            ...static::additionalTableColumns(), // Hook for additional columns
-        ];
-
-        if (static::modelHasColumn('featured')) {
-            $columns[] = ToggleColumn::make('featured')
                 ->sortable()
-                ->toggleable();
+                ->limit(50)
+                ->getStateUsing(function ($record) use ($currentLocale) {
+                    return $record->getTranslation('title', $currentLocale);
+                });
+        }
+
+        if (static::modelHasColumn('slug')) {
+            $columns[] =
+                TextColumn::make('slug')
+                    ->limit(50);
+        }
+
+        if (static::modelHasColumn('featured') && !static::isFieldHidden('featured')) {
+            $columns[] =
+                ToggleColumn::make('featured');
+        }
+
+        if (static::modelHasColumn('status') && !static::isFieldHidden('status')) {
+            $columns[] =
+                TextColumn::make('status')
+                    ->badge()
+                    ->sortable();
+        }
+
+        if (static::modelHasRelationship('author') && !static::isFieldHidden('author_id')) {
+            $columns[] =
+                TextColumn::make('author.name')
+                    ->sortable()
+                    ->searchable();
+        }
+
+        // hook for additional columns
+        $columns = [...$columns, ...static::additionalTableColumns()];
+
+        $columns = [...$columns, ...static::tableDateColumns()];
+
+        if (static::modelHasColumn('menu_order') && !static::isFieldHidden('menu_order')) {
+            $columns[] =
+                TextColumn::make('menu_order')
+                    ->label('Order')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true);
+        }
+
+        return $columns;
+
+    }
+
+    protected static function tableDateColumns(): array
+    {
+        $columns = [];
+
+        if (static::modelHasColumn('published_at') && !static::isFieldHidden('published_at')) {
+            $columns[] =
+                TextColumn::make('published_at')
+                    ->dateTime()
+                    ->sortable();
+        }
+
+        if (static::modelHasColumn('created_at') && !static::isFieldHidden('created_at')) {
+            $columns[] =
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true);
+        }
+
+        if (static::modelHasColumn('updated_at') && !static::isFieldHidden('updated_at')) {
+            $columns[] =
+                TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true);
+        }
+
+        if (static::modelHasColumn('deleted_at') && !static::isFieldHidden('deleted_at')) {
+            $columns[] =
+                TextColumn::make('deleted_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true);
         }
 
         return $columns;
     }
 
-    protected static function tableDateColumns(): array
-    {
-        $dateColumns = [];
-
-        if (static::modelHasColumn('published_at')) {
-            $dateColumns[] = TextColumn::make('published_at')
-                ->label('Published Date')
-                ->date()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true);
-        }
-        if (static::modelHasColumn('created_at')) {
-            $dateColumns[] = TextColumn::make('created_at')
-                ->label('Created Date')
-                ->date()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true);
-        }
-        if (static::modelHasColumn('updated_at')) {
-            $dateColumns[] = TextColumn::make('updated_at')
-                ->label('Updated Date')
-                ->date()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true);
-        }
-
-        return $dateColumns;
-    }
-
     protected static function additionalTableColumns(): array
     {
-        return []; // Hook for additional table columns
+        return []; // hook for additional columns
     }
 
     protected static function tableFilters(): array
     {
+
         return [
             Tables\Filters\TrashedFilter::make(),
         ];
@@ -583,80 +638,83 @@ abstract class BaseResource extends Resource
     {
         return [
             Tables\Actions\EditAction::make(),
-            Tables\Actions\DeleteAction::make(),
-            Tables\Actions\Action::make('duplicate')
-                ->label('Duplicate')
-                ->action(function ($record) {
+            Tables\Actions\Action::make('replicate')
+                ->icon('heroicon-o-document-duplicate')
+                ->action(function (\Filament\Tables\Actions\Action $action, \Illuminate\Database\Eloquent\Model $record, \Livewire\Component $livewire) {
                     $newRecord = static::duplicateRecord($record);
-                    Notification::make()
-                        ->success()
-                        ->title('Duplicated successfully')
-                        ->body('The record has been duplicated. You are now editing the new draft.')
-                        ->send();
-
-                    return redirect(static::getResource()::getUrl('edit', ['record' => $newRecord->id]));
-
-                })
-                ->requiresConfirmation()
-                ->modalHeading('Duplicate record')
-                ->modalDescription('Are you sure you want to duplicate this record? A new draft will be created.')
-                ->modalSubmitActionLabel('Yes, duplicate it'),
+                    $livewire->redirect(static::getUrl('index', ['record' => $newRecord]));
+                }),
+            Tables\Actions\DeleteAction::make(),
+            Tables\Actions\ForceDeleteAction::make(),
+            Tables\Actions\RestoreAction::make(),
         ];
     }
 
     protected static function tableBulkActions(): array
     {
         return [
-            static::tableEditBulkAction(),
-            Tables\Actions\DeleteBulkAction::make(),
-            static::tableExportBulkAction(),
+            Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\ForceDeleteBulkAction::make(),
+                Tables\Actions\RestoreBulkAction::make(),
+                ...static::tableEditBulkAction(),
+                ...static::tableExportBulkAction(),
+            ]),
         ];
     }
 
     protected static function tableEditBulkAction(): array
     {
-        $bulkActions = [];
+        return [
+            Tables\Actions\BulkAction::make('edit')
+                ->form(function () {
+                    $fields = [];
 
-        $fields = [];
-        if (static::modelHasColumn('status')) {
-            $fields[] = Select::make('status')
-                ->enum(ContentStatus::class)
-                ->options(ContentStatus::class);
-        }
+                    if (static::modelHasColumn('status')) {
+                        $fields[] =
+                            Select::make('status')
+                                ->enum(ContentStatus::class)
+                                ->options(ContentStatus::class)
+                                ->nullable();
+                    }
 
-        if (static::modelHasColumn('author_id')) {
-            $fields[] = Select::make('author_id')
-                ->relationship('author', 'name')
-                ->label('Author');
-        }
+                    if (static::modelHasColumn('author_id')) {
+                        $fields[] =
+                            Select::make('author_id')
+                                ->relationship('author', 'name')
+                                ->searchable()
+                                ->preload()
+                                ->nullable();
+                    }
 
-        if (static::modelHasColumn('published_at')) {
-            $fields[] = DateTimePicker::make('published_at')
-                ->label('Published Date');
-        }
+                    if (static::modelHasColumn('published_at')) {
+                        $fields[] =
+                            DateTimePicker::make('published_at')
+                                ->nullable();
+                    }
 
-        if (static::modelHasRelationship('categories')) {
-            $fields[] = Select::make('categories')
-                ->relationship('categories', 'title')
-                ->multiple()
-                ->label('Categories');
-        }
-
-        if (static::modelHasRelationship('tags')) {
-            $fields[] = Select::make('tags')
-                ->relationship('tags', 'title')
-                ->multiple()
-                ->label('Tags');
-        }
-
-        if (!empty($fields)) {
-            $bulkActions[] = Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\EditAction::make('edit')
-                    ->form($fields),
-            ])->label('Edit');
-        }
-
-        return $bulkActions;
+                    return $fields;
+                })
+                ->action(function (\Illuminate\Support\Collection $records, array $data) {
+                    $records->each(function (\Illuminate\Database\Eloquent\Model $record) use ($data) {
+                        $updateData = [];
+                        if (isset($data['status'])) {
+                            $updateData['status'] = $data['status'];
+                        }
+                        if (isset($data['author_id'])) {
+                            $updateData['author_id'] = $data['author_id'];
+                        }
+                        if (isset($data['published_at'])) {
+                            $updateData['published_at'] = $data['published_at'];
+                        }
+                        $record->update($updateData);
+                    });
+                })
+                ->deselectRecordsAfterCompletion()
+                ->icon('heroicon-o-pencil-square')
+                ->color('primary')
+                ->label('Edit selected'),
+        ];
     }
 
     protected static function tableExportBulkAction(): array
@@ -666,9 +724,8 @@ abstract class BaseResource extends Resource
 
     protected static function tableHeaderActions(): array
     {
-        return [
-            Tables\Actions\CreateAction::make(),
-        ];
+        return [];
+
     }
 
     public static function getEloquentQuery(): Builder
@@ -679,53 +736,59 @@ abstract class BaseResource extends Resource
             ]);
     }
 
-    /**
-     * UTILITY FUNCTIONS
-     *
-     * These functions are used by the form and table builders.
-     */
+    // Helper methods
 
-    // Check if a field should be hidden
+    /**
+     * Check if a field should be hidden
+     */
     protected static function isFieldHidden(string $field): bool
     {
-        return in_array($field, static::hiddenFields(), true);
+        return in_array($field, static::hiddenFields());
     }
 
     // Check if the model has a specific column
     protected static function modelHasColumn(string $column): bool
     {
-        $modelClass = static::$model;
-        $modelInstance = new $modelClass;
+        $modelClass = app(static::$model);
 
-        return Schema::hasColumn($modelInstance->getTable(), $column);
+        return in_array($column, $modelClass->getFillable()) ||
+            array_key_exists($column, $modelClass->getCasts()) ||
+            $modelClass->hasAttribute($column);
     }
 
     // Check if the model has a specific relationship
     protected static function modelHasRelationship(string $relationship): bool
     {
-        $modelClass = static::$model;
-        $modelInstance = new $modelClass;
+        $modelClass = app(static::$model);
 
-        if (method_exists($modelInstance, $relationship)) {
-            $relation = $modelInstance->$relationship();
-            return $relation instanceof \Illuminate\Database\Eloquent\Relations\Relation;
+        // Check if the method exists on the model
+        if (!method_exists($modelClass, $relationship)) {
+            return false;
         }
 
-        return false;
+        try {
+            // Call the relationship method and check if it returns a Relation instance
+            $result = $modelClass->{$relationship}();
+
+            return $result instanceof \Illuminate\Database\Eloquent\Relations\Relation;
+        } catch (\Exception $e) {
+            // If calling the method throws an exception, it's likely not a relationship
+            return false;
+        }
     }
 
     /**
-     * DUPLICATION LOGIC
+     * Replicate actions for table records
      */
-
-    // Main duplication function
     protected static function duplicateRecord(\Illuminate\Database\Eloquent\Model $record): \Illuminate\Database\Eloquent\Model
     {
         $newRecord = $record->replicate();
-        static::resetDraftStatus($newRecord);
-        $newRecord->save();
 
         static::handleMultilingualSlugs($record, $newRecord);
+        static::resetDraftStatus($newRecord);
+
+        $newRecord->save();
+
         static::replicateRelationships($record, $newRecord);
 
         return $newRecord;
@@ -733,28 +796,27 @@ abstract class BaseResource extends Resource
 
     protected static function handleMultilingualSlugs(\Illuminate\Database\Eloquent\Model $record, \Illuminate\Database\Eloquent\Model $newRecord): void
     {
-        if (static::isTranslatable() && static::modelHasColumn('slug')) {
-            $locales = static::getAvailableLocales();
-            foreach ($locales as $locale) {
-                $originalSlug = $record->getTranslation('slug', $locale, false);
-                if ($originalSlug) {
-                    $newSlug = static::generateUniqueSlug($originalSlug, $locale);
-                    $newRecord->setTranslation('slug', $locale, $newSlug);
-                }
-            }
-            $newRecord->save();
+        $originalSlugs = $newRecord->getTranslations('slug');
+        $newSlugs = [];
+        $locales = static::getAvailableLocales();
+
+        foreach ($locales as $locale) {
+            $originalSlug = Arr::get($originalSlugs, $locale);
+            $newSlugs[$locale] = $originalSlug ? static::generateUniqueSlug($originalSlug, $locale) : null;
         }
+
+        $newRecord->setTranslations('slug', $newSlugs);
     }
 
     protected static function generateUniqueSlug(string $originalSlug, string $locale): string
     {
-        $modelClass = static::$model;
         $count = 1;
-        $newSlug = $originalSlug . '-' . $count;
+        $newSlug = $originalSlug;
+        $modelClass = static::getModel();
 
-        while ($modelClass::where("slug->{$locale}", $newSlug)->exists()) {
+        while ($modelClass::whereJsonContains("slug->{$locale}", $newSlug)->exists()) {
+            $newSlug = "{$originalSlug}-copy-{$count}";
             $count++;
-            $newSlug = $originalSlug . '-' . $count;
         }
 
         return $newSlug;
@@ -762,9 +824,12 @@ abstract class BaseResource extends Resource
 
     protected static function resetDraftStatus(\Illuminate\Database\Eloquent\Model $newRecord): void
     {
+        // Set status to Draft if the field exists
         if (static::hasAttribute($newRecord, 'status')) {
             $newRecord->status = ContentStatus::Draft;
         }
+
+        // Clear published_at if the field exists
         if (static::hasAttribute($newRecord, 'published_at')) {
             $newRecord->published_at = null;
         }
@@ -772,7 +837,7 @@ abstract class BaseResource extends Resource
 
     protected static function hasAttribute(\Illuminate\Database\Eloquent\Model $model, string $attribute): bool
     {
-        return in_array($attribute, $model->getFillable()) || array_key_exists($attribute, $model->getCasts());
+        return array_key_exists($attribute, $model->getAttributes()) || $model->isFillable($attribute);
     }
 
     protected static function getAvailableLocales(): array
