@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Littleboy130491\SeoSuite\Models\Traits\InteractsWithSeoSuite;
-use Spatie\Translatable\HasTranslations;
 use Littleboy130491\Sumimasen\Traits\HasSections;
+use Spatie\Translatable\HasTranslations;
 
 class Archive extends Model
 {
-    use HasFactory, HasTranslations, InteractsWithSeoSuite, SoftDeletes, HasSections;
+    use HasFactory, HasSections, HasTranslations, InteractsWithSeoSuite, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -51,7 +51,6 @@ class Archive extends Model
         'content',
         'section',
     ];
-
 
     // --------------------------------------------------------------------------
     // Relationships

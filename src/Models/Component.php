@@ -4,12 +4,12 @@ namespace Littleboy130491\Sumimasen\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Translatable\HasTranslations;
 use Littleboy130491\Sumimasen\Traits\HasSections;
+use Spatie\Translatable\HasTranslations;
 
 class Component extends Model
 {
-    use HasTranslations, SoftDeletes, HasSections;
+    use HasSections, HasTranslations, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -39,5 +39,4 @@ class Component extends Model
     public $translatable = [
         'section',
     ];
-
 }

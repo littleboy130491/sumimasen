@@ -40,7 +40,7 @@ class MenuItem extends BaseMenuItem
 
                 // Only replace if translation exists
                 if ($translatedValue !== $translationKey) {
-                    $processedTitle = str_replace('{{' . $translationKey . '}}', $translatedValue, $processedTitle);
+                    $processedTitle = str_replace('{{'.$translationKey.'}}', $translatedValue, $processedTitle);
                 }
             }
 
@@ -51,7 +51,7 @@ class MenuItem extends BaseMenuItem
         $normalizedKey = $this->normalizeTranslationKey($title);
 
         // Try menu-specific translations first (scoped to menu only)
-        $fullKey = 'menu.' . $normalizedKey;
+        $fullKey = 'menu.'.$normalizedKey;
 
         $menuTranslated = __($fullKey);
 

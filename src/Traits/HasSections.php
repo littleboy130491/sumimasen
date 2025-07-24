@@ -25,12 +25,12 @@ trait HasSections
             // Try default language
             $defaultLocale = config('cms.default_language', config('app.fallback_locale'));
 
-            if (isset($translations[$defaultLocale]) && !empty($translations[$defaultLocale])) {
+            if (isset($translations[$defaultLocale]) && ! empty($translations[$defaultLocale])) {
                 $currentValue = $translations[$defaultLocale];
             } else {
                 // Return first non-empty translation
                 foreach ($translations as $locale => $localeValue) {
-                    if (!empty($localeValue)) {
+                    if (! empty($localeValue)) {
                         $currentValue = $localeValue;
                         break;
                     }
@@ -44,6 +44,7 @@ trait HasSections
                 $media = Media::find($block['data']['image']);
                 $block['data']['media_url'] = $media?->url;
             }
+
             return $block;
         })->all();
     }
@@ -55,5 +56,4 @@ trait HasSections
     {
         return $this->getSectionsForFrontend();
     }
-
 }

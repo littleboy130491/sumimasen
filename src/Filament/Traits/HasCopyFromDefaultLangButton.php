@@ -2,12 +2,12 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Traits;
 
+use Awcodes\Curator\Models\Media;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\Field;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
-use Filament\Forms\Components\Field;
-use Awcodes\Curator\Models\Media;
 
 trait HasCopyFromDefaultLangButton
 {
@@ -30,16 +30,21 @@ trait HasCopyFromDefaultLangButton
                 }
 
                 // Build list of base translatable fields
-                $baseFields = static::extractTranslatableBaseFields($livewire);
+                $translatableFields = $livewire->record->translatable;
 
                 static::copyAllTranslatableFieldsFromDefaultLanguage(
                     locale: $locale,
                     livewire: $livewire,
+                    get: $get,
                     set: $set,
-                    baseFields: $baseFields,
+                    translatableFields: $translatableFields,
                 );
             })
-            ->link();
+            ->link()
+            ->requiresConfirmation()
+            ->modalHeading('Copy content?')
+            ->modalDescription('This will overwrite the current locale\'s fields with content from the default language.')
+            ->modalIconColor('warning');
     }
 
     /* -----------------------------------------------------------------
@@ -48,30 +53,15 @@ trait HasCopyFromDefaultLangButton
      */
 
     /**
-     * Returns ['title', 'slug', 'content', ...] by inspecting the form.
-     */
-    protected static function extractTranslatableBaseFields($livewire): array
-    {
-        $locales = collect(array_keys(config('cms.language_available')));
-        $pattern = '/^(.+)\.(' . $locales->join('|') . ')$/';
-
-        return collect($livewire->getForm('form')->getFlatComponents())
-            ->filter(fn($c) => $c instanceof Field && preg_match($pattern, $c->getName()))
-            ->map(fn($c) => explode('.', $c->getName())[0])
-            ->unique()
-            ->values()
-            ->all();
-    }
-
-    /**
      * Copies values for the given base fields from the default locale
      * into the target locale and pushes them into the form state.
      */
     protected static function copyAllTranslatableFieldsFromDefaultLanguage(
         string $locale,
         $livewire,
+        ?Get $get,
         ?Set $set,
-        array $baseFields,
+        array $translatableFields,
     ): void {
         $default = config('cms.default_language', 'en');
 
@@ -80,6 +70,7 @@ trait HasCopyFromDefaultLangButton
                 ->title('Cannot copy to default language')
                 ->warning()
                 ->send();
+
             return;
         }
 
@@ -89,36 +80,36 @@ trait HasCopyFromDefaultLangButton
 
         if (!$record) {
             Notification::make()->title('No record found')->danger()->send();
+
             return;
         }
 
         $copied = false;
 
-        foreach ($baseFields as $field) {
+        foreach ($translatableFields as $field) {
             if (!static::modelHasColumn($field)) {
                 continue;
             }
 
-            $value = $record->getTranslation($field, $default, false);
-
-            if (blank($value)) {
-                continue;
-            }
-
-            $value = $field === 'section'
-                ? static::resolveCuratorValue($value)
-                : $value;
-
             if ($set) {
-                $set("{$field}.{$locale}", $value);
+                // Get the value from the default language
+                $defaultLangFieldValue = $get("{$field}.{$default}");
+
+                if (empty($defaultLangFieldValue)) {
+                    // Skip if the default language field is empty
+                    continue;
+                }
+                // Set the value in the target locale
+                $set("{$field}.{$locale}", $defaultLangFieldValue);
             }
+
             $copied = true;
         }
 
         $copied
             ? Notification::make()
                 ->title('All fields copied successfully')
-                ->body('Content has been copied from default language. Remember to save the form.')
+                ->body('Content has been copied from default language. Save the form to apply the changes.')
                 ->success()
                 ->send()
             : Notification::make()
@@ -127,76 +118,6 @@ trait HasCopyFromDefaultLangButton
                 ->send();
     }
 
-    /**
-     * Recursively process data to convert curator field integers to proper structure
-     */
-    protected static function resolveCuratorValue($data, int $depth = 0): mixed
-    {
-        // Prevent infinite recursion
-        if ($depth > 20) {
-            return $data;
-        }
-
-        // Handle arrays
-        if (is_array($data)) {
-            $processed = [];
-            foreach ($data as $key => $value) {
-                $processed[$key] = static::resolveCuratorValue($value, $depth + 1);
-            }
-
-            return $processed;
-        }
-
-        // Handle positive integers that might be media IDs
-        // Convert them to UUID-keyed array structure expected by curator picker
-        if (is_int($data) && $data > 0) {
-            try {
-                $media = Media::find($data);
-                if ($media) {
-                    // Create UUID-keyed structure like curator picker expects
-                    $uuid = (string) \Illuminate\Support\Str::uuid();
-
-                    return [
-                        $uuid => [
-                            'id' => $media->id,
-                            'disk' => $media->disk,
-                            'directory' => $media->directory,
-                            'visibility' => $media->visibility,
-                            'name' => $media->name,
-                            'path' => $media->path,
-                            'width' => $media->width,
-                            'height' => $media->height,
-                            'size' => $media->size,
-                            'type' => $media->type,
-                            'ext' => $media->ext,
-                            'alt' => $media->alt,
-                            'title' => $media->title,
-                            'description' => $media->description,
-                            'caption' => $media->caption,
-                            'exif' => $media->exif,
-                            'curations' => $media->curations,
-                            'created_at' => $media->created_at,
-                            'updated_at' => $media->updated_at,
-                            'tenant_id' => $media->tenant_id,
-                            'url' => $media->url,
-                            'thumbnail_url' => $media->thumbnail_url,
-                            'medium_url' => $media->medium_url,
-                            'large_url' => $media->large_url,
-                            'resizable' => $media->resizable,
-                            'size_for_humans' => $media->size_for_humans,
-                            'pretty_name' => $media->pretty_name,
-                        ],
-                    ];
-                }
-            } catch (\Exception $e) {
-                // If error occurs, return original value
-                return $data;
-            }
-        }
-
-        // Return other data types as-is
-        return $data;
-    }
 
     /* -----------------------------------------------------------------
      |  Utility

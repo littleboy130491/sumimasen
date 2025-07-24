@@ -13,8 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Littleboy130491\Sumimasen\Filament\Resources\ComponentResource\Pages;
 use Littleboy130491\Sumimasen\Filament\Traits\HasContentBlocks;
-use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
 use Littleboy130491\Sumimasen\Filament\Traits\HasCopyFromDefaultLangButton;
+use SolutionForest\FilamentTranslateField\Forms\Component\Translate;
 
 class ComponentResource extends Resource
 {
