@@ -2,7 +2,6 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Traits;
 
-use Awcodes\Curator\Models\Media;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Get;
@@ -22,10 +21,10 @@ trait HasCopyFromDefaultLangButton
             ->label('Copy Content from Default Language')
             ->icon('heroicon-m-language')
             ->color('gray')
-            ->visible(fn($arguments) => $arguments['locale'] !== config('cms.default_language'))
+            ->visible(fn ($arguments) => $arguments['locale'] !== config('cms.default_language'))
             ->action(function (Get $get, Set $set, $livewire, $arguments) {
                 $locale = $arguments['locale'] ?? null;
-                if (!$locale) {
+                if (! $locale) {
                     return;
                 }
 
@@ -78,7 +77,7 @@ trait HasCopyFromDefaultLangButton
             ? $livewire->getRecord()
             : ($livewire->record ?? null);
 
-        if (!$record) {
+        if (! $record) {
             Notification::make()->title('No record found')->danger()->send();
 
             return;
@@ -87,7 +86,7 @@ trait HasCopyFromDefaultLangButton
         $copied = false;
 
         foreach ($translatableFields as $field) {
-            if (!static::modelHasColumn($field)) {
+            if (! static::modelHasColumn($field)) {
                 continue;
             }
 
@@ -117,7 +116,6 @@ trait HasCopyFromDefaultLangButton
                 ->warning()
                 ->send();
     }
-
 
     /* -----------------------------------------------------------------
      |  Utility

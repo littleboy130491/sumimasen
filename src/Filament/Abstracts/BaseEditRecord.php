@@ -3,12 +3,11 @@
 namespace Littleboy130491\Sumimasen\Filament\Abstracts;
 
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 use Filament\Pages\Actions\Action;
+use Filament\Resources\Pages\EditRecord;
 
 abstract class BaseEditRecord extends EditRecord
 {
-
     protected function getHeaderActions(): array
     {
         $url = $this->resolvePublicUrl();
@@ -36,9 +35,9 @@ abstract class BaseEditRecord extends EditRecord
         $modelClass = $this->getModel();
 
         $meta = collect(config('cms.content_models'))
-            ->first(fn(array $meta, string $key) => $meta['model'] === $modelClass);
+            ->first(fn (array $meta, string $key) => $meta['model'] === $modelClass);
 
-        if (!$meta) {
+        if (! $meta) {
             return null;
         }
 
@@ -56,5 +55,4 @@ abstract class BaseEditRecord extends EditRecord
             default => null,
         };
     }
-
 }

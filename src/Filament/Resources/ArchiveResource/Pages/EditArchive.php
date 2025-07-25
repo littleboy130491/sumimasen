@@ -2,10 +2,10 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Resources\ArchiveResource\Pages;
 
-use Filament\Resources\Pages\EditRecord;
-use Littleboy130491\Sumimasen\Filament\Resources\ArchiveResource;
 use Filament\Actions;
 use Filament\Pages\Actions\Action;
+use Filament\Resources\Pages\EditRecord;
+use Littleboy130491\Sumimasen\Filament\Resources\ArchiveResource;
 
 class EditArchive extends EditRecord
 {
@@ -38,12 +38,11 @@ class EditArchive extends EditRecord
         // find the entry whose slug (or key) matches and is a content model with archive
         $meta = collect($contentModels)
             ->first(
-                fn(array $meta, string $key) =>
-                ($meta['slug'] ?? $key) === $recordSlug &&
+                fn (array $meta, string $key) => ($meta['slug'] ?? $key) === $recordSlug &&
                 ($meta['type'] ?? null) === 'content'
             );
 
-        if (!$meta || !($meta['has_archive'] ?? false)) {
+        if (! $meta || ! ($meta['has_archive'] ?? false)) {
             return null;
         }
 
@@ -52,6 +51,4 @@ class EditArchive extends EditRecord
             $recordSlug,
         ]);
     }
-
 }
-
