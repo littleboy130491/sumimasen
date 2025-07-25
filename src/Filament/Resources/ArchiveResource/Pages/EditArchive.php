@@ -29,25 +29,27 @@ class EditArchive extends EditRecord
         ];
     }
 
-    /**
-     * Return the front-end archive URL for the current record
-     * or null if the model has no archive.
-     */
     protected function resolvePublicUrl(): ?string
     {
-        $slug = $this->getRecord()->slug;
+        $recordSlug = $this->getRecord()->slug;
 
-        // Find the model entry whose slug matches the record slug
-        $model = collect(config('cms.content_models'))
-            ->first(fn(array $meta) => ($meta['slug'] ?? null) === $slug);
+        $contentModels = config('cms.content_models');
 
-        if (!$model || !($model['has_archive'] ?? false)) {
+        // find the entry whose slug (or key) matches and is a content model with archive
+        $meta = collect($contentModels)
+            ->first(
+                fn(array $meta, string $key) =>
+                ($meta['slug'] ?? $key) === $recordSlug &&
+                ($meta['type'] ?? null) === 'content'
+            );
+
+        if (!$meta || !($meta['has_archive'] ?? false)) {
             return null;
         }
 
         return route('cms.archive.content', [
             app()->getLocale(),
-            $slug,
+            $recordSlug,
         ]);
     }
 
