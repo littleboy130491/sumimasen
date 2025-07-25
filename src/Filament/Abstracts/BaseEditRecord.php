@@ -8,18 +8,18 @@ use Filament\Pages\Actions\Action;
 
 abstract class BaseEditRecord extends EditRecord
 {
+
     protected function getHeaderActions(): array
     {
-        $lang = app()->getLocale();
-        $modelClass = $this->getModel();
-        $slug = $this->getRecord()->slug;
+        $url = $this->resolvePublicUrl();
 
         return [
-            Action::make('view')
-                ->label('View Post')
-                ->url($this->getRouteUrl($lang, $modelClass, $slug), shouldOpenInNewTab: true)
-                ->color('gray')
-                ->icon('heroicon-o-eye'),
+            ...(filled($url) ? [
+                Action::make('view')
+                    ->label('View')
+                    ->url($url, shouldOpenInNewTab: true)
+                    ->color('gray'),
+            ] : []),
             $this->getSaveFormAction()
                 ->formId('form'),
             Actions\DeleteAction::make(),
@@ -27,32 +27,34 @@ abstract class BaseEditRecord extends EditRecord
         ];
     }
 
-    protected function getRouteUrl($lang, $modelClass, $slug)
+    /**
+     * Build the public-facing URL for the current record.
+     * Returns null when the model is not registered or has no public route.
+     */
+    protected function resolvePublicUrl(): ?string
     {
+        $modelClass = $this->getModel();
 
-        $content_model_key = null;
-        $content_model = collect(config('cms.content_models'))
-            ->first(function ($item, $key) use ($modelClass, &$content_model_key) {
-                if ($item['model'] === $modelClass) {
-                    $content_model_key = $key; // save the key like 'posts', 'pages', etc.
-                    return true;
-                }
-                return false;
-            });
-        $type = $content_model['type'] ?? null;
+        $meta = collect(config('cms.content_models'))
+            ->first(fn(array $meta, string $key) => $meta['model'] === $modelClass);
 
-        if ($type === 'taxonomy') {
-            return route('cms.taxonomy.archive', [
-                $lang,
-                $content_model_key,
-                $this->getRecord()->slug,
-            ]);
-        } elseif ($type === 'content') {
-            return route('cms.single.content', [
-                $lang,
-                $content_model_key,
-                $this->getRecord()->slug,
-            ]);
+        if (!$meta) {
+            return null;
         }
+
+        $key = $meta['slug'] ?? array_search($meta, config('cms.content_models'), true);
+        $type = $meta['type'] ?? null;
+        $slug = $this->getRecord()->slug;
+
+        return match ($type) {
+            'taxonomy' => $meta['has_archive'] ?? false
+            ? route('cms.taxonomy.archive', [app()->getLocale(), $key, $slug])
+            : null,
+            'content' => $meta['has_archive'] ?? false
+            ? route('cms.single.content', [app()->getLocale(), $key, $slug])
+            : null,
+            default => null,
+        };
     }
+
 }
