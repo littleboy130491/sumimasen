@@ -46,7 +46,7 @@ abstract class BaseEditRecord extends EditRecord
 
         // Get fresh record data
         $record = $this->getRecord()->refresh();
-        $slug = $record->slug;
+        $slug = $record->slug ?: $record->getTranslation('slug', config('cms.default_language', false));
 
         if (!$slug) {
             return null;

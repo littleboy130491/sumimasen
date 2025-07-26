@@ -13,15 +13,12 @@ class EditArchive extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        $url = $this->resolvePublicUrl();
-
         return [
-            ...(filled($url) ? [
-                Action::make('view')
-                    ->label('View')
-                    ->url($url, shouldOpenInNewTab: true)
-                    ->color('gray'),
-            ] : []),
+            Action::make('view')
+                ->label('View')
+                ->url(fn() => $this->resolvePublicUrl(), shouldOpenInNewTab: true)
+                ->color('gray')
+                ->visible(fn() => filled($this->resolvePublicUrl())),
             $this->getSaveFormAction()
                 ->formId('form'),
             Actions\DeleteAction::make(),
@@ -31,24 +28,25 @@ class EditArchive extends EditRecord
 
     protected function resolvePublicUrl(): ?string
     {
-        $recordSlug = $this->getRecord()->slug;
+        $record = $this->getRecord()->refresh();
+        $slug = $record->slug;
 
         $contentModels = config('cms.content_models');
 
         // find the entry whose slug (or key) matches and is a content model with archive
         $meta = collect($contentModels)
             ->first(
-                fn (array $meta, string $key) => ($meta['slug'] ?? $key) === $recordSlug &&
+                fn(array $meta, string $key) => ($meta['slug'] ?? $key) === $slug &&
                 ($meta['type'] ?? null) === 'content'
             );
 
-        if (! $meta || ! ($meta['has_archive'] ?? false)) {
+        if (!$meta || !($meta['has_archive'] ?? false)) {
             return null;
         }
 
         return route('cms.archive.content', [
             app()->getLocale(),
-            $recordSlug,
+            $slug,
         ]);
     }
 }
