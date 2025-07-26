@@ -5,6 +5,7 @@ namespace Littleboy130491\Sumimasen\Filament\Abstracts;
 use Filament\Actions;
 use Filament\Pages\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
+use Littleboy130491\Sumimasen\Enums\ContentStatus;
 
 abstract class BaseEditRecord extends EditRecord
 {
@@ -29,6 +30,7 @@ abstract class BaseEditRecord extends EditRecord
     /**
      * Build the public-facing URL for the current record.
      * Returns null when the model is not registered or has no public route.
+     * Appends preview=true if content status is not published.
      */
     protected function resolvePublicUrl(): ?string
     {
@@ -43,16 +45,29 @@ abstract class BaseEditRecord extends EditRecord
 
         $key = $meta['slug'] ?? array_search($meta, config('cms.content_models'), true);
         $type = $meta['type'] ?? null;
-        $slug = $this->getRecord()->slug;
+        $record = $this->getRecord();
+        $slug = $record->slug;
 
-        return match ($type) {
+        $url = match ($type) {
             'taxonomy' => $meta['has_archive'] ?? false
-            ? route('cms.taxonomy.archive', [app()->getLocale(), $key, $slug])
-            : null,
-            'content' => $meta['has_archive'] ?? false
-            ? route('cms.single.content', [app()->getLocale(), $key, $slug])
-            : null,
+                ? route('cms.taxonomy.archive', [app()->getLocale(), $key, $slug])
+                : null,
+            'content' => $meta['has_single'] ?? false
+                ? route('cms.single.content', [app()->getLocale(), $key, $slug])
+                : null,
             default => null,
         };
+
+        // For static pages, use the static page route
+        if ($type === 'content' && $key === 'pages') {
+            $url = route('cms.static.page', [app()->getLocale(), $slug]);
+        }
+
+        // Append preview=true if content has status and is not published
+        if ($url && property_exists($record, 'status') && $record->status !== ContentStatus::Published) {
+            $url .= '?preview=true';
+        }
+
+        return $url;
     }
 }
