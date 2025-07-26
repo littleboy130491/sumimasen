@@ -14,9 +14,9 @@ abstract class BaseEditRecord extends EditRecord
         return [
             Action::make('view')
                 ->label('View')
-                ->url(fn() => $this->resolvePublicUrl(), shouldOpenInNewTab: true)
+                ->url(fn () => $this->resolvePublicUrl(), shouldOpenInNewTab: true)
                 ->color('gray')
-                ->visible(fn() => filled($this->resolvePublicUrl())),
+                ->visible(fn () => filled($this->resolvePublicUrl())),
             $this->getSaveFormAction()
                 ->formId('form'),
             Actions\DeleteAction::make(),
@@ -34,9 +34,9 @@ abstract class BaseEditRecord extends EditRecord
         $modelClass = $this->getModel();
 
         $meta = collect(config('cms.content_models'))
-            ->first(fn(array $meta, string $key) => $meta['model'] === $modelClass);
+            ->first(fn (array $meta, string $key) => $meta['model'] === $modelClass);
 
-        if (!$meta) {
+        if (! $meta) {
             return null;
         }
 
@@ -48,7 +48,7 @@ abstract class BaseEditRecord extends EditRecord
         $record = $this->getRecord()->refresh();
         $slug = $record->slug ?: $record->getTranslation('slug', config('cms.default_language', false));
 
-        if (!$slug) {
+        if (! $slug) {
             return null;
         }
 
