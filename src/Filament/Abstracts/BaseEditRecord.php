@@ -11,15 +11,12 @@ abstract class BaseEditRecord extends EditRecord
 {
     protected function getHeaderActions(): array
     {
-        $url = $this->resolvePublicUrl();
-
         return [
-            ...(filled($url) ? [
-                Action::make('view')
-                    ->label('View')
-                    ->url($url, shouldOpenInNewTab: true)
-                    ->color('gray'),
-            ] : []),
+            Action::make('view')
+                ->label('View')
+                ->url(fn() => $this->resolvePublicUrl(), shouldOpenInNewTab: true)
+                ->color('gray')
+                ->visible(fn() => filled($this->resolvePublicUrl())),
             $this->getSaveFormAction()
                 ->formId('form'),
             Actions\DeleteAction::make(),
@@ -37,34 +34,41 @@ abstract class BaseEditRecord extends EditRecord
         $modelClass = $this->getModel();
 
         $meta = collect(config('cms.content_models'))
-            ->first(fn (array $meta, string $key) => $meta['model'] === $modelClass);
+            ->first(fn(array $meta, string $key) => $meta['model'] === $modelClass);
 
-        if (! $meta) {
+        if (!$meta) {
             return null;
         }
 
-        $key = $meta['slug'] ?? array_search($meta, config('cms.content_models'), true);
+        $configKey = array_search($meta, config('cms.content_models'), true);
+        $key = $meta['slug'] ?? $configKey;
         $type = $meta['type'] ?? null;
-        $record = $this->getRecord();
+
+        // Get fresh record data
+        $record = $this->getRecord()->refresh();
         $slug = $record->slug;
+
+        if (!$slug) {
+            return null;
+        }
 
         $url = match ($type) {
             'taxonomy' => $meta['has_archive'] ?? false
-                ? route('cms.taxonomy.archive', [app()->getLocale(), $key, $slug])
-                : null,
+            ? route('cms.taxonomy.archive', [app()->getLocale(), $key, $slug])
+            : null,
             'content' => $meta['has_single'] ?? false
-                ? route('cms.single.content', [app()->getLocale(), $key, $slug])
-                : null,
+            ? route('cms.single.content', [app()->getLocale(), $key, $slug])
+            : null,
             default => null,
         };
 
         // For static pages, use the static page route
-        if ($type === 'content' && $key === 'pages') {
+        if ($type === 'content' && $configKey === config('cms.static_page_slug')) {
             $url = route('cms.static.page', [app()->getLocale(), $slug]);
         }
 
         // Append preview=true if content has status and is not published
-        if ($url && property_exists($record, 'status') && $record->status !== ContentStatus::Published) {
+        if ($url && isset($record->status) && $record->status !== ContentStatus::Published) {
             $url .= '?preview=true';
         }
 
