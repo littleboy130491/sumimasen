@@ -108,18 +108,18 @@ abstract class BaseContentController extends Controller
     /**
      * Find content by slug in requested language with fallback to default language
      */
-    protected function findContent(string $modelClass, string $requestedLocale, string $slug): ?Model
+    protected function findContent(string $modelClass, string $requestedLocale, string $slug, bool $isPreview = false): ?Model
     {
         $defaultLanguage = $this->defaultLanguage;
 
         // Try the requested locale first
-        $content = $this->buildQueryWithStatusFilter($modelClass)
+        $content = $this->buildQueryWithStatusFilter($modelClass, $isPreview)
             ->whereJsonContainsLocale('slug', $requestedLocale, $slug)
             ->first();
 
         // Fallback to default locale if not found
         if (! $content && $requestedLocale !== $defaultLanguage) {
-            $content = $this->buildQueryWithStatusFilter($modelClass)
+            $content = $this->buildQueryWithStatusFilter($modelClass, $isPreview)
                 ->whereJsonContainsLocale('slug', $defaultLanguage, $slug)
                 ->first();
         }
@@ -130,7 +130,7 @@ abstract class BaseContentController extends Controller
     /**
      * Try to find content in fallback content model and redirect if found
      */
-    protected function tryFallbackContentModel(string $lang, string $slug, Request $request): ?\Illuminate\Http\RedirectResponse
+    protected function tryFallbackContentModel(string $lang, string $slug, Request $request, bool $isPreview = false): ?\Illuminate\Http\RedirectResponse
     {
         $fallbackContentType = Config::get('cms.fallback_content_type', 'posts');
         $modelClass = Config::get("cms.content_models.{$fallbackContentType}.model");
@@ -139,7 +139,7 @@ abstract class BaseContentController extends Controller
             return null;
         }
 
-        $item = $this->findContent($modelClass, $lang, $slug);
+        $item = $this->findContent($modelClass, $lang, $slug, $isPreview);
 
         if ($item) {
             return redirect()->route('cms.single.content', array_merge([
@@ -168,12 +168,20 @@ abstract class BaseContentController extends Controller
 
     /**
      * Build a query with status filtering if the model has a status column
+     * Supports preview mode for authenticated users
      */
-    protected function buildQueryWithStatusFilter(string $modelClass): \Illuminate\Database\Eloquent\Builder
+    protected function buildQueryWithStatusFilter(string $modelClass, bool $isPreview = false): \Illuminate\Database\Eloquent\Builder
     {
         $query = $modelClass::query();
 
         if ($this->hasStatusColumn($modelClass)) {
+            // In preview mode, authenticated users can see all content statuses
+            if ($isPreview && auth()->check()) {
+                // No status filter - show all content regardless of status
+                return $query;
+            }
+
+            // Normal mode - only show published content
             $query->where('status', ContentStatus::Published);
         }
 
@@ -189,7 +197,8 @@ abstract class BaseContentController extends Controller
         $item = null,
         ?string $contentTypeKey = null,
         ?string $contentSlug = null,
-        array $viewData = []
+        array $viewData = [],
+        bool $isPreview = false
     ) {
         $bodyClasses = $this->generateBodyClasses($lang, $item, $contentTypeKey, $contentSlug);
 
@@ -197,6 +206,7 @@ abstract class BaseContentController extends Controller
         View::share('lang', $lang);
         View::share('bodyClasses', $bodyClasses);
         View::share('contentTypeKey', $contentTypeKey);
+        View::share('preview', $isPreview);
 
         if ($item) {
             View::share('globalItem', $item);

@@ -12,13 +12,16 @@ class StaticPageController extends BaseContentController
      */
     public function __invoke(Request $request, string $lang, string $page_slug)
     {
+        // Check if preview mode is enabled
+        $isPreview = $request->query('preview') === 'true';
+
         // Redirect to home if this is the front page
         if ($this->isFrontPage($lang, $page_slug)) {
             return $this->redirectToHome($lang, $request);
         }
 
         $modelClass = $this->getValidModelClass($this->staticPageClass);
-        $item = $this->findContent($modelClass, $lang, $page_slug);
+        $item = $this->findContent($modelClass, $lang, $page_slug, $isPreview);
 
         // Handle localized slug redirects
         if ($item) {
@@ -29,7 +32,7 @@ class StaticPageController extends BaseContentController
 
         // Try fallback content model if page not found
         if (! $item) {
-            $fallbackResult = $this->tryFallbackContentModel($lang, $page_slug, $request);
+            $fallbackResult = $this->tryFallbackContentModel($lang, $page_slug, $request, $isPreview);
             if ($fallbackResult) {
                 return $fallbackResult;
             }
@@ -48,19 +51,20 @@ class StaticPageController extends BaseContentController
             item: $item,
             viewData: [
                 'item' => $item,
-            ]
+            ],
+            isPreview: $isPreview
         );
     }
 
     /**
      * Find static page by slug with language fallback
      */
-    private function findStaticPageBySlug(string $slug, string $lang): ?Model
+    private function findStaticPageBySlug(string $slug, string $lang, bool $isPreview = false): ?Model
     {
         $modelClass = $this->getValidModelClass($this->staticPageClass);
 
         // Try requested language first
-        $page = $this->buildQueryWithStatusFilter($modelClass)
+        $page = $this->buildQueryWithStatusFilter($modelClass, $isPreview)
             ->whereJsonContainsLocale('slug', $lang, $slug)
             ->first();
 
@@ -70,7 +74,7 @@ class StaticPageController extends BaseContentController
 
         // Try default language as fallback
         if ($lang !== $this->defaultLanguage) {
-            $page = $this->buildQueryWithStatusFilter($modelClass)
+            $page = $this->buildQueryWithStatusFilter($modelClass, $isPreview)
                 ->whereJsonContainsLocale('slug', $this->defaultLanguage, $slug)
                 ->first();
         }

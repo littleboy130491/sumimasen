@@ -15,6 +15,9 @@ class SingleContentController extends BaseContentController
      */
     public function __invoke(Request $request, string $lang, string $content_type_key, string $content_slug)
     {
+        // Check if preview mode is enabled
+        $isPreview = $request->query('preview') === 'true';
+
         // Get the original content type key from the slug (handles custom slug overrides)
         $originalContentTypeKey = $this->getOriginalContentTypeKey($content_type_key);
 
@@ -27,7 +30,7 @@ class SingleContentController extends BaseContentController
         }
 
         $modelClass = $this->getContentModelClass($content_type_key);
-        $item = $this->findContent($modelClass, $lang, $content_slug);
+        $item = $this->findContent($modelClass, $lang, $content_slug, $isPreview);
 
         // Handle localized slug redirects
         if ($item) {
@@ -61,7 +64,8 @@ class SingleContentController extends BaseContentController
                 'original_content_type' => $originalContentTypeKey,
                 'item' => $item,
                 'title' => $item->title,
-            ]
+            ],
+            isPreview: $isPreview
         );
     }
 
