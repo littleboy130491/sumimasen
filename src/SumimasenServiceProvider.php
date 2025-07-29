@@ -73,8 +73,6 @@ class SumimasenServiceProvider extends PackageServiceProvider
         return [
             \Littleboy130491\Sumimasen\Console\Commands\InstallCommand::class,
             \Littleboy130491\Sumimasen\Console\Commands\CmsFinalizeCommand::class,
-            \Littleboy130491\Sumimasen\Console\Commands\CreateExporterCommand::class,
-            \Littleboy130491\Sumimasen\Console\Commands\CreateImporterCommand::class,
             \Littleboy130491\Sumimasen\Console\Commands\CreateMigrationCommand::class,
             \Littleboy130491\Sumimasen\Console\Commands\CreateModelCommand::class,
             \Littleboy130491\Sumimasen\Console\Commands\GenerateRolesCommand::class,
