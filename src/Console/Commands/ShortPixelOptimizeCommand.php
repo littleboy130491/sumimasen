@@ -4,7 +4,6 @@ namespace Littleboy130491\Sumimasen\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 use Exception;
 
 /**
@@ -58,6 +57,13 @@ class ShortPixelOptimizeCommand extends Command
         // Get folder path - defaults to 'media' which resolves to storage/app/public/media
         $folder = $this->option('folder') ?: config('shortpixel.folders.default_path', 'media');
 
+        // Debug: Show API key source
+        if ($this->getOutput()->isVerbose()) {
+            $this->line("API Key source: " . ($this->option('apiKey') ? 'command option' : 'config file'));
+            $this->line("API Key length: " . strlen($apiKey));
+            $this->line("API Key preview: " . substr($apiKey, 0, 10) . '...');
+        }
+
         // Validate API key
         if (!$apiKey) {
             $this->error('API Key is required. Provide via --apiKey option or set SHORTPIXEL_API_KEY in config.');
@@ -110,15 +116,10 @@ class ShortPixelOptimizeCommand extends Command
                 return 0;
             }
 
-            $this->line("Connecting to ShortPixel API...");
+            $this->line("Starting optimization with ShortPixel API...");
             
-            // Test API key validity
-            if (!$this->testApiConnection($apiKey)) {
-                return 1;
-            }
-            
-            // Process the files
-            $this->optimizeFiles($files, $apiKey);
+            // Process the files using ShortPixel PHP package
+            $this->optimizeFilesWithPackage($files, $apiKey);
 
             // Show results summary
             $this->displaySummary();
@@ -213,11 +214,20 @@ class ShortPixelOptimizeCommand extends Command
         return $files;
     }
 
-    protected function optimizeFiles(array $files, string $apiKey): void
+    protected function optimizeFilesWithPackage(array $files, string $apiKey): void
     {
-        $webPath = $this->option('webPath');
-        $speed = (int) $this->option('speed');
-        $chunks = array_chunk($files, $speed);
+        // Check if ShortPixel package is available
+        if (!class_exists('\ShortPixel\ShortPixel')) {
+            $this->error('ShortPixel PHP package not found. Install it with: composer require shortpixel/shortpixel-php');
+            return;
+        }
+
+        // Initialize ShortPixel
+        \ShortPixel\ShortPixel::setKey($apiKey);
+        \ShortPixel\ShortPixel::setOptions([
+            'lossy' => (int) $this->option('compression'),
+            'wait' => 300, // Wait up to 5 minutes for processing
+        ]);
 
         // Create progress bar
         $progressBar = $this->output->createProgressBar(count($files));
@@ -225,9 +235,12 @@ class ShortPixelOptimizeCommand extends Command
         $progressBar->setMessage('Starting optimization...');
         $progressBar->start();
 
+        $speed = (int) $this->option('speed');
+        $chunks = array_chunk($files, $speed);
+
         foreach ($chunks as $chunkIndex => $chunk) {
             $progressBar->setMessage("Processing chunk " . ($chunkIndex + 1) . " of " . count($chunks));
-            $this->processChunk($chunk, $apiKey, $webPath, $progressBar);
+            $this->processChunkWithPackage($chunk, $progressBar);
         }
 
         $progressBar->setMessage('Optimization complete!');
@@ -235,7 +248,7 @@ class ShortPixelOptimizeCommand extends Command
         $this->line(''); // New line after progress bar
     }
 
-    protected function processChunk(array $files, string $apiKey, ?string $webPath, $progressBar = null): void
+    protected function processChunkWithPackage(array $files, $progressBar = null): void
     {
         foreach ($files as $filePath) {
             $fileName = basename($filePath);
@@ -245,15 +258,34 @@ class ShortPixelOptimizeCommand extends Command
             }
             
             try {
-                if ($webPath) {
-                    $this->optimizeViaUrl($filePath, $apiKey, $webPath);
+                // Use ShortPixel package for optimization
+                $result = \ShortPixel\ShortPixel::fromFile($filePath)->toFiles(dirname($filePath));
+                
+                if ($result->isSuccessful()) {
+                    $this->processedFiles[] = $filePath;
+                    
+                    if (isset($result[0])) {
+                        $savedBytes = $result[0]->originalSize - $result[0]->optimizedSize;
+                        $this->totalSaved += $savedBytes;
+                        
+                        if ($this->getOutput()->isVerbose()) {
+                            $percentSaved = round(($savedBytes / $result[0]->originalSize) * 100, 2);
+                            $this->info("✓ Optimized: {$fileName} (saved {$percentSaved}% / " . $this->formatBytes($savedBytes) . ")");
+                        }
+                    }
                 } else {
-                    $this->optimizeViaUpload($filePath, $apiKey);
+                    $this->skippedFiles[] = $filePath;
+                    $errorMessage = $result->hasErrors() ? $result->getErrors()[0] : 'Unknown error';
+                    
+                    if (count($this->skippedFiles) <= 3 || $this->getOutput()->isVerbose()) {
+                        $this->warn("Skipped {$fileName}: {$errorMessage}");
+                    }
                 }
                 
                 if ($progressBar) {
                     $progressBar->advance();
                 }
+                
             } catch (Exception $e) {
                 $this->skippedFiles[] = $filePath;
                 
@@ -262,163 +294,11 @@ class ShortPixelOptimizeCommand extends Command
                     $progressBar->advance();
                 }
                 
-                // Always show error for the first few files to help debug
                 if (count($this->skippedFiles) <= 3 || $this->getOutput()->isVerbose()) {
                     $this->warn("Skipped {$fileName}: " . $e->getMessage());
                 }
             }
         }
-    }
-
-    protected function optimizeViaUpload(string $filePath, string $apiKey): void
-    {
-        $fileSize = File::size($filePath);
-        $fileName = basename($filePath);
-
-        if ($this->getOutput()->isVerbose()) {
-            $this->line("Processing: {$fileName} (" . $this->formatBytes($fileSize) . ")");
-        }
-
-        // Build clean request data
-        $requestData = [
-            'key' => $apiKey,
-            'plugin_version' => '1.0.0',
-            'lossy' => (int) $this->option('compression'),
-        ];
-        
-        // Add optional parameters only if they have values
-        if ($this->option('resize')) {
-            $requestData['resize'] = $this->option('resize');
-        }
-        
-        $convertOptions = $this->getConvertOptions();
-        if (!empty($convertOptions)) {
-            $requestData['convertto'] = $convertOptions;
-        }
-
-        $response = Http::timeout(120)->attach(
-            'file1', File::get($filePath), $fileName
-        )->post('https://api.shortpixel.com/v2/reducer.php', $requestData);
-
-        $this->handleApiResponse($response, $filePath, $fileSize);
-    }
-
-    protected function optimizeViaUrl(string $filePath, string $apiKey, string $webPath): void
-    {
-        $relativePath = str_replace(storage_path('app/public/'), '', $filePath);
-        $fileUrl = rtrim($webPath, '/') . '/' . $relativePath;
-        $fileName = basename($filePath);
-
-        if ($this->getOutput()->isVerbose()) {
-            $this->line("Processing via URL: {$fileName}");
-        }
-
-        $response = Http::post('https://api.shortpixel.com/v2/reducer.php', [
-            'key' => $apiKey,
-            'plugin_version' => '1.0.0',
-            'urllist' => [$fileUrl],
-            'lossy' => $this->option('compression'),
-            'resize' => $this->option('resize') ?: '',
-            'convertto' => $this->getConvertOptions(),
-        ]);
-
-        $this->handleApiResponse($response, $filePath, File::size($filePath));
-    }
-
-    protected function handleApiResponse($response, string $filePath, int $originalSize): void
-    {
-        if (!$response->successful()) {
-            $errorBody = $response->body();
-            throw new Exception("API request failed with status: " . $response->status() . ". Response: " . $errorBody);
-        }
-
-        $data = $response->json();
-        
-        // Handle different response formats
-        $responseData = $data;
-        if (isset($data[0])) {
-            // Array format (for urllist requests)
-            $responseData = $data[0];
-        } elseif (isset($data['Status'])) {
-            // Direct object format (for file upload requests)
-            $responseData = $data;
-        } else {
-            throw new Exception("Invalid API response format. Response: " . json_encode($data));
-        }
-
-        if (isset($responseData['Status']['Code']) && $responseData['Status']['Code'] == 1) {
-            $optimizedUrl = $responseData['OptimizedURL'];
-            $savedBytes = $responseData['OriginalSize'] - $responseData['OptimizedSize'];
-            $percentSaved = round(($savedBytes / $responseData['OriginalSize']) * 100, 2);
-
-            $this->downloadOptimizedFile($optimizedUrl, $filePath);
-            $this->totalSaved += $savedBytes;
-            $this->processedFiles[] = $filePath;
-
-            if ($this->getOutput()->isVerbose()) {
-                $this->info("✓ Optimized: " . basename($filePath) . " (saved {$percentSaved}% / " . $this->formatBytes($savedBytes) . ")");
-            }
-
-            // Handle WebP/AVIF creation
-            if ($this->option('createWebP') && isset($responseData['WebPURL'])) {
-                $this->downloadAdditionalFormat($responseData['WebPURL'], $filePath, 'webp');
-            }
-
-            if ($this->option('createAVIF') && isset($responseData['AVIFURL'])) {
-                $this->downloadAdditionalFormat($responseData['AVIFURL'], $filePath, 'avif');
-            }
-
-        } else {
-            $statusCode = $responseData['Status']['Code'] ?? 'Unknown';
-            $message = $responseData['Status']['Message'] ?? 'Unknown error';
-            throw new Exception("ShortPixel Error (Code: {$statusCode}): {$message}");
-        }
-    }
-
-    protected function downloadOptimizedFile(string $url, string $filePath): void
-    {
-        $targetFolder = $this->option('targetFolder');
-        $backupBase = $this->option('backupBase');
-
-        // Create backup if specified
-        if ($backupBase) {
-            $this->createBackup($filePath, $backupBase);
-        }
-
-        // Determine final file path
-        if ($targetFolder) {
-            $relativePath = str_replace(dirname($filePath), '', $filePath);
-            $finalPath = rtrim($targetFolder, '/') . '/' . ltrim($relativePath, '/');
-            File::ensureDirectoryExists(dirname($finalPath));
-        } else {
-            $finalPath = $filePath;
-        }
-
-        // Download optimized file
-        $optimizedContent = Http::get($url)->body();
-        File::put($finalPath, $optimizedContent);
-    }
-
-    protected function downloadAdditionalFormat(string $url, string $originalPath, string $format): void
-    {
-        $pathInfo = pathinfo($originalPath);
-        $newPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.' . $format;
-        
-        $content = Http::get($url)->body();
-        File::put($newPath, $content);
-
-        if ($this->getOutput()->isVerbose()) {
-            $this->line("  ✓ Created {$format}: " . basename($newPath));
-        }
-    }
-
-    protected function createBackup(string $filePath, string $backupBase): void
-    {
-        $relativePath = str_replace(getcwd(), '', $filePath);
-        $backupPath = rtrim($backupBase, '/') . '/' . ltrim($relativePath, '/');
-        
-        File::ensureDirectoryExists(dirname($backupPath));
-        File::copy($filePath, $backupPath);
     }
 
     protected function getConvertOptions(): string
@@ -519,52 +399,6 @@ class ShortPixelOptimizeCommand extends Command
         return false;
     }
 
-    /**
-     * Test API connection with a simple request
-     */
-    protected function testApiConnection(string $apiKey): bool
-    {
-        try {
-            $response = Http::timeout(10)->post('https://api.shortpixel.com/v2/reducer.php', [
-                'key' => $apiKey,
-                'plugin_version' => '1.0.0',
-                'urllist' => ['https://via.placeholder.com/1x1.png'], // Tiny test image
-                'lossy' => 1,
-            ]);
 
-            if (!$response->successful()) {
-                $this->error("Failed to connect to ShortPixel API (Status: " . $response->status() . ")");
-                return false;
-            }
-
-            $data = $response->json();
-            
-            if (isset($data[0]['Status']['Code'])) {
-                $code = $data[0]['Status']['Code'];
-                $message = $data[0]['Status']['Message'] ?? '';
-                
-                if ($code == -3) {
-                    $this->error("Invalid API key. Please check your SHORTPIXEL_API_KEY.");
-                    return false;
-                } elseif ($code == -4) {
-                    $this->error("No credits left on your ShortPixel account.");
-                    return false;
-                } elseif ($code < 0) {
-                    $this->error("ShortPixel API Error (Code: {$code}): {$message}");
-                    return false;
-                }
-                
-                $this->info("✓ API connection successful!");
-                return true;
-            }
-            
-            $this->error("Unexpected API response format.");
-            return false;
-            
-        } catch (Exception $e) {
-            $this->error("Failed to connect to ShortPixel API: " . $e->getMessage());
-            return false;
-        }
-    }
 
 }
