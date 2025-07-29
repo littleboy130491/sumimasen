@@ -26,7 +26,7 @@
                     wire:confirm="This will clear all cache types (application, config, view, route, response, and CMS caches). Are you sure you want to continue?"
                     wire:click="clearAllCacheAction" wire:loading.attr="disabled" wire:target="clearAllCacheAction"
                     @disabled($clearingCache)
-                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 focus:bg-red-500 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400">
                     <div wire:loading.remove wire:target="clearAllCacheAction">
                         <x-heroicon-o-fire class="w-4 h-4 mr-2" />
                     </div>
@@ -69,7 +69,7 @@
             <div class="mt-4">
                 <button wire:click="optimizeApplicationAction" wire:loading.attr="disabled"
                     wire:target="optimizeApplicationAction" @disabled($optimizing)
-                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 focus:bg-green-500 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400">
                     <div wire:loading.remove wire:target="optimizeApplicationAction">
                         <x-heroicon-o-bolt class="w-4 h-4 mr-2" />
                     </div>
@@ -156,7 +156,7 @@
                     wire:confirm="This will create/update super admin, admin, and editor roles with appropriate permissions. Existing roles will be updated."
                     wire:click="generateRolesAction" wire:loading.attr="disabled" wire:target="generateRolesAction"
                     @disabled($generatingRoles)
-                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-500 focus:bg-yellow-500 active:bg-yellow-900 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400">
                     <div wire:loading.remove wire:target="generateRolesAction">
                         <x-heroicon-o-shield-check class="w-4 h-4 mr-2" />
                     </div>
@@ -199,7 +199,7 @@
             <div class="mt-4">
                 <button wire:click="refreshInstagramTokenAction" wire:loading.attr="disabled"
                     wire:target="refreshInstagramTokenAction" @disabled($refreshingToken)
-                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-500 focus:bg-gray-500 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400">
                     <div wire:loading.remove wire:target="refreshInstagramTokenAction">
                         <x-heroicon-o-photo class="w-4 h-4 mr-2" />
                     </div>
@@ -244,7 +244,7 @@
                     wire:confirm="This will optimize images in the media folder using ShortPixel API. Make sure you have configured your API key."
                     wire:click="shortpixelOptimizeAction" wire:loading.attr="disabled"
                     wire:target="shortpixelOptimizeAction" @disabled($optimizingImages)
-                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-500 focus:bg-purple-500 active:bg-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400">
                     <div wire:loading.remove wire:target="shortpixelOptimizeAction">
                         <x-heroicon-o-sparkles class="w-4 h-4 mr-2" />
                     </div>
