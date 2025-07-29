@@ -279,15 +279,26 @@ class ShortPixelOptimizeCommand extends Command
             $this->line("Processing: {$fileName} (" . $this->formatBytes($fileSize) . ")");
         }
 
-        $response = Http::attach(
-            'file1', File::get($filePath), $fileName
-        )->post('https://api.shortpixel.com/v2/reducer.php', [
+        // Build clean request data
+        $requestData = [
             'key' => $apiKey,
             'plugin_version' => '1.0.0',
-            'lossy' => $this->option('compression'),
-            'resize' => $this->option('resize') ?: '',
-            'convertto' => $this->getConvertOptions(),
-        ]);
+            'lossy' => (int) $this->option('compression'),
+        ];
+        
+        // Add optional parameters only if they have values
+        if ($this->option('resize')) {
+            $requestData['resize'] = $this->option('resize');
+        }
+        
+        $convertOptions = $this->getConvertOptions();
+        if (!empty($convertOptions)) {
+            $requestData['convertto'] = $convertOptions;
+        }
+
+        $response = Http::timeout(120)->attach(
+            'file1', File::get($filePath), $fileName
+        )->post('https://api.shortpixel.com/v2/reducer.php', $requestData);
 
         $this->handleApiResponse($response, $filePath, $fileSize);
     }
@@ -323,15 +334,22 @@ class ShortPixelOptimizeCommand extends Command
 
         $data = $response->json();
         
-        // Check if response has expected structure
-        if (!isset($data[0])) {
+        // Handle different response formats
+        $responseData = $data;
+        if (isset($data[0])) {
+            // Array format (for urllist requests)
+            $responseData = $data[0];
+        } elseif (isset($data['Status'])) {
+            // Direct object format (for file upload requests)
+            $responseData = $data;
+        } else {
             throw new Exception("Invalid API response format. Response: " . json_encode($data));
         }
 
-        if (isset($data[0]['Status']['Code']) && $data[0]['Status']['Code'] == 1) {
-            $optimizedUrl = $data[0]['OptimizedURL'];
-            $savedBytes = $data[0]['OriginalSize'] - $data[0]['OptimizedSize'];
-            $percentSaved = round(($savedBytes / $data[0]['OriginalSize']) * 100, 2);
+        if (isset($responseData['Status']['Code']) && $responseData['Status']['Code'] == 1) {
+            $optimizedUrl = $responseData['OptimizedURL'];
+            $savedBytes = $responseData['OriginalSize'] - $responseData['OptimizedSize'];
+            $percentSaved = round(($savedBytes / $responseData['OriginalSize']) * 100, 2);
 
             $this->downloadOptimizedFile($optimizedUrl, $filePath);
             $this->totalSaved += $savedBytes;
@@ -342,17 +360,17 @@ class ShortPixelOptimizeCommand extends Command
             }
 
             // Handle WebP/AVIF creation
-            if ($this->option('createWebP') && isset($data[0]['WebPURL'])) {
-                $this->downloadAdditionalFormat($data[0]['WebPURL'], $filePath, 'webp');
+            if ($this->option('createWebP') && isset($responseData['WebPURL'])) {
+                $this->downloadAdditionalFormat($responseData['WebPURL'], $filePath, 'webp');
             }
 
-            if ($this->option('createAVIF') && isset($data[0]['AVIFURL'])) {
-                $this->downloadAdditionalFormat($data[0]['AVIFURL'], $filePath, 'avif');
+            if ($this->option('createAVIF') && isset($responseData['AVIFURL'])) {
+                $this->downloadAdditionalFormat($responseData['AVIFURL'], $filePath, 'avif');
             }
 
         } else {
-            $statusCode = $data[0]['Status']['Code'] ?? 'Unknown';
-            $message = $data[0]['Status']['Message'] ?? 'Unknown error';
+            $statusCode = $responseData['Status']['Code'] ?? 'Unknown';
+            $message = $responseData['Status']['Message'] ?? 'Unknown error';
             throw new Exception("ShortPixel Error (Code: {$statusCode}): {$message}");
         }
     }
