@@ -118,8 +118,8 @@ class ShortPixelOptimizeCommand extends Command
 
             $this->line("Starting optimization with ShortPixel API...");
             
-            // Process the files using ShortPixel PHP package
-            $this->optimizeFilesWithPackage($files, $apiKey);
+            // Process the files using ShortPixel PHP package with proper folder optimization
+            $this->optimizeWithFolderMethod($folderPath, $apiKey);
 
             // Show results summary
             $this->displaySummary();
@@ -225,11 +225,19 @@ class ShortPixelOptimizeCommand extends Command
         // Initialize ShortPixel
         \ShortPixel\ShortPixel::setKey($apiKey);
         
-        // Build options
+        // Build options with persistence enabled for duplicate detection
         $options = [
             'lossy' => (int) $this->option('compression'),
             'wait' => 300, // Wait up to 5 minutes for processing
+            'persist_type' => 'text', // Enable .shortpixel file tracking
+            'persist_name' => '.shortpixel', // Track optimization status
         ];
+        
+        // Add backup configuration if specified
+        $backupBase = $this->option('backupBase');
+        if ($backupBase) {
+            $options['backup_path'] = $backupBase;
+        }
         
         // Add resize options if specified
         if ($this->option('resize')) {
@@ -273,6 +281,232 @@ class ShortPixelOptimizeCommand extends Command
         $progressBar->setMessage('Optimization complete!');
         $progressBar->finish();
         $this->line(''); // New line after progress bar
+    }
+
+    protected function optimizeWithFolderMethod(string $folderPath, string $apiKey): void
+    {
+        // Check if ShortPixel package is available
+        if (!class_exists('\\ShortPixel\\ShortPixel')) {
+            $this->error('ShortPixel PHP package not found. Install it with: composer require shortpixel/shortpixel-php');
+            return;
+        }
+
+        // Initialize ShortPixel
+        \ShortPixel\ShortPixel::setKey($apiKey);
+        
+        // Build options with persistence enabled for duplicate detection
+        $options = [
+            'lossy' => (int) $this->option('compression'),
+            'wait' => 300, // Wait up to 5 minutes for processing
+            'persist_type' => 'text', // Enable .shortpixel file tracking for duplicate detection
+            'persist_name' => '.shortpixel', // Track optimization status in .shortpixel files
+        ];
+        
+        // Get backup path from option or config
+        $backupBase = $this->option('backupBase');
+        
+        // If no option provided, check config
+        if (!$backupBase && config('shortpixel.backup.enabled', true)) {
+            $backupBase = config('shortpixel.backup.base_path', storage_path('app/shortpixel-backups'));
+        }
+        
+        if ($backupBase) {
+            // Ensure backup directory exists
+            File::ensureDirectoryExists($backupBase);
+            if ($this->getOutput()->isVerbose()) {
+                $this->line("Backup enabled: Original files will be saved to {$backupBase}");
+            }
+        }
+        
+        // Add resize options if specified
+        if ($this->option('resize')) {
+            $resize = $this->option('resize');
+            if (strpos($resize, 'x') !== false) {
+                $parts = explode('x', $resize);
+                $options['resize'] = 1; // Enable resize
+                $options['resize_width'] = (int) $parts[0];
+                if (isset($parts[1])) {
+                    $resizeParts = explode('/', $parts[1]);
+                    $options['resize_height'] = (int) $resizeParts[0];
+                    if (isset($resizeParts[1])) {
+                        $options['resize'] = (int) $resizeParts[1]; // resize type
+                    }
+                }
+            }
+        }
+        
+        // Add format conversion options
+        $convertOptions = $this->getConvertOptions();
+        if (!empty($convertOptions)) {
+            $options['convertto'] = $convertOptions;
+        }
+        
+        // Set target folder if specified
+        $targetFolder = $this->option('targetFolder');
+        if ($targetFolder) {
+            File::ensureDirectoryExists($targetFolder);
+            $options['base_path'] = $targetFolder;
+        }
+        
+        \ShortPixel\ShortPixel::setOptions($options);
+
+        // Get exclude patterns
+        $excludeFolders = $this->option('exclude') ? explode(',', $this->option('exclude')) : [];
+        $recurseDepth = $this->option('recurseDepth') ? (int) $this->option('recurseDepth') : PHP_INT_MAX;
+        
+        // Get folder info to show progress and check what needs processing
+        $folderInfo = null;
+        try {
+            $folderInfo = \ShortPixel\folderInfo($folderPath, true, true, $excludeFolders, false, $recurseDepth);
+            
+            if ($folderInfo && isset($folderInfo->total)) {
+                $this->info("Folder analysis: {$folderInfo->total} images total");
+                if (isset($folderInfo->succeeded)) {
+                    $this->info("Already optimized: {$folderInfo->succeeded} images");
+                    // Count already optimized files as skipped
+                    for ($i = 0; $i < $folderInfo->succeeded; $i++) {
+                        $this->skippedFiles[] = "already-optimized-file-{$i}";
+                    }
+                }
+                if (isset($folderInfo->pending)) {
+                    $this->info("Pending optimization: {$folderInfo->pending} images");
+                }
+                if (isset($folderInfo->failed)) {
+                    $this->info("Failed images: {$folderInfo->failed} images");
+                    // Count failed files as skipped
+                    for ($i = 0; $i < $folderInfo->failed; $i++) {
+                        $this->skippedFiles[] = "failed-file-{$i}";
+                    }
+                }
+                if (isset($folderInfo->same)) {
+                    $this->info("Same (no optimization needed): {$folderInfo->same} images");
+                    // Count "same" files as skipped
+                    for ($i = 0; $i < $folderInfo->same; $i++) {
+                        $this->skippedFiles[] = "same-file-{$i}";
+                    }
+                }
+                
+                // Show unprocessed files count
+                $unprocessed = $folderInfo->total - ($folderInfo->succeeded ?? 0) - ($folderInfo->same ?? 0) - ($folderInfo->failed ?? 0);
+                if ($this->getOutput()->isVerbose()) {
+                    $this->info("Unprocessed files: {$unprocessed}");
+                }
+            }
+        } catch (Exception $e) {
+            $this->warn("Could not analyze folder: " . $e->getMessage());
+        }
+        
+        // Process folder in chunks using ShortPixel's fromFolder method
+        $speed = (int) $this->option('speed');
+        $processed = 0;
+        $totalProcessed = 0;
+        
+        do {
+            if ($this->getOutput()->isVerbose()) {
+                $this->line("Processing batch of up to {$speed} files...");
+            }
+            
+            try {
+                // Use fromFolder to get a batch of files that need processing
+                // Third parameter of toFiles() is the backup path
+                $result = \ShortPixel\fromFolder($folderPath, $speed, $excludeFolders, false, \ShortPixel\ShortPixel::CLIENT_MAX_BODY_SIZE, $recurseDepth)
+                    ->wait(300)
+                    ->toFiles($targetFolder ?: $folderPath, null, $backupBase);
+                
+                // Process results
+                $processed = $this->processFolderResult($result);
+                $totalProcessed += $processed;
+                
+                if ($processed > 0) {
+                    $this->info("✓ Processed {$processed} files in this batch");
+                }
+                
+            } catch (\ShortPixel\ClientException $e) {
+                if ($e->getCode() === 2) {
+                    // No more files to process
+                    if ($this->getOutput()->isVerbose()) {
+                        $this->info("✓ All files have been processed or no files need optimization");
+                    }
+                    break;
+                } else {
+                    $this->error("ShortPixel error: " . $e->getMessage());
+                    break;
+                }
+            } catch (Exception $e) {
+                $this->error("Error processing folder: " . $e->getMessage());
+                break;
+            }
+            
+        } while ($processed > 0);
+        
+        if ($totalProcessed > 0) {
+            $this->info("Total files processed in this session: {$totalProcessed}");
+        }
+    }
+
+    protected function processFolderResult($result): int
+    {
+        $processed = 0;
+        
+        // Handle successful optimizations
+        if (isset($result->succeeded) && count($result->succeeded) > 0) {
+            foreach ($result->succeeded as $data) {
+                $this->processedFiles[] = $data->OriginalURL ?? 'unknown';
+                $processed++;
+                
+                // Calculate savings if data is available
+                if (isset($data->OriginalSize) && isset($data->LossySize)) {
+                    $savedBytes = $data->OriginalSize - $data->LossySize;
+                    $this->totalSaved += $savedBytes;
+                    
+                    if ($this->getOutput()->isVerbose()) {
+                        $percentSaved = round(($savedBytes / $data->OriginalSize) * 100, 2);
+                        $fileName = basename($data->OriginalURL ?? 'unknown');
+                        $this->info("✓ Optimized: {$fileName} (saved {$percentSaved}% / " . $this->formatBytes($savedBytes) . ")");
+                    }
+                }
+            }
+        }
+        
+        // Handle files that were already optimized (same)
+        if (isset($result->same) && count($result->same) > 0) {
+            foreach ($result->same as $data) {
+                $this->processedFiles[] = $data->OriginalURL ?? 'unknown';
+                $processed++;
+                
+                if ($this->getOutput()->isVerbose()) {
+                    $fileName = basename($data->OriginalURL ?? 'unknown');
+                    $this->info("✓ Already optimized: {$fileName} (no further optimization possible)");
+                }
+            }
+        }
+        
+        // Handle pending files
+        if (isset($result->pending) && count($result->pending) > 0) {
+            foreach ($result->pending as $data) {
+                $this->skippedFiles[] = $data->OriginalURL ?? 'unknown';
+                
+                if (count($this->skippedFiles) <= 3 || $this->getOutput()->isVerbose()) {
+                    $fileName = basename($data->OriginalURL ?? 'unknown');
+                    $this->warn("Skipped {$fileName}: Processing timeout (still pending)");
+                }
+            }
+        }
+        
+        // Handle failed files
+        if (isset($result->failed) && count($result->failed) > 0) {
+            foreach ($result->failed as $data) {
+                $this->skippedFiles[] = $data->OriginalURL ?? 'unknown';
+                $errorMessage = $data->Message ?? 'Processing failed';
+                
+                if (count($this->skippedFiles) <= 3 || $this->getOutput()->isVerbose()) {
+                    $fileName = basename($data->OriginalURL ?? 'unknown');
+                    $this->warn("Skipped {$fileName}: {$errorMessage}");
+                }
+            }
+        }
+        
+        return $processed;
     }
 
     protected function processChunkWithPackage(array $files, $progressBar = null): void
