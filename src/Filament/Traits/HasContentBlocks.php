@@ -51,16 +51,18 @@ trait HasContentBlocks
 
                         TextInput::make('video_url')
                             ->label('Video URL')
-                            ->visible(fn (Get $get) => $get('type') === 'video'),
+                            ->visible(fn(Get $get) => $get('type') === 'video'),
 
                         CuratorPicker::make('fallback_image')
                             ->label('Fallback/Thumbnail Image')
+                            ->preserveFilenames()
                             ->acceptedFileTypes(['image/*']),
 
                         CuratorPicker::make('background_image')
                             ->label('Background Image')
+                            ->preserveFilenames()
                             ->acceptedFileTypes(['image/*'])
-                            ->visible(fn (Get $get) => $get('type') === 'image'),
+                            ->visible(fn(Get $get) => $get('type') === 'image'),
                     ])
                     ->defaultItems(1)
                     ->collapsible()
@@ -92,6 +94,7 @@ trait HasContentBlocks
 
                 CuratorPicker::make('background_image')
                     ->label('Background Image')
+                    ->preserveFilenames()
                     ->acceptedFileTypes(['image/*']),
 
                 Repeater::make('items')
@@ -108,6 +111,7 @@ trait HasContentBlocks
                             ->label('Item URL'),
                         CuratorPicker::make('image')
                             ->label('Item Image')
+                            ->preserveFilenames()
                             ->acceptedFileTypes(['image/*']),
                     ])
                     ->defaultItems(3)
@@ -141,10 +145,12 @@ trait HasContentBlocks
 
                 CuratorPicker::make('primary_image')
                     ->label('Primary Image')
+                    ->preserveFilenames()
                     ->acceptedFileTypes(['image/*']),
 
                 CuratorPicker::make('secondary_image')
                     ->label('Secondary Image')
+                    ->preserveFilenames()
                     ->acceptedFileTypes(['image/*']),
 
                 Repeater::make('additional_media')
@@ -152,6 +158,7 @@ trait HasContentBlocks
                     ->schema([
                         CuratorPicker::make('image')
                             ->label('Image')
+                            ->preserveFilenames()
                             ->acceptedFileTypes(['image/*']),
                         TextInput::make('alt_text')
                             ->label('Alt Text'),
@@ -225,6 +232,7 @@ trait HasContentBlocks
 
                 CuratorPicker::make('thumbnail_image')
                     ->label('Custom Thumbnail')
+                    ->preserveFilenames()
                     ->acceptedFileTypes(['image/*'])
                     ->helperText('Optional: custom thumbnail image'),
 
@@ -256,6 +264,7 @@ trait HasContentBlocks
                     ->schema([
                         CuratorPicker::make('logo')
                             ->label('Logo Image')
+                            ->preserveFilenames()
                             ->acceptedFileTypes(['image/*'])
                             ->required(),
                         TextInput::make('alt_text')
@@ -300,6 +309,7 @@ trait HasContentBlocks
 
                 CuratorPicker::make('background_image')
                     ->label('Background Image')
+                    ->preserveFilenames()
                     ->acceptedFileTypes(['image/*']),
             ])
             ->columns(2);
@@ -329,6 +339,7 @@ trait HasContentBlocks
                             ->label('Content Title'),
                         CuratorPicker::make('image')
                             ->label('Tab Image')
+                            ->preserveFilenames()
                             ->acceptedFileTypes(['image/*']),
                         TiptapEditor::make('content')
                             ->label('Tab Content')
@@ -360,6 +371,7 @@ trait HasContentBlocks
                 TextInput::make('cta_url')->label('CTA URL'),
                 CuratorPicker::make('media_id')
                     ->label('Media')
+                    ->preserveFilenames()
                     ->helperText('Accepted file types: image or document'),
             ])
             ->columns(2);
@@ -400,6 +412,7 @@ trait HasContentBlocks
                     ->label('Left Position (%)'),
                 CuratorPicker::make('media_id')
                     ->label('Background Media')
+                    ->preserveFilenames()
                     ->helperText('Accepted file types: image or document'),
             ])
             ->columns(2);
@@ -414,6 +427,7 @@ trait HasContentBlocks
                     ->label('Gallery Title'),
                 CuratorPicker::make('media_id')
                     ->label('Gallery Images')
+                    ->preserveFilenames()
                     ->multiple()
                     ->acceptedFileTypes(['image/*'])
                     ->helperText('Select multiple images for the gallery'),
@@ -428,6 +442,7 @@ trait HasContentBlocks
             ->schema([
                 CuratorPicker::make('media_id')
                     ->label('Image')
+                    ->preserveFilenames()
                     ->acceptedFileTypes(['image/*'])
                     ->helperText('Main image for this block'),
                 TextInput::make('heading'),
@@ -474,6 +489,7 @@ trait HasContentBlocks
 
                 CuratorPicker::make('map_image')
                     ->label('Map/Floor Plan Image')
+                    ->preserveFilenames()
                     ->acceptedFileTypes(['image/*'])
                     ->required(),
 
@@ -508,6 +524,7 @@ trait HasContentBlocks
 
                         CuratorPicker::make('popup_image')
                             ->label('Popup Image')
+                            ->preserveFilenames()
                             ->acceptedFileTypes(['image/*']),
 
                         TextInput::make('additional_info')
@@ -544,6 +561,7 @@ trait HasContentBlocks
 
                 CuratorPicker::make('background_image')
                     ->label('Background Image')
+                    ->preserveFilenames()
                     ->acceptedFileTypes(['image/*']),
 
                 Repeater::make('timeline_items')
@@ -562,6 +580,7 @@ trait HasContentBlocks
 
                         CuratorPicker::make('image')
                             ->label('Event Image (optional)')
+                            ->preserveFilenames()
                             ->acceptedFileTypes(['image/*']),
                     ])
                     ->defaultItems(4)
@@ -609,8 +628,9 @@ trait HasContentBlocks
 
                         CuratorPicker::make('image')
                             ->label('Item Image')
+                            ->preserveFilenames()
                             ->acceptedFileTypes(['image/*'])
-                            ->visible(fn (Get $get) => $get('../../style') === 'with_images'),
+                            ->visible(fn(Get $get) => $get('../../style') === 'with_images'),
 
                         TextInput::make('button_text')
                             ->label('Button Text'),
@@ -792,7 +812,8 @@ trait HasContentBlocks
                 Textarea::make('description')
                     ->columnSpanFull(),
                 CuratorPicker::make('image')
-                    ->acceptedFileTypes(['image/*']),
+                    ->acceptedFileTypes(['image/*'])
+                    ->preserveFilenames(),
             ])
             ->columns(2);
     }
