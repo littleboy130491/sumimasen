@@ -20,6 +20,15 @@
                     <strong>Warning:</strong> May temporarily slow down your application.
                 </p>
             </div>
+            <div class="mt-4">
+                <button 
+                    wire:confirm="This will clear all cache types (application, config, view, route, response, and CMS caches). Are you sure you want to continue?"
+                    wire:click="clearAllCacheAction"
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 focus:bg-red-500 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <x-heroicon-o-fire class="w-4 h-4 mr-2" />
+                    Clear All Cache
+                </button>
+            </div>
         </div>
 
         <!-- System Optimization -->
@@ -41,6 +50,14 @@
                 <p class="text-xs text-green-800">
                     <strong>Recommended:</strong> Run after clearing cache.
                 </p>
+            </div>
+            <div class="mt-4">
+                <button 
+                    wire:click="optimizeApplicationAction"
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 focus:bg-green-500 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <x-heroicon-o-bolt class="w-4 h-4 mr-2" />
+                    Optimize Application
+                </button>
             </div>
         </div>
 
@@ -64,6 +81,14 @@
                     <strong>Output:</strong> Creates sitemap.xml in public folder.
                 </p>
             </div>
+            <div class="mt-4">
+                <button 
+                    wire:click="generateSitemapAction"
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <x-heroicon-o-map class="w-4 h-4 mr-2" />
+                    Generate Sitemap
+                </button>
+            </div>
         </div>
 
         <!-- Role Management -->
@@ -85,6 +110,15 @@
                 <p class="text-xs text-yellow-800">
                     <strong>Note:</strong> Will update existing roles if they exist.
                 </p>
+            </div>
+            <div class="mt-4">
+                <button 
+                    wire:confirm="This will create/update super admin, admin, and editor roles with appropriate permissions. Existing roles will be updated."
+                    wire:click="generateRolesAction"
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-500 focus:bg-yellow-500 active:bg-yellow-900 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <x-heroicon-o-shield-check class="w-4 h-4 mr-2" />
+                    Generate Roles
+                </button>
             </div>
         </div>
 
@@ -108,6 +142,14 @@
                     <strong>Requirement:</strong> Valid Instagram API configuration.
                 </p>
             </div>
+            <div class="mt-4">
+                <button 
+                    wire:click="refreshInstagramTokenAction"
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-500 focus:bg-gray-500 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <x-heroicon-o-photo class="w-4 h-4 mr-2" />
+                    Refresh Token
+                </button>
+            </div>
         </div>
 
         <!-- Image Optimization -->
@@ -130,6 +172,15 @@
                     <strong>Requirement:</strong> ShortPixel API key configured.
                 </p>
             </div>
+            <div class="mt-4">
+                <button 
+                    wire:confirm="This will optimize images in the media folder using ShortPixel API. Make sure you have configured your API key."
+                    wire:click="shortpixelOptimizeAction"
+                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-500 focus:bg-purple-500 active:bg-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <x-heroicon-o-sparkles class="w-4 h-4 mr-2" />
+                    Optimize Images
+                </button>
+            </div>
         </div>
     </div>
 
@@ -139,7 +190,7 @@
             <div>
                 <h4 class="text-sm font-medium text-blue-800 mb-1">Usage Instructions</h4>
                 <p class="text-sm text-blue-700">
-                    Use the action buttons in the header to execute system utilities. Each action will show a notification with the result. 
+                    Use the buttons on each utility card to execute system commands. Each operation will show a notification with the result. 
                     For production environments, it's recommended to clear cache during low-traffic periods.
                 </p>
             </div>

@@ -41,7 +41,20 @@ class GenerateSitemap extends Command
             if ($key === config('cms.static_page_slug')) {
                 $routePrefix = ''; // assuming 'page_slug' is the field used for pages
             } else {
-                $routePrefix = $definition['slug'] ?? $key . '/';
+                if ($definition['has_single']) {
+                    $routePrefix = $definition['slug'] ?? $key;
+                    $routePrefix = $routePrefix.'/';
+                }
+            }
+
+            // Add archive page URL if has_archive is true
+            if (isset($definition['has_archive']) && $definition['has_archive'] === true) {
+                $archiveSlug = $definition['slug'] ?? $key;
+                foreach ($locales as $locale) {
+                    $archiveUrl = url("{$locale}/{$archiveSlug}");
+                    $this->info("Adding archive: $archiveUrl");
+                    $sitemap->add(Url::create($archiveUrl));
+                }
             }
 
             $instance = new $modelClass;

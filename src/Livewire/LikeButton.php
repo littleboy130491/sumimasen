@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace Littleboy130491\Sumimasen\Livewire;
 
 use Littleboy130491\Sumimasen\Traits\HasPageLikes;
 use Livewire\Component;
@@ -31,7 +31,7 @@ class LikeButton extends Component
         $this->variant = $variant;
 
         // Check if the model uses HasPageLikes trait
-        if (! in_array(HasPageLikes::class, class_uses_recursive($this->content))) {
+        if (!in_array(HasPageLikes::class, class_uses_recursive($this->content))) {
             throw new \Exception('Content model must use HasPageLikes trait');
         }
 

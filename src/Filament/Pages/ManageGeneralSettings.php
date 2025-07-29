@@ -2,15 +2,16 @@
 
 namespace Littleboy130491\Sumimasen\Filament\Pages;
 
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SettingsPage;
 use Littleboy130491\Sumimasen\Settings\GeneralSettings;
-use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class ManageGeneralSettings extends SettingsPage
 {
     use HasPageShield;
+
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
     protected static string $settings = GeneralSettings::class;
