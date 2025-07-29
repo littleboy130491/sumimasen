@@ -62,6 +62,13 @@ class ShortPixelOptimizeCommand extends Command
         if (!$apiKey) {
             $this->error('API Key is required. Provide via --apiKey option or set SHORTPIXEL_API_KEY in config.');
             $this->line('Get your API key from: https://shortpixel.com/');
+            $this->line('Add to your .env file: SHORTPIXEL_API_KEY=your_api_key_here');
+            return 1;
+        }
+        
+        // Validate API key format (basic check)
+        if (strlen($apiKey) < 10) {
+            $this->error('Invalid API key format. Please check your API key.');
             return 1;
         }
 
@@ -97,7 +104,19 @@ class ShortPixelOptimizeCommand extends Command
             // Scan for image files
             $files = $this->scanFolder($folderPath);
             $this->info("Found " . count($files) . " image files to process.");
+            
+            if (count($files) === 0) {
+                $this->warn("No image files found in the specified folder.");
+                return 0;
+            }
 
+            $this->line("Connecting to ShortPixel API...");
+            
+            // Test API key validity
+            if (!$this->testApiConnection($apiKey)) {
+                return 1;
+            }
+            
             // Process the files
             $this->optimizeFiles($files, $apiKey);
 
@@ -200,24 +219,52 @@ class ShortPixelOptimizeCommand extends Command
         $speed = (int) $this->option('speed');
         $chunks = array_chunk($files, $speed);
 
-        foreach ($chunks as $chunk) {
-            $this->processChunk($chunk, $apiKey, $webPath);
+        // Create progress bar
+        $progressBar = $this->output->createProgressBar(count($files));
+        $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% | %message%');
+        $progressBar->setMessage('Starting optimization...');
+        $progressBar->start();
+
+        foreach ($chunks as $chunkIndex => $chunk) {
+            $progressBar->setMessage("Processing chunk " . ($chunkIndex + 1) . " of " . count($chunks));
+            $this->processChunk($chunk, $apiKey, $webPath, $progressBar);
         }
+
+        $progressBar->setMessage('Optimization complete!');
+        $progressBar->finish();
+        $this->line(''); // New line after progress bar
     }
 
-    protected function processChunk(array $files, string $apiKey, ?string $webPath): void
+    protected function processChunk(array $files, string $apiKey, ?string $webPath, $progressBar = null): void
     {
         foreach ($files as $filePath) {
+            $fileName = basename($filePath);
+            
+            if ($progressBar) {
+                $progressBar->setMessage("Processing: {$fileName}");
+            }
+            
             try {
                 if ($webPath) {
                     $this->optimizeViaUrl($filePath, $apiKey, $webPath);
                 } else {
                     $this->optimizeViaUpload($filePath, $apiKey);
                 }
+                
+                if ($progressBar) {
+                    $progressBar->advance();
+                }
             } catch (Exception $e) {
                 $this->skippedFiles[] = $filePath;
-                if ($this->getOutput()->isVerbose()) {
-                    $this->warn("Skipped {$filePath}: " . $e->getMessage());
+                
+                if ($progressBar) {
+                    $progressBar->setMessage("Skipped: {$fileName} - " . $e->getMessage());
+                    $progressBar->advance();
+                }
+                
+                // Always show error for the first few files to help debug
+                if (count($this->skippedFiles) <= 3 || $this->getOutput()->isVerbose()) {
+                    $this->warn("Skipped {$fileName}: " . $e->getMessage());
                 }
             }
         }
@@ -270,10 +317,16 @@ class ShortPixelOptimizeCommand extends Command
     protected function handleApiResponse($response, string $filePath, int $originalSize): void
     {
         if (!$response->successful()) {
-            throw new Exception("API request failed with status: " . $response->status());
+            $errorBody = $response->body();
+            throw new Exception("API request failed with status: " . $response->status() . ". Response: " . $errorBody);
         }
 
         $data = $response->json();
+        
+        // Check if response has expected structure
+        if (!isset($data[0])) {
+            throw new Exception("Invalid API response format. Response: " . json_encode($data));
+        }
 
         if (isset($data[0]['Status']['Code']) && $data[0]['Status']['Code'] == 1) {
             $optimizedUrl = $data[0]['OptimizedURL'];
@@ -298,8 +351,9 @@ class ShortPixelOptimizeCommand extends Command
             }
 
         } else {
+            $statusCode = $data[0]['Status']['Code'] ?? 'Unknown';
             $message = $data[0]['Status']['Message'] ?? 'Unknown error';
-            throw new Exception($message);
+            throw new Exception("ShortPixel Error (Code: {$statusCode}): {$message}");
         }
     }
 
@@ -445,6 +499,54 @@ class ShortPixelOptimizeCommand extends Command
         }
         
         return false;
+    }
+
+    /**
+     * Test API connection with a simple request
+     */
+    protected function testApiConnection(string $apiKey): bool
+    {
+        try {
+            $response = Http::timeout(10)->post('https://api.shortpixel.com/v2/reducer.php', [
+                'key' => $apiKey,
+                'plugin_version' => '1.0.0',
+                'urllist' => ['https://via.placeholder.com/1x1.png'], // Tiny test image
+                'lossy' => 1,
+            ]);
+
+            if (!$response->successful()) {
+                $this->error("Failed to connect to ShortPixel API (Status: " . $response->status() . ")");
+                return false;
+            }
+
+            $data = $response->json();
+            
+            if (isset($data[0]['Status']['Code'])) {
+                $code = $data[0]['Status']['Code'];
+                $message = $data[0]['Status']['Message'] ?? '';
+                
+                if ($code == -3) {
+                    $this->error("Invalid API key. Please check your SHORTPIXEL_API_KEY.");
+                    return false;
+                } elseif ($code == -4) {
+                    $this->error("No credits left on your ShortPixel account.");
+                    return false;
+                } elseif ($code < 0) {
+                    $this->error("ShortPixel API Error (Code: {$code}): {$message}");
+                    return false;
+                }
+                
+                $this->info("✓ API connection successful!");
+                return true;
+            }
+            
+            $this->error("Unexpected API response format.");
+            return false;
+            
+        } catch (Exception $e) {
+            $this->error("Failed to connect to ShortPixel API: " . $e->getMessage());
+            return false;
+        }
     }
 
 }
