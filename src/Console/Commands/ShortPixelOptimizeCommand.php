@@ -269,7 +269,7 @@ class ShortPixelOptimizeCommand extends Command
                 $outputPath = $targetFolder ?: dirname($filePath);
                 
                 // Use ShortPixel package for optimization
-                $result = \ShortPixel\ShortPixel::fromFile($filePath)->toFiles($outputPath);
+                $result = \ShortPixel\fromFile($filePath)->wait(300)->toFiles($outputPath);
                 
                 if ($result->isSuccessful()) {
                     $this->processedFiles[] = $filePath;
@@ -351,9 +351,9 @@ class ShortPixelOptimizeCommand extends Command
         
         try {
             if ($this->option('createWebP')) {
-                $webpResult = \ShortPixel\ShortPixel::fromFile($originalPath)
+                $webpResult = \ShortPixel\fromFile($originalPath)
                     ->optimize((int) $this->option('compression'))
-                    ->generateWebP()
+                    ->wait(300)
                     ->toFiles($outputPath);
                     
                 if ($webpResult->isSuccessful() && $this->getOutput()->isVerbose()) {
@@ -362,9 +362,9 @@ class ShortPixelOptimizeCommand extends Command
             }
             
             if ($this->option('createAVIF')) {
-                $avifResult = \ShortPixel\ShortPixel::fromFile($originalPath)
+                $avifResult = \ShortPixel\fromFile($originalPath)
                     ->optimize((int) $this->option('compression'))
-                    ->generateAVIF()
+                    ->wait(300)
                     ->toFiles($outputPath);
                     
                 if ($avifResult->isSuccessful() && $this->getOutput()->isVerbose()) {
