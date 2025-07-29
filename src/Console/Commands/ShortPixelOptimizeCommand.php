@@ -126,7 +126,7 @@ class ShortPixelOptimizeCommand extends Command
      */
     protected function resolveFolderPath(string $folder): string
     {
-        if (File::isAbsolute($folder)) {
+        if ($this->isAbsolutePath($folder)) {
             return $folder;
         }
 
@@ -427,6 +427,24 @@ class ShortPixelOptimizeCommand extends Command
         $factor = floor((strlen($bytes) - 1) / 3);
         
         return sprintf("%.2f %s", $bytes / pow(1024, $factor), $units[$factor]);
+    }
+
+    /**
+     * Check if a path is absolute
+     */
+    protected function isAbsolutePath(string $path): bool
+    {
+        // Unix/Linux/Mac absolute paths start with /
+        if (str_starts_with($path, '/')) {
+            return true;
+        }
+        
+        // Windows absolute paths (C:\, D:\, etc.)
+        if (preg_match('/^[A-Za-z]:[\\\\\/]/', $path)) {
+            return true;
+        }
+        
+        return false;
     }
 
 }
