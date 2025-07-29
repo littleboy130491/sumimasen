@@ -6,6 +6,7 @@ use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Littleboy130491\Sumimasen\Filament\Pages\ManageGeneralSettings;
+use Littleboy130491\Sumimasen\Filament\Pages\SystemUtilities;
 use Littleboy130491\Sumimasen\Filament\Resources\ArchiveResource;
 use Littleboy130491\Sumimasen\Filament\Resources\CategoryResource;
 use Littleboy130491\Sumimasen\Filament\Resources\CommentResource;
@@ -98,6 +99,9 @@ class SumimasenPlugin implements Plugin
         if ($this->hasSettingsPage) {
             $pages[] = ManageGeneralSettings::class;
         }
+
+        // Always include system utilities page
+        $pages[] = SystemUtilities::class;
 
         return array_merge($pages, $this->pages);
     }

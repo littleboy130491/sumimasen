@@ -38,10 +38,10 @@ class GenerateSitemap extends Command
 
             $modelClass = $definition['model'];
             $slugField = 'slug'; // assuming 'slug' is the field used for all
-            if ($key === 'pages') {
+            if ($key === config('cms.static_page_slug')) {
                 $routePrefix = ''; // assuming 'page_slug' is the field used for pages
             } else {
-                $routePrefix = $key.'/';
+                $routePrefix = $definition['slug'] ?? $key . '/';
             }
 
             $instance = new $modelClass;

@@ -51,7 +51,7 @@ trait HasContentBlocks
 
                         TextInput::make('video_url')
                             ->label('Video URL')
-                            ->visible(fn(Get $get) => $get('type') === 'video'),
+                            ->visible(fn (Get $get) => $get('type') === 'video'),
 
                         CuratorPicker::make('fallback_image')
                             ->label('Fallback/Thumbnail Image')
@@ -62,7 +62,7 @@ trait HasContentBlocks
                             ->label('Background Image')
                             ->preserveFilenames()
                             ->acceptedFileTypes(['image/*'])
-                            ->visible(fn(Get $get) => $get('type') === 'image'),
+                            ->visible(fn (Get $get) => $get('type') === 'image'),
                     ])
                     ->defaultItems(1)
                     ->collapsible()
@@ -630,7 +630,7 @@ trait HasContentBlocks
                             ->label('Item Image')
                             ->preserveFilenames()
                             ->acceptedFileTypes(['image/*'])
-                            ->visible(fn(Get $get) => $get('../../style') === 'with_images'),
+                            ->visible(fn (Get $get) => $get('../../style') === 'with_images'),
 
                         TextInput::make('button_text')
                             ->label('Button Text'),
