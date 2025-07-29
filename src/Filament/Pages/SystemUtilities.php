@@ -16,7 +16,7 @@ class SystemUtilities extends Page
 
     protected static string $view = 'sumimasen-cms::filament.pages.system-utilities';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static ?string $navigationGroup = 'Settings';
 
     protected static ?string $title = 'System Utilities';
 
