@@ -41,7 +41,7 @@ class GenerateSitemap extends Command
             if ($key === config('cms.static_page_slug')) {
                 $routePrefix = ''; // assuming 'page_slug' is the field used for pages
             } else {
-                if ($definition['has_single']) {
+                if (isset($definition['has_single']) && $definition['has_single'] === true) {
                     $routePrefix = $definition['slug'] ?? $key;
                     $routePrefix = $routePrefix.'/';
                 }

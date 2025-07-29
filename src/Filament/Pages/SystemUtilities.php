@@ -23,8 +23,26 @@ class SystemUtilities extends Page
 
     protected static ?int $navigationSort = 99;
 
+    public bool $clearingCache = false;
+
+    public bool $optimizing = false;
+
+    public bool $generatingSitemap = false;
+
+    public bool $generatingRoles = false;
+
+    public bool $refreshingToken = false;
+
+    public bool $optimizingImages = false;
+
     public function clearAllCacheAction()
     {
+        if ($this->clearingCache) {
+            return;
+        }
+
+        $this->clearingCache = true;
+
         try {
             Artisan::call('cms:clear-all-caches');
             Notification::make()
@@ -37,11 +55,19 @@ class SystemUtilities extends Page
                 ->body($e->getMessage())
                 ->danger()
                 ->send();
+        } finally {
+            $this->clearingCache = false;
         }
     }
 
     public function optimizeApplicationAction()
     {
+        if ($this->optimizing) {
+            return;
+        }
+
+        $this->optimizing = true;
+
         try {
             Artisan::call('optimize');
             Notification::make()
@@ -54,11 +80,19 @@ class SystemUtilities extends Page
                 ->body($e->getMessage())
                 ->danger()
                 ->send();
+        } finally {
+            $this->optimizing = false;
         }
     }
 
     public function generateSitemapAction()
     {
+        if ($this->generatingSitemap) {
+            return;
+        }
+
+        $this->generatingSitemap = true;
+
         try {
             Artisan::call('sitemap:generate');
             Notification::make()
@@ -72,11 +106,19 @@ class SystemUtilities extends Page
                 ->body($e->getMessage())
                 ->danger()
                 ->send();
+        } finally {
+            $this->generatingSitemap = false;
         }
     }
 
     public function generateRolesAction()
     {
+        if ($this->generatingRoles) {
+            return;
+        }
+
+        $this->generatingRoles = true;
+
         try {
             Artisan::call('cms:generate-roles', ['--force' => true]);
             Notification::make()
@@ -90,11 +132,19 @@ class SystemUtilities extends Page
                 ->body($e->getMessage())
                 ->danger()
                 ->send();
+        } finally {
+            $this->generatingRoles = false;
         }
     }
 
     public function refreshInstagramTokenAction()
     {
+        if ($this->refreshingToken) {
+            return;
+        }
+
+        $this->refreshingToken = true;
+
         try {
             Artisan::call('instagram:refresh-token');
             Notification::make()
@@ -107,11 +157,19 @@ class SystemUtilities extends Page
                 ->body($e->getMessage())
                 ->danger()
                 ->send();
+        } finally {
+            $this->refreshingToken = false;
         }
     }
 
     public function shortpixelOptimizeAction()
     {
+        if ($this->optimizingImages) {
+            return;
+        }
+
+        $this->optimizingImages = true;
+
         try {
             Artisan::call('cms:shortpixel-optimize');
             Notification::make()
@@ -125,6 +183,8 @@ class SystemUtilities extends Page
                 ->body($e->getMessage())
                 ->danger()
                 ->send();
+        } finally {
+            $this->optimizingImages = false;
         }
     }
 }
