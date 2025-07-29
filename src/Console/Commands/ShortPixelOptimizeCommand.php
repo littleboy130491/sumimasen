@@ -17,7 +17,7 @@ use Exception;
  *   php artisan cms:shortpixel-optimize --apiKey=YOUR_API_KEY
  * 
  * Advanced Usage:
- *   php artisan cms:shortpixel-optimize --apiKey=YOUR_KEY --folder=uploads --createWebP --verbose
+ *   php artisan cms:shortpixel-optimize --apiKey=YOUR_KEY --folder=uploads --createWebP -v
  * 
  * Configuration:
  *   Set SHORTPIXEL_API_KEY in your .env file to avoid passing --apiKey each time
@@ -39,7 +39,6 @@ class ShortPixelOptimizeCommand extends Command
                             {--speed=10 : Set processing speed between 1-10}
                             {--exclude= : Comma separated list of subfolders to exclude}
                             {--recurseDepth= : How many subfolders deep to process}
-                            {--verbose : Display detailed optimization info}
                             {--clearLock : Clear existing folder lock}
                             {--retrySkipped : Retry all skipped items}';
 
@@ -217,7 +216,7 @@ class ShortPixelOptimizeCommand extends Command
                 }
             } catch (Exception $e) {
                 $this->skippedFiles[] = $filePath;
-                if ($this->option('verbose')) {
+                if ($this->getOutput()->isVerbose()) {
                     $this->warn("Skipped {$filePath}: " . $e->getMessage());
                 }
             }
@@ -229,7 +228,7 @@ class ShortPixelOptimizeCommand extends Command
         $fileSize = File::size($filePath);
         $fileName = basename($filePath);
 
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line("Processing: {$fileName} (" . $this->formatBytes($fileSize) . ")");
         }
 
@@ -252,7 +251,7 @@ class ShortPixelOptimizeCommand extends Command
         $fileUrl = rtrim($webPath, '/') . '/' . $relativePath;
         $fileName = basename($filePath);
 
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line("Processing via URL: {$fileName}");
         }
 
@@ -285,7 +284,7 @@ class ShortPixelOptimizeCommand extends Command
             $this->totalSaved += $savedBytes;
             $this->processedFiles[] = $filePath;
 
-            if ($this->option('verbose')) {
+            if ($this->getOutput()->isVerbose()) {
                 $this->info("✓ Optimized: " . basename($filePath) . " (saved {$percentSaved}% / " . $this->formatBytes($savedBytes) . ")");
             }
 
@@ -336,7 +335,7 @@ class ShortPixelOptimizeCommand extends Command
         $content = Http::get($url)->body();
         File::put($newPath, $content);
 
-        if ($this->option('verbose')) {
+        if ($this->getOutput()->isVerbose()) {
             $this->line("  ✓ Created {$format}: " . basename($newPath));
         }
     }
@@ -414,7 +413,7 @@ class ShortPixelOptimizeCommand extends Command
             $this->line("\n✅ Optimization complete! ShortPixel creates .shortpixel files to track optimization status.");
         }
         
-        if ($skippedCount > 0 && $this->option('verbose')) {
+        if ($skippedCount > 0 && $this->getOutput()->isVerbose()) {
             $this->warn("\nSkipped files:");
             foreach ($this->skippedFiles as $file) {
                 $this->line("  - " . basename($file));
