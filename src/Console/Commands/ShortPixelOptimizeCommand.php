@@ -258,8 +258,18 @@ class ShortPixelOptimizeCommand extends Command
             }
             
             try {
+                // Create backup if specified
+                $backupBase = $this->option('backupBase');
+                if ($backupBase) {
+                    $this->createBackup($filePath, $backupBase);
+                }
+                
+                // Determine target folder
+                $targetFolder = $this->option('targetFolder');
+                $outputPath = $targetFolder ?: dirname($filePath);
+                
                 // Use ShortPixel package for optimization
-                $result = \ShortPixel\ShortPixel::fromFile($filePath)->toFiles(dirname($filePath));
+                $result = \ShortPixel\ShortPixel::fromFile($filePath)->toFiles($outputPath);
                 
                 if ($result->isSuccessful()) {
                     $this->processedFiles[] = $filePath;
@@ -273,6 +283,12 @@ class ShortPixelOptimizeCommand extends Command
                             $this->info("✓ Optimized: {$fileName} (saved {$percentSaved}% / " . $this->formatBytes($savedBytes) . ")");
                         }
                     }
+                    
+                    // Handle additional format creation
+                    if ($this->option('createWebP') || $this->option('createAVIF')) {
+                        $this->createAdditionalFormats($filePath, $outputPath);
+                    }
+                    
                 } else {
                     $this->skippedFiles[] = $filePath;
                     $errorMessage = $result->hasErrors() ? $result->getErrors()[0] : 'Unknown error';
@@ -314,6 +330,52 @@ class ShortPixelOptimizeCommand extends Command
         }
 
         return implode('|', $options);
+    }
+
+    protected function createBackup(string $filePath, string $backupBase): void
+    {
+        $relativePath = str_replace(getcwd(), '', $filePath);
+        $backupPath = rtrim($backupBase, '/') . '/' . ltrim($relativePath, '/');
+        
+        File::ensureDirectoryExists(dirname($backupPath));
+        File::copy($filePath, $backupPath);
+        
+        if ($this->getOutput()->isVerbose()) {
+            $this->line("  📁 Backed up to: " . $backupPath);
+        }
+    }
+
+    protected function createAdditionalFormats(string $originalPath, string $outputPath): void
+    {
+        $pathInfo = pathinfo($originalPath);
+        
+        try {
+            if ($this->option('createWebP')) {
+                $webpResult = \ShortPixel\ShortPixel::fromFile($originalPath)
+                    ->optimize((int) $this->option('compression'))
+                    ->generateWebP()
+                    ->toFiles($outputPath);
+                    
+                if ($webpResult->isSuccessful() && $this->getOutput()->isVerbose()) {
+                    $this->line("  🖼️ Created WebP: " . $pathInfo['filename'] . '.webp');
+                }
+            }
+            
+            if ($this->option('createAVIF')) {
+                $avifResult = \ShortPixel\ShortPixel::fromFile($originalPath)
+                    ->optimize((int) $this->option('compression'))
+                    ->generateAVIF()
+                    ->toFiles($outputPath);
+                    
+                if ($avifResult->isSuccessful() && $this->getOutput()->isVerbose()) {
+                    $this->line("  🖼️ Created AVIF: " . $pathInfo['filename'] . '.avif');
+                }
+            }
+        } catch (Exception $e) {
+            if ($this->getOutput()->isVerbose()) {
+                $this->warn("  ⚠️ Additional format creation failed: " . $e->getMessage());
+            }
+        }
     }
 
     protected function checkLock(): bool
