@@ -224,10 +224,37 @@ class ShortPixelOptimizeCommand extends Command
 
         // Initialize ShortPixel
         \ShortPixel\ShortPixel::setKey($apiKey);
-        \ShortPixel\ShortPixel::setOptions([
+        
+        // Build options
+        $options = [
             'lossy' => (int) $this->option('compression'),
             'wait' => 300, // Wait up to 5 minutes for processing
-        ]);
+        ];
+        
+        // Add resize options if specified
+        if ($this->option('resize')) {
+            $resize = $this->option('resize');
+            if (strpos($resize, 'x') !== false) {
+                $parts = explode('x', $resize);
+                $options['resize'] = 1; // Enable resize
+                $options['resize_width'] = (int) $parts[0];
+                if (isset($parts[1])) {
+                    $resizeParts = explode('/', $parts[1]);
+                    $options['resize_height'] = (int) $resizeParts[0];
+                    if (isset($resizeParts[1])) {
+                        $options['resize'] = (int) $resizeParts[1]; // resize type
+                    }
+                }
+            }
+        }
+        
+        // Add format conversion options
+        $convertOptions = $this->getConvertOptions();
+        if (!empty($convertOptions)) {
+            $options['convertto'] = $convertOptions;
+        }
+        
+        \ShortPixel\ShortPixel::setOptions($options);
 
         // Create progress bar
         $progressBar = $this->output->createProgressBar(count($files));
@@ -271,15 +298,18 @@ class ShortPixelOptimizeCommand extends Command
                 // Use ShortPixel package for optimization
                 $result = \ShortPixel\fromFile($filePath)->wait(300)->toFiles($outputPath);
                 
-                if ($result->isSuccessful()) {
+                // Handle ShortPixel response structure
+                if (isset($result->succeeded) && count($result->succeeded) > 0) {
                     $this->processedFiles[] = $filePath;
+                    $data = $result->succeeded[0];
                     
-                    if (isset($result[0])) {
-                        $savedBytes = $result[0]->originalSize - $result[0]->optimizedSize;
+                    // Calculate savings if data is available
+                    if (isset($data->OriginalSize) && isset($data->LossySize)) {
+                        $savedBytes = $data->OriginalSize - $data->LossySize;
                         $this->totalSaved += $savedBytes;
                         
                         if ($this->getOutput()->isVerbose()) {
-                            $percentSaved = round(($savedBytes / $result[0]->originalSize) * 100, 2);
+                            $percentSaved = round(($savedBytes / $data->OriginalSize) * 100, 2);
                             $this->info("✓ Optimized: {$fileName} (saved {$percentSaved}% / " . $this->formatBytes($savedBytes) . ")");
                         }
                     }
@@ -289,9 +319,27 @@ class ShortPixelOptimizeCommand extends Command
                         $this->createAdditionalFormats($filePath, $outputPath);
                     }
                     
+                } elseif (isset($result->same) && count($result->same) > 0) {
+                    $this->processedFiles[] = $filePath;
+                    if ($this->getOutput()->isVerbose()) {
+                        $this->info("✓ Already optimized: {$fileName} (no further optimization possible)");
+                    }
+                    
+                } elseif (isset($result->pending) && count($result->pending) > 0) {
+                    $this->skippedFiles[] = $filePath;
+                    if (count($this->skippedFiles) <= 3 || $this->getOutput()->isVerbose()) {
+                        $this->warn("Skipped {$fileName}: Processing timeout (still pending)");
+                    }
+                    
                 } else {
                     $this->skippedFiles[] = $filePath;
-                    $errorMessage = $result->hasErrors() ? $result->getErrors()[0] : 'Unknown error';
+                    $errorMessage = 'Unknown error or processing failed';
+                    
+                    // Try to get error details from failed array
+                    if (isset($result->failed) && count($result->failed) > 0) {
+                        $errorData = $result->failed[0];
+                        $errorMessage = isset($errorData->Message) ? $errorData->Message : 'Processing failed';
+                    }
                     
                     if (count($this->skippedFiles) <= 3 || $this->getOutput()->isVerbose()) {
                         $this->warn("Skipped {$fileName}: {$errorMessage}");
@@ -347,34 +395,12 @@ class ShortPixelOptimizeCommand extends Command
 
     protected function createAdditionalFormats(string $originalPath, string $outputPath): void
     {
-        $pathInfo = pathinfo($originalPath);
+        // Note: WebP/AVIF creation is handled via convertto option in main optimization
+        // The ShortPixel package doesn't have separate generateWebP/generateAVIF methods
+        // These formats should be specified in the main optimize call via convertto option
         
-        try {
-            if ($this->option('createWebP')) {
-                $webpResult = \ShortPixel\fromFile($originalPath)
-                    ->optimize((int) $this->option('compression'))
-                    ->wait(300)
-                    ->toFiles($outputPath);
-                    
-                if ($webpResult->isSuccessful() && $this->getOutput()->isVerbose()) {
-                    $this->line("  🖼️ Created WebP: " . $pathInfo['filename'] . '.webp');
-                }
-            }
-            
-            if ($this->option('createAVIF')) {
-                $avifResult = \ShortPixel\fromFile($originalPath)
-                    ->optimize((int) $this->option('compression'))
-                    ->wait(300)
-                    ->toFiles($outputPath);
-                    
-                if ($avifResult->isSuccessful() && $this->getOutput()->isVerbose()) {
-                    $this->line("  🖼️ Created AVIF: " . $pathInfo['filename'] . '.avif');
-                }
-            }
-        } catch (Exception $e) {
-            if ($this->getOutput()->isVerbose()) {
-                $this->warn("  ⚠️ Additional format creation failed: " . $e->getMessage());
-            }
+        if ($this->getOutput()->isVerbose()) {
+            $this->line("  ℹ️ Additional formats (WebP/AVIF) are handled via convertto option during optimization");
         }
     }
 
