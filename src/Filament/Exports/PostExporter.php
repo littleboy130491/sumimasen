@@ -5,11 +5,18 @@ namespace Littleboy130491\Sumimasen\Filament\Exports;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
-use Littleboy130491\Sumimasen\Models\Category;
+use Littleboy130491\Sumimasen\Models\Post;
 
-class CategoryExporter extends Exporter
+class PostExporter extends Exporter
 {
-    protected static ?string $model = Littleboy130491\Sumimasen\Models\Category::class;
+    protected static ?string $model = null;
+
+    public static function getModel(): string
+    {
+        return static::$model ??= class_exists(\App\Models\Post::class)
+            ? \App\Models\Post::class
+            : \Littleboy130491\Sumimasen\Models\Post::class;
+    }
 
     public static function getColumns(): array
     {
