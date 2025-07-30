@@ -33,7 +33,7 @@ class StaticPageController extends BaseContentController
         }
 
         // Try fallback content model if page not found
-        if (!$item) {
+        if (! $item) {
             $fallbackResult = $this->tryFallbackContentModel($lang, $page_slug, $request, $isPreview);
             if ($fallbackResult) {
                 return $fallbackResult;

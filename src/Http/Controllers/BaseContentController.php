@@ -5,12 +5,12 @@ namespace Littleboy130491\Sumimasen\Http\Controllers;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Littleboy130491\SeoSuite\Traits\SetsSeoSuite;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 use Littleboy130491\Sumimasen\Models\Page;
-use Illuminate\Support\Facades\Route;
 
 abstract class BaseContentController extends Controller
 {
@@ -92,14 +92,14 @@ abstract class BaseContentController extends Controller
 
         $modelKey = $slugToKeyMap[$contentTypeKey] ?? null;
 
-        if (!$modelKey) {
+        if (! $modelKey) {
             abort(404, "Content type '{$contentTypeKey}' not found in configuration.");
         }
 
         $modelConfig = $keyToConfigMap[$modelKey];
         $modelClass = $modelConfig['model'];
 
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             abort(404, "Model for content type '{$contentTypeKey}' not found or not configured correctly.");
         }
 
@@ -121,7 +121,7 @@ abstract class BaseContentController extends Controller
             ->first();
 
         // Fallback to default locale if not found
-        if (!$content && $requestedLocale !== $defaultLanguage) {
+        if (! $content && $requestedLocale !== $defaultLanguage) {
             $content = $this->buildQueryWithStatusFilter($modelClass, $isPreview)
                 ->whereJsonContainsLocale('slug', $defaultLanguage, $slug)
                 ->first();
@@ -144,7 +144,7 @@ abstract class BaseContentController extends Controller
         $fallbackContentType = Config::get('cms.fallback_content_type', 'posts');
         $modelClass = Config::get("cms.content_models.{$fallbackContentType}.model");
 
-        if (!$modelClass || !class_exists($modelClass)) {
+        if (! $modelClass || ! class_exists($modelClass)) {
             return null;
         }
 
@@ -168,7 +168,7 @@ abstract class BaseContentController extends Controller
      */
     protected function hasStatusColumn(string $modelClass): bool
     {
-        if (!isset($this->statusColumnCache[$modelClass])) {
+        if (! isset($this->statusColumnCache[$modelClass])) {
             $this->statusColumnCache[$modelClass] = \Schema::hasColumn((new $modelClass)->getTable(), 'status');
         }
 
@@ -234,7 +234,7 @@ abstract class BaseContentController extends Controller
      */
     protected function getValidModelClass(string $modelClass): string
     {
-        if (!$modelClass || !class_exists($modelClass)) {
+        if (! $modelClass || ! class_exists($modelClass)) {
             return Page::class;
         }
 
@@ -247,7 +247,7 @@ abstract class BaseContentController extends Controller
     protected function incrementPageViewsIfSupported(Model $item): void
     {
         // Only increment for guests (unauthorized users)
-        if (!auth()->check() && in_array(\Littleboy130491\Sumimasen\Traits\HasPageViews::class, class_uses_recursive($item))) {
+        if (! auth()->check() && in_array(\Littleboy130491\Sumimasen\Traits\HasPageViews::class, class_uses_recursive($item))) {
             $item->incrementPageViews();
         }
     }
@@ -367,13 +367,13 @@ abstract class BaseContentController extends Controller
     {
         $templates = [];
 
-        if (!empty($item->template)) {
+        if (! empty($item->template)) {
             $templates[] = "{$this->templateBase}.{$item->template}";
         }
 
         if (method_exists($item, 'getTranslation')) {
             $defaultSlug = $item->getTranslation('slug', $this->defaultLanguage);
-            if (!empty($defaultSlug)) {
+            if (! empty($defaultSlug)) {
                 $templates[] = "{$this->templateBase}.{$defaultSlug}";
             }
         }
@@ -388,13 +388,13 @@ abstract class BaseContentController extends Controller
     {
         $templates = [];
 
-        if (!empty($taxonomyModel->template)) {
+        if (! empty($taxonomyModel->template)) {
             $templates[] = "{$this->templateBase}.archives.{$taxonomyModel->template}";
         }
 
         if (method_exists($taxonomyModel, 'getTranslation')) {
             $defaultSlug = $taxonomyModel->getTranslation('slug', $this->defaultLanguage);
-            if (!empty($defaultSlug)) {
+            if (! empty($defaultSlug)) {
                 $templates[] = "{$this->templateBase}.archives.{$defaultSlug}";
             }
         }
@@ -411,7 +411,7 @@ abstract class BaseContentController extends Controller
 
         if ($item) {
             if ($item instanceof Model) {
-                $classes[] = 'type-' . ($contentTypeKey ?? Str::kebab(Str::singular($item->getTable())));
+                $classes[] = 'type-'.($contentTypeKey ?? Str::kebab(Str::singular($item->getTable())));
 
                 $slugForClass = '';
                 if (method_exists($item, 'getTranslation')) {
@@ -421,25 +421,25 @@ abstract class BaseContentController extends Controller
                 }
 
                 if ($slugForClass) {
-                    $classes[] = 'slug-' . $slugForClass;
+                    $classes[] = 'slug-'.$slugForClass;
                 }
 
-                if (!empty($item->template)) {
-                    $classes[] = 'template-' . Str::kebab($item->template);
+                if (! empty($item->template)) {
+                    $classes[] = 'template-'.Str::kebab($item->template);
                 }
             } elseif (is_object($item)) {
                 if (isset($item->post_type)) {
-                    $classes[] = 'archive-' . $item->post_type;
+                    $classes[] = 'archive-'.$item->post_type;
                 } elseif (isset($item->taxonomy)) {
-                    $classes[] = 'taxonomy-' . $item->taxonomy;
+                    $classes[] = 'taxonomy-'.$item->taxonomy;
                     if (isset($item->taxonomy_slug)) {
-                        $classes[] = 'term-' . $item->taxonomy_slug;
+                        $classes[] = 'term-'.$item->taxonomy_slug;
                     }
                 }
             }
         } else {
             if ($contentTypeKey) {
-                $classes[] = 'page-' . $contentTypeKey;
+                $classes[] = 'page-'.$contentTypeKey;
             }
         }
 

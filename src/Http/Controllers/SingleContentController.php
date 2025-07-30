@@ -39,7 +39,7 @@ class SingleContentController extends BaseContentController
             }
         }
 
-        if (!$item) {
+        if (! $item) {
             throw (new ModelNotFoundException)->setModel(
                 $modelClass,
                 "No content found for slug '{$content_slug}'"
