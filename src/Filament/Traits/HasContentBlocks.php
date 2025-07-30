@@ -36,7 +36,7 @@ trait HasContentBlocks
                     ->label('Image')
                     ->preserveFilenames()
                     ->acceptedFileTypes(['image/*'])
-                    ->helperText('Accepted file types: image only')
+                    ->helperText('Accepted file types: image only'),
             ])
             ->columns(2);
     }
