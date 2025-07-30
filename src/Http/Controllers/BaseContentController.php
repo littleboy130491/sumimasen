@@ -303,8 +303,10 @@ abstract class BaseContentController extends Controller
         $currentRouteName = $currentRoute->getName();
         $currentParams = $currentRoute->parameters();
         $query_string = request()->query();
+
+        // update slug parameters value with $localizedSlug
         $currentParams[$slug_param] = $localizedSlug;
-        // dd($currentParams);
+
         return to_route($currentRouteName, $currentParams + $query_string, 301);
 
     }
