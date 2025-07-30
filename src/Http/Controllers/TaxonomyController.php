@@ -20,12 +20,12 @@ class TaxonomyController extends BaseContentController
 
         // Handle localized slug redirects
         if ($taxonomyModel) {
-            if ($redirect = $this->maybeRedirectToLocalizedSlug('cms.taxonomy.archive', $lang, $taxonomy_slug, $taxonomyModel, 'taxonomy_slug')) {
-                return $redirect;
+            if ($this->shouldRedirectToLocalizedSlug) {
+                return $this->redirectToLocalizedSlug($lang, $taxonomyModel, 'taxonomy_slug');
             }
         }
 
-        if (! $taxonomyModel) {
+        if (!$taxonomyModel) {
             throw (new ModelNotFoundException)->setModel(
                 $modelClass,
                 "Taxonomy not found for slug '{$taxonomy_slug}'"
@@ -49,7 +49,7 @@ class TaxonomyController extends BaseContentController
                 'taxonomy_slug' => $taxonomy_slug,
                 'record' => $taxonomyModel,
                 'title' => $taxonomyModel->title ??
-                    Str::title(str_replace('-', ' ', $taxonomy_key)).': '.
+                    Str::title(str_replace('-', ' ', $taxonomy_key)) . ': ' .
                     Str::title(str_replace('-', ' ', $taxonomy_slug)),
                 'items' => $items,
             ]
@@ -64,7 +64,7 @@ class TaxonomyController extends BaseContentController
         $originalKey = $this->getOriginalContentTypeKey($taxonomyKey);
         $relationshipName = Config::get("cms.content_models.{$originalKey}.display_content_from", 'posts');
 
-        if (! method_exists($taxonomyModel, $relationshipName)) {
+        if (!method_exists($taxonomyModel, $relationshipName)) {
             \Illuminate\Support\Facades\Log::warning("Configured relationship '{$relationshipName}' not found for taxonomy '{$taxonomyKey}'. Falling back to 'posts'.");
             $relationshipName = 'posts';
         }
@@ -73,7 +73,7 @@ class TaxonomyController extends BaseContentController
             // Get eager load relationships for the related content type
             $relatedContentEagerLoad = $this->getEagerLoadRelationships($relationshipName);
 
-            $paginationLimit = config('cms.content_models.'.$originalKey.'.per_page') ?? $this->paginationLimit;
+            $paginationLimit = config('cms.content_models.' . $originalKey . '.per_page') ?? $this->paginationLimit;
 
             return $taxonomyModel->{$relationshipName}()
                 ->with($relatedContentEagerLoad)

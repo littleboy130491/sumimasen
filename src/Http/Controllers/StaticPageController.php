@@ -4,6 +4,7 @@ namespace Littleboy130491\Sumimasen\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Littleboy130491\Sumimasen\Models\Archive;
 
 class StaticPageController extends BaseContentController
 {
@@ -25,17 +26,26 @@ class StaticPageController extends BaseContentController
 
         // Handle localized slug redirects
         if ($item) {
-            if ($redirect = $this->maybeRedirectToLocalizedSlug('cms.static.page', $lang, $page_slug, $item, 'page_slug')) {
-                return $redirect;
+            // dd($this->shouldRedirectToLocalizedSlug);
+            if ($this->shouldRedirectToLocalizedSlug) {
+                return $this->redirectToLocalizedSlug($lang, $item, 'page_slug');
             }
         }
 
         // Try fallback content model if page not found
-        if (! $item) {
+        if (!$item) {
             $fallbackResult = $this->tryFallbackContentModel($lang, $page_slug, $request, $isPreview);
             if ($fallbackResult) {
                 return $fallbackResult;
             }
+            // check archive
+            $archive = Archive::whereJsonContainsLocale('slug', $lang, $page_slug)->first();
+            // Archive::whereJsonContainsLocale('slug', $this->defaultLanguage, $page_slug)->first();
+            if ($archive) {
+                $slug = $archive->getTranslation('slug', $this->defaultLanguage, false);
+                dd($slug);
+            }
+
             abort(404, "Page not found for slug '{$page_slug}'");
         }
 
@@ -54,32 +64,6 @@ class StaticPageController extends BaseContentController
             ],
             isPreview: $isPreview
         );
-    }
-
-    /**
-     * Find static page by slug with language fallback
-     */
-    private function findStaticPageBySlug(string $slug, string $lang, bool $isPreview = false): ?Model
-    {
-        $modelClass = $this->getValidModelClass($this->staticPageClass);
-
-        // Try requested language first
-        $page = $this->buildQueryWithStatusFilter($modelClass, $isPreview)
-            ->whereJsonContainsLocale('slug', $lang, $slug)
-            ->first();
-
-        if ($page) {
-            return $page;
-        }
-
-        // Try default language as fallback
-        if ($lang !== $this->defaultLanguage) {
-            $page = $this->buildQueryWithStatusFilter($modelClass, $isPreview)
-                ->whereJsonContainsLocale('slug', $this->defaultLanguage, $slug)
-                ->first();
-        }
-
-        return $page;
     }
 
     /**

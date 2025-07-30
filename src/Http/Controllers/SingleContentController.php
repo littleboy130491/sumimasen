@@ -34,12 +34,12 @@ class SingleContentController extends BaseContentController
 
         // Handle localized slug redirects
         if ($item) {
-            if ($redirect = $this->maybeRedirectToLocalizedSlug('cms.single.content', $lang, $content_slug, $item, 'content_slug')) {
-                return $redirect;
+            if ($this->shouldRedirectToLocalizedSlug) {
+                return $this->redirectToLocalizedSlug($lang, $item, 'content_slug');
             }
         }
 
-        if (! $item) {
+        if (!$item) {
             throw (new ModelNotFoundException)->setModel(
                 $modelClass,
                 "No content found for slug '{$content_slug}'"
