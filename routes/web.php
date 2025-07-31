@@ -67,7 +67,7 @@ Route::get('/{path}', function (Illuminate\Http\Request $request, $path) {
     return redirect()->to($redirectUrl);
 })
     ->middleware(['setLocale', 'web'])
-    ->where('path', '^(?!'.implode('|', array_keys(Config::get('cms.language_available', ['en' => 'English']))).'/).*');
+    ->where('path', '^(?!' . implode('|', array_keys(Config::get('cms.language_available', ['en' => 'English']))) . '/).*');
 
 Route::prefix('{lang}')
     ->whereIn('lang', array_keys(Config::get('cms.language_available', ['en' => 'English'])))
@@ -122,37 +122,35 @@ Route::prefix('{lang}')
 
         // Regex for matching valid keys from your config.
         // preg_quote is important for special characters in keys.
-        $contentArchiveKeysRegex = ! empty($contentArchiveKeys) ? implode('|', array_map('preg_quote', $contentArchiveKeys)) : '^\b$'; // Matches nothing if empty
-        $contentSingleKeysRegex = ! empty($contentSingleKeys) ? implode('|', array_map('preg_quote', $contentSingleKeys)) : '^\b$'; // Matches nothing if empty
-        $taxonomyArchiveKeysRegex = ! empty($taxonomyArchiveKeys) ? implode('|', array_map('preg_quote', $taxonomyArchiveKeys)) : '^\b$'; // Matches nothing if empty
-
+        $contentArchiveKeysRegex = !empty($contentArchiveKeys) ? implode('|', array_map('preg_quote', $contentArchiveKeys)) : '^\b$'; // Matches nothing if empty
+        $contentSingleKeysRegex = !empty($contentSingleKeys) ? implode('|', array_map('preg_quote', $contentSingleKeys)) : '^\b$'; // Matches nothing if empty
+        $taxonomyArchiveKeysRegex = !empty($taxonomyArchiveKeys) ? implode('|', array_map('preg_quote', $taxonomyArchiveKeys)) : '^\b$'; // Matches nothing if empty
+    
         // General slug regex
         $slugRegex = '[a-zA-Z0-9-_]+';
 
         Route::get('/', HomeController::class)->name('cms.home');
 
-        // Content single route. Two segments; first must be a content type key with single views.
+        // Content single route.
         // Redirect to static page if content_type_key matches static_page_slug.
         Route::get('/{content_type_key}/{content_slug}', SingleContentController::class)
             ->where('content_type_key', $contentSingleKeysRegex)
             ->where('content_slug', $slugRegex)
             ->name('cms.single.content');
 
-        // Taxonomy archive route. Two segments; first must be a taxonomy key.
+        // Taxonomy archive route, ex: categories/news, tags/latest
         Route::get('/{taxonomy_key}/{taxonomy_slug}', TaxonomyController::class)
             ->where('taxonomy_key', $taxonomyArchiveKeysRegex)
             ->where('taxonomy_slug', $slugRegex)
             ->name('cms.taxonomy.archive');
 
-        // One segment, must be a content type key with an archive. Comes BEFORE static pages.
-        // Controller receives $content_type_archive_key.
-        Route::get('/{content_type_archive_key}', ArchiveController::class)
-            ->where('content_type_archive_key', $contentArchiveKeysRegex)
-            ->name('cms.archive.content');
-
         // Static page route.
-        // Most generic (single slug) and MUST be defined LAST.
-        Route::get('/{page_slug}', StaticPageController::class)
-            ->where('page_slug', $slugRegex)
-            ->name('cms.static.page');
+        Route::get('/{slug}', StaticPageController::class)
+            ->where('slug', $slugRegex)
+            ->name('cms.page');
+
+        // Archive content, ex: posts, projects
+        Route::get('/archive/{content_type_archive_key}', ArchiveController::class)
+            ->where('content_type_archive_key', $slugRegex)
+            ->name('cms.archive.content');
     });

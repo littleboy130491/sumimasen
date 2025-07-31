@@ -126,7 +126,7 @@ abstract class BaseContentController extends Controller
                 ->whereJsonContainsLocale('slug', $defaultLanguage, $slug)
                 ->first();
 
-            if (isset($content) && $content->slug !== $slug) {
+            if ($content && $content->slug !== $slug) {
                 // redirect to localized slug, ex: default_slug = 'about', localized = 'about-en', 'about' will be redirected to 'about-en'
                 $this->shouldRedirectToLocalizedSlug = true;
             }
