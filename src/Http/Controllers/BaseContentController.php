@@ -126,7 +126,7 @@ abstract class BaseContentController extends Controller
                 ->whereJsonContainsLocale('slug', $defaultLanguage, $slug)
                 ->first();
 
-            if ($content->slug && $content->slug !== $slug) {
+            if ($content && $content->slug !== $slug) {
                 // redirect to localized slug, ex: default_slug = 'about', localized = 'about-en', 'about' will be redirected to 'about-en'
                 $this->shouldRedirectToLocalizedSlug = true;
             }
@@ -151,7 +151,7 @@ abstract class BaseContentController extends Controller
         $item = $this->findContent($modelClass, $lang, $slug, $isPreview);
 
         if ($item) {
-            return redirect()->route('cms.single.content', array_merge([
+            return to_route('cms.single.content', array_merge([
                 'lang' => $lang,
                 'content_type_key' => $fallbackContentType,
                 'content_slug' => $slug,
@@ -307,7 +307,7 @@ abstract class BaseContentController extends Controller
         // update slug parameters value with $localizedSlug
         $currentParams[$slug_param] = $localizedSlug;
 
-        return to_route($currentRouteName, $currentParams + $query_string, 301);
+        return to_route($currentRouteName, array_merge($currentParams, $query_string), 301);
 
     }
 
@@ -447,9 +447,7 @@ abstract class BaseContentController extends Controller
         if (request()->routeIs('cms.home')) {
             $classes[] = 'home';
         }
-        if (request()->routeIs('cms.archive.content')) {
-            $classes[] = 'archive-page';
-        }
+
         if (request()->routeIs('cms.taxonomy.archive')) {
             $classes[] = 'taxonomy-archive-page';
         }

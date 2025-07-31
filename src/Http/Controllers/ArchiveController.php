@@ -7,97 +7,130 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Littleboy130491\Sumimasen\Models\Archive;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View as ViewResponse;
 
 class ArchiveController extends BaseContentController
 {
     /**
      * Display an archive page listing all content of a specific type
      */
-    public function __invoke(string $lang, string $content_type_archive_key)
+    public function __invoke(string $lang, string $slug)
     {
-        $modelClass = $this->getContentModelClass($content_type_archive_key);
-        $originalKey = $this->getOriginalContentTypeKey($content_type_archive_key);
-        $eagerLoadRelationships = $this->getEagerLoadRelationships($originalKey);
+        // Try to find archive page in database
+        $archiveModel = $this->findArchive(Archive::class, $lang, $slug);
 
-        $archive = $this->createArchiveObject($content_type_archive_key, $lang);
-        $paginationLimit = config('cms.content_models.'.$originalKey.'.per_page') ?? $this->paginationLimit;
+        // Handle localized redirects if needed
+        if ($archiveModel && $this->shouldRedirectToLocalizedSlug) {
+            return $this->redirectToLocalizedSlug($lang, $archiveModel, 'slug');
+        }
 
-        $items = $this->buildQueryWithStatusFilter($modelClass)
-            ->with($eagerLoadRelationships)
-            ->orderBy('created_at', 'desc')
-            ->paginate($paginationLimit);
+        // Determine the content type key to work with
+        $contentTypeKey = $this->determineContentTypeKey($archiveModel, $lang, $slug);
 
-        return $this->renderContentView(
-            template: $this->resolveArchiveTemplate($content_type_archive_key),
-            lang: $lang,
-            item: $archive->record,
-            contentTypeKey: $content_type_archive_key,
-            viewData: [
-                'archive' => $archive,
-                'record' => $archive->record,
-                'title' => $archive->record->title ?? $archive->title,
-                'description' => $archive->record->content ?? $archive->content,
-                'items' => $items,
-            ]
-        );
+        // Find the original config key from $contentTypeKey
+        $originalConfigKey = $this->findOriginalConfigKey($contentTypeKey);
+
+        // Create archive object for display
+        $archiveObject = $archiveModel
+            ? $this->createArchiveObjectFromModel($archiveModel, $contentTypeKey, $originalConfigKey)
+            : $this->createArchiveObject($contentTypeKey, $originalConfigKey, $lang);
+
+        // Step 6: Get content items for this archive
+        $items = $this->getArchiveItems($originalConfigKey);
+
+        // Step 7: Render the archive view
+        return $this->renderArchiveView($lang, $archiveObject, $items, $contentTypeKey);
     }
 
     /**
-     * Create an archive object for archive pages, with static page content if configured
+     * Determine content type key from archive model or slug
      */
-    private function createArchiveObject(string $contentTypeKey, string $lang): object
+    private function determineContentTypeKey(?Model $archiveModel, string $lang, string $slug): string
     {
-        $originalKey = $this->getOriginalContentTypeKey($contentTypeKey);
-        $config = Config::get("cms.content_models.{$originalKey}", []);
+        if (!$archiveModel) {
+            return $slug;
+        }
 
-        // Check if archive_page_slug is configured
-        $pageSlug = $config['archive_page_slug'] ?? null;
+        // Get slug from default language if we have a model
+        if ($lang !== $this->defaultLanguage && method_exists($archiveModel, 'getTranslation')) {
+            return $archiveModel->getTranslation('slug', $this->defaultLanguage, false) ?: $archiveModel->slug;
+        }
 
-        if ($pageSlug) {
-            $archive = $this->findArchiveBySlug($pageSlug);
-            if ($archive) {
-                return $this->createArchiveObjectFromArchive($archive, $contentTypeKey, $config);
+        return $archiveModel->slug;
+    }
+
+    /**
+     * Find the original config key by checking content_models configuration
+     * First check if any config has a 'slug' that matches, otherwise use the key itself
+     */
+    private function findOriginalConfigKey(string $contentTypeKey): string
+    {
+        $contentModels = Config::get('cms.content_models', []);
+
+        // First, check if any config has a 'slug' that matches our contentTypeKey
+        foreach ($contentModels as $configKey => $config) {
+            if (isset($config['slug']) && $config['slug'] === $contentTypeKey) {
+                return $configKey;
             }
         }
 
-        // Try to find archive by originalKey if pageSlug didn't work
-        $archive = $this->findArchiveBySlug($originalKey);
-        if ($archive) {
-            return $this->createArchiveObjectFromArchive($archive, $contentTypeKey, $config);
+        // If no config with matching 'slug' found, check if the key itself exists in config
+        if (isset($contentModels[$contentTypeKey])) {
+            return $contentTypeKey;
         }
 
-        // Fallback to default archive object
-        return $this->createDefaultArchiveObject($contentTypeKey, $config);
+        // Fallback: return the contentTypeKey as-is
+        return $contentTypeKey;
     }
 
     /**
-     * Find archive by slug with language fallback
+     * Get paginated items for the archive based on config
      */
-    private function findArchiveBySlug(string $slug): ?Archive
+    private function getArchiveItems(string $originalConfigKey)
     {
-        // Try requested language first
-        $archive = Archive::whereJsonContainsLocale('slug', $this->defaultLanguage, $slug)->first();
+        $config = Config::get("cms.content_models.{$originalConfigKey}", []);
 
-        if ($archive) {
-            return $archive;
-        }
-
-        return null;
+        // For regular content types
+        return $this->getContentItems($originalConfigKey, $config);
     }
 
     /**
-     * Create archive object from Archive model
+     * Get items for regular content archives
      */
-    private function createArchiveObjectFromArchive(Archive $archive, string $contentTypeKey, array $config): object
+    private function getContentItems(string $originalConfigKey, array $config)
     {
-        // set SEO from CMS
+        $modelClass = $config['model'] ?? null;
+        if (!$modelClass) {
+            return collect();
+        }
+
+        $paginationLimit = $config['per_page'] ?? $this->paginationLimit;
+        $eagerLoadRelationships = $config['eager_load'] ?? [];
+
+        return $this->buildQueryWithStatusFilter($modelClass)
+            ->with($eagerLoadRelationships)
+            ->orderBy('created_at', 'desc')
+            ->paginate($paginationLimit);
+    }
+
+    /**
+     * Create archive object from existing Archive model
+     */
+    private function createArchiveObjectFromModel(Archive $archive, string $contentTypeKey, string $originalConfigKey): object
+    {
+        $config = Config::get("cms.content_models.{$originalConfigKey}", []);
+
+        // Set SEO from CMS if method exists
         if (method_exists($this, 'setsSeo')) {
             $this->setsSeo($archive);
         }
 
         return (object) [
-            'record' => $archive, // the full archive object
+            'record' => $archive,
             'post_type' => $contentTypeKey,
+            'original_key' => $originalConfigKey,
             'source' => 'archive',
             'config' => $config,
             'per_page' => $config['per_page'] ?? $this->paginationLimit,
@@ -105,20 +138,57 @@ class ArchiveController extends BaseContentController
     }
 
     /**
+     * Create archive object when no Archive model exists - purely from config
+     */
+    private function createArchiveObject(string $contentTypeKey, string $originalConfigKey, string $lang): object
+    {
+        $config = Config::get("cms.content_models.{$originalConfigKey}", []);
+
+        // Check if this config has archive enabled
+        if (!($config['has_archive'] ?? false)) {
+            abort(404);
+        }
+
+        // Validate the requested slug against config
+        $this->validateArchiveSlug($contentTypeKey, $originalConfigKey, $config);
+
+        // Create default archive object from config
+        return $this->createDefaultArchiveObject($contentTypeKey, $originalConfigKey, $config);
+    }
+
+    /**
+     * Validate if the requested slug is allowed based on config
+     */
+    private function validateArchiveSlug(string $contentTypeKey, string $originalConfigKey, array $config): void
+    {
+        // If config has a specific 'slug' defined, only that slug is allowed
+        if (isset($config['slug'])) {
+            if ($contentTypeKey !== $config['slug']) {
+                abort(404); // Wrong slug - should be using the configured slug
+            }
+        } else {
+            // If no specific slug in config, only the config key itself is allowed
+            if ($contentTypeKey !== $originalConfigKey) {
+                abort(404); // Wrong slug - should be using the config key
+            }
+        }
+    }
+
+
+    /**
      * Create default archive object when no static page is found
      */
-    private function createDefaultArchiveObject(string $contentTypeKey, array $config): object
+    private function createDefaultArchiveObject(string $contentTypeKey, string $originalConfigKey, array $config): object
     {
         $name = $config['name'] ?? Str::title(str_replace('-', ' ', $contentTypeKey));
-
-        // set SEO manually
         $title = $config['archive_SEO_title'] ?? "Archive: {$name}";
         $description = $config['archive_SEO_description'] ?? "Archive of all {$name}";
 
+        // Set SEO manually
         SEOTools::setTitle($title);
         SEOTools::setDescription($description);
 
-        // Create a mock record object or set record to null explicitly
+        // Create a mock record object
         $mockRecord = (object) [
             'title' => $title,
             'content' => $description,
@@ -130,6 +200,7 @@ class ArchiveController extends BaseContentController
             'title' => $title,
             'content' => $description,
             'post_type' => $contentTypeKey,
+            'original_key' => $originalConfigKey,
             'source' => 'config',
             'config' => $config,
             'per_page' => $config['per_page'] ?? $this->paginationLimit,
@@ -137,26 +208,92 @@ class ArchiveController extends BaseContentController
     }
 
     /**
-     * Resolve template for archive pages with config-based custom views
+     * Render the archive view with all data
      */
-    private function resolveArchiveTemplate(string $content_type_archive_key): string
+    private function renderArchiveView(string $lang, object $archiveObject, $items, string $contentTypeKey): ViewResponse
     {
-        $originalKey = $this->getOriginalContentTypeKey($content_type_archive_key);
-        $configView = Config::get("cms.content_models.{$originalKey}.archive_view");
+        $template = $this->resolveArchiveTemplate($contentTypeKey, $archiveObject->original_key);
 
+        return $this->renderContentView(
+            template: $template,
+            lang: $lang,
+            item: $archiveObject->record,
+            contentTypeKey: $contentTypeKey,
+            viewData: [
+                'archive' => $archiveObject,
+                'record' => $archiveObject->record,
+                'title' => $this->getArchiveTitle($archiveObject),
+                'description' => $this->getArchiveDescription($archiveObject),
+                'items' => $items,
+            ]
+        );
+    }
+
+    /**
+     * Get archive title with fallbacks
+     */
+    private function getArchiveTitle(object $archiveObject): string
+    {
+        return $archiveObject->record->title
+            ?? $archiveObject->title
+            ?? '';
+    }
+
+    /**
+     * Get archive description with fallbacks
+     */
+    private function getArchiveDescription(object $archiveObject): string
+    {
+        return $archiveObject->record->content
+            ?? $archiveObject->content
+            ?? '';
+    }
+
+    /**
+     * Resolve template for archive pages
+     */
+    private function resolveArchiveTemplate(string $contentTypeKey, string $originalConfigKey): string
+    {
+        $configView = Config::get("cms.content_models.{$originalConfigKey}.archive_view");
+
+        // Check for configured custom view first
         if ($configView && View::exists($configView)) {
             return $configView;
         }
 
+        // Template fallback hierarchy
         $templates = [
-            "{$this->templateBase}.archives.archive-{$content_type_archive_key}",
-            "{$this->templateBase}.archives.archive-{$originalKey}",
-            "{$this->templateBase}.archive-{$content_type_archive_key}",
-            "{$this->templateBase}.archive-{$originalKey}",
+            "{$this->templateBase}.archives.archive-{$contentTypeKey}",
+            "{$this->templateBase}.archives.archive-{$originalConfigKey}",
+            "{$this->templateBase}.archive-{$contentTypeKey}",
+            "{$this->templateBase}.archive-{$originalConfigKey}",
             "{$this->templateBase}.archives.archive",
             "{$this->templateBase}.archive",
         ];
 
         return $this->findFirstExistingTemplate($templates);
+    }
+
+    /**
+     * Find archive with language fallback and redirect logic
+     */
+    protected function findArchive(string $modelClass, string $requestedLocale, string $slug, bool $isPreview = false): ?Model
+    {
+        $defaultLanguage = $this->defaultLanguage;
+
+        // Try the requested locale first
+        $content = $modelClass::whereJsonContainsLocale('slug', $requestedLocale, $slug)->first();
+
+        // Fallback to default locale if not found
+        if (!$content && $requestedLocale !== $defaultLanguage) {
+            $content = $modelClass::whereJsonContainsLocale('slug', $defaultLanguage, $slug)->first();
+
+            // Set redirect flag if localized slug differs from requested slug
+            if ($content && $content->slug !== $slug) {
+                $this->shouldRedirectToLocalizedSlug = true;
+            }
+        }
+
+        return $content;
     }
 }
