@@ -3,13 +3,12 @@
 namespace Littleboy130491\Sumimasen\Http\Controllers;
 
 use Artesaos\SEOTools\Facades\SEOTools;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
-use Littleboy130491\Sumimasen\Models\Archive;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View as ViewResponse;
+use Littleboy130491\Sumimasen\Models\Archive;
 
 class ArchiveController extends BaseContentController
 {
@@ -49,7 +48,7 @@ class ArchiveController extends BaseContentController
      */
     private function determineContentTypeKey(?Model $archiveModel, string $lang, string $slug): string
     {
-        if (!$archiveModel) {
+        if (! $archiveModel) {
             return $slug;
         }
 
@@ -102,7 +101,7 @@ class ArchiveController extends BaseContentController
     private function getContentItems(string $originalConfigKey, array $config)
     {
         $modelClass = $config['model'] ?? null;
-        if (!$modelClass) {
+        if (! $modelClass) {
             return collect();
         }
 
@@ -145,7 +144,7 @@ class ArchiveController extends BaseContentController
         $config = Config::get("cms.content_models.{$originalConfigKey}", []);
 
         // Check if this config has archive enabled
-        if (!($config['has_archive'] ?? false)) {
+        if (! ($config['has_archive'] ?? false)) {
             abort(404);
         }
 
@@ -173,7 +172,6 @@ class ArchiveController extends BaseContentController
             }
         }
     }
-
 
     /**
      * Create default archive object when no static page is found
@@ -285,7 +283,7 @@ class ArchiveController extends BaseContentController
         $content = $modelClass::whereJsonContainsLocale('slug', $requestedLocale, $slug)->first();
 
         // Fallback to default locale if not found
-        if (!$content && $requestedLocale !== $defaultLanguage) {
+        if (! $content && $requestedLocale !== $defaultLanguage) {
             $content = $modelClass::whereJsonContainsLocale('slug', $defaultLanguage, $slug)->first();
 
             // Set redirect flag if localized slug differs from requested slug
