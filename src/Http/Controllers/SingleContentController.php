@@ -21,10 +21,12 @@ class SingleContentController extends BaseContentController
         // Get the original content type key from the slug (handles custom slug overrides)
         $originalContentTypeKey = $this->getOriginalContentTypeKey($content_type_key);
 
+        $static_page_slug = Config::get('cms.static_page_slug') ?? 'pages';
+
         // Redirect to static page route if this is a static page
-        if ($originalContentTypeKey === 'pages' || $content_type_key === Config::get('cms.static_page_slug')) {
-            return redirect()->route('cms.static.page', array_merge(
-                ['lang' => $lang, 'page_slug' => $content_slug],
+        if ($originalContentTypeKey === $static_page_slug || $content_type_key === $static_page_slug) {
+            return redirect()->route('cms.page', array_merge(
+                ['lang' => $lang, 'slug' => $content_slug],
                 $request->query()
             ));
         }
@@ -32,11 +34,9 @@ class SingleContentController extends BaseContentController
         $modelClass = $this->getContentModelClass($content_type_key);
         $item = $this->findContent($modelClass, $lang, $content_slug, $isPreview);
 
-        // Handle localized slug redirects
-        if ($item) {
-            if ($this->shouldRedirectToLocalizedSlug) {
-                return $this->redirectToLocalizedSlug($lang, $item, 'content_slug');
-            }
+        // Handle localized slug redirects if needed
+        if ($item && $this->shouldRedirectToLocalizedSlug) {
+            return $this->redirectToLocalizedSlug($lang, $item, 'content_slug');
         }
 
         if (!$item) {

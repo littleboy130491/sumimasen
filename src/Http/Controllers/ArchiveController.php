@@ -7,20 +7,55 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Littleboy130491\Sumimasen\Models\Archive;
+use Illuminate\Database\Eloquent\Model;
 
 class ArchiveController extends BaseContentController
 {
     /**
      * Display an archive page listing all content of a specific type
      */
-    public function __invoke(string $lang, string $content_type_archive_key)
+    public function __invoke(string $lang, string $slug)
     {
-        $modelClass = $this->getContentModelClass($content_type_archive_key);
-        $originalKey = $this->getOriginalContentTypeKey($content_type_archive_key);
+
+        $modelClass = \Littleboy130491\Sumimasen\Models\Archive::class;
+        $archive = $this->findArchive($modelClass, $lang, $slug);
+
+        // Handle localized slug redirects if needed
+        if ($archive) {
+            if ($this->shouldRedirectToLocalizedSlug) {
+                return $this->redirectToLocalizedSlug($lang, $archive, 'slug');
+            }
+
+            if ($lang !== $this->defaultLanguage) {
+                $archive_slug = $archive->getTranslation('slug', $this->defaultLanguage, false);
+            } else
+                $archive_slug = $archive->slug;
+
+        }
+
+        $contentTypeKey = $archive_slug ?? $slug;
+
+        // Try fallback content model if page not found
+        if (!$archive) {
+            $originalKey = $this->getOriginalContentTypeKey($slug);
+            $archive = $this->createArchiveObject($slug, $lang);
+        }
+
+        $originalKey = $this->getOriginalContentTypeKey($contentTypeKey);
+        $paginationLimit = config('cms.content_models.' . $originalKey . '.per_page') ?? $this->paginationLimit;
+        $eagerLoadRelationships = $this->getEagerLoadRelationships($originalKey);
+
+        $items = $this->buildQueryWithStatusFilter($modelClass)
+            ->with($eagerLoadRelationships)
+            ->orderBy('created_at', 'desc')
+            ->paginate($paginationLimit);
+
+        $modelClass = $this->getContentModelClass($slug);
+        $originalKey = $this->getOriginalContentTypeKey($slug);
         $eagerLoadRelationships = $this->getEagerLoadRelationships($originalKey);
 
         $archive = $this->createArchiveObject($content_type_archive_key, $lang);
-        $paginationLimit = config('cms.content_models.'.$originalKey.'.per_page') ?? $this->paginationLimit;
+        $paginationLimit = config('cms.content_models.' . $originalKey . '.per_page') ?? $this->paginationLimit;
 
         $items = $this->buildQueryWithStatusFilter($modelClass)
             ->with($eagerLoadRelationships)
@@ -159,4 +194,29 @@ class ArchiveController extends BaseContentController
 
         return $this->findFirstExistingTemplate($templates);
     }
+
+    protected function findArchive(string $modelClass, string $requestedLocale, string $slug, bool $isPreview = false): ?Model
+    {
+
+        $defaultLanguage = $this->defaultLanguage;
+
+        // Try the requested locale first
+        $content = $modelClass::whereJsonContainsLocale('slug', $requestedLocale, $slug)
+            ->first();
+
+        // Fallback to default locale if not found
+        if (!$content && $requestedLocale !== $defaultLanguage) {
+            $content = $modelClass::whereJsonContainsLocale('slug', $defaultLanguage, $slug)
+                ->first();
+
+            if (isset($content) && $content->slug !== $slug) {
+                // redirect to localized slug, ex: default_slug = 'about', localized = 'about-en', 'about' will be redirected to 'about-en'
+                $this->shouldRedirectToLocalizedSlug = true;
+            }
+
+        }
+
+        return $content;
+    }
+
 }

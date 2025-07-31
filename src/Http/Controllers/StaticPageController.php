@@ -24,12 +24,9 @@ class StaticPageController extends BaseContentController
         $modelClass = $this->getValidModelClass($this->staticPageClass);
         $item = $this->findContent($modelClass, $lang, $page_slug, $isPreview);
 
-        // Handle localized slug redirects
-        if ($item) {
-            // dd($this->shouldRedirectToLocalizedSlug);
-            if ($this->shouldRedirectToLocalizedSlug) {
-                return $this->redirectToLocalizedSlug($lang, $item, 'page_slug');
-            }
+        // Handle localized slug redirects if needed
+        if ($item && $this->shouldRedirectToLocalizedSlug) {
+            return $this->redirectToLocalizedSlug($lang, $item, 'slug');
         }
 
         // Try fallback content model if page not found
@@ -38,13 +35,9 @@ class StaticPageController extends BaseContentController
             if ($fallbackResult) {
                 return $fallbackResult;
             }
+
             // check archive
-            $archive = Archive::whereJsonContainsLocale('slug', $lang, $page_slug)->first();
-            // Archive::whereJsonContainsLocale('slug', $this->defaultLanguage, $page_slug)->first();
-            if ($archive) {
-                $slug = $archive->getTranslation('slug', $this->defaultLanguage, false);
-                dd($slug);
-            }
+            return app(ArchiveController::class)($lang, $page_slug);
 
             abort(404, "Page not found for slug '{$page_slug}'");
         }
