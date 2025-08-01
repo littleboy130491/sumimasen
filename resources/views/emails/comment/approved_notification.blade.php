@@ -1,25 +1,29 @@
 @component('mail::message')
-# Your Comment Has Been Approved
+# {{ __('sumimasen-cms::emails.approval_notification_subject') }}
 
-Hello {{ $commentAuthorName }},
+{{ __('sumimasen-cms::emails.approval_notification_greeting', ['name' => $commentAuthorName]) }}
 
-Great news! Your comment on "{{ $commentableTitle }}" has been approved and is now visible to other visitors.
+{{ __('sumimasen-cms::emails.approval_notification_body_line1', ['commentable_title' => $commentableTitle]) }}
 
-## Your Comment:
+## {{ __('sumimasen-cms::emails.approval_notification_your_comment') }}
 @component('mail::panel')
-    {{ $commentContent }}
+{{ $commentContent }}
 @endcomponent
 
-You can view your comment and any replies by visiting the post:
+{{ __('sumimasen-cms::emails.approval_notification_view_comment_text') }}
 
+@if($commentableUrl !== '#')
 @component('mail::button', ['url' => $commentableUrl])
-    View Your Comment
+{{ __('sumimasen-cms::emails.approval_notification_view_comment_button') }}
 @endcomponent
+@else
+{{ __('sumimasen-cms::emails.approval_notification_view_comment_text') }}
+@endif
 
-**Approved on:** {{ $approvedDate }}
+**{{ __('sumimasen-cms::emails.approval_notification_approved_on', ['approved_date' => $approvedDate]) }}**
 
-Thank you for contributing to our community discussion!
+{{ __('sumimasen-cms::emails.approval_notification_thanks_message') }}
 
-Thanks,<br>
+{{ __('sumimasen-cms::emails.thanks') }}<br>
 {{ config('app.name') }}
 @endcomponent

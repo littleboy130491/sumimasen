@@ -10,8 +10,8 @@ return [
     'thanks' => 'Thanks,',
 
     'reply_notification_subject' => 'Hi :name,',
-    'reply_notification_body_line1' => '** :reply_author_name ** has replied to your comment on **":commentable_title"**.',
-    'reply_notification_reply_details' => '**Their reply (posted on :reply_date GMT+7):**',
+    'reply_notification_body_line1' => ':reply_author_name has replied to your comment on ":commentable_title".',
+    'reply_notification_reply_details' => 'Their reply (posted on :reply_date GMT+7):',
     'reply_notification_view_conversation_button' => 'View the conversation',
     'reply_notification_view_conversation_text' => 'You can view this conversation on the website.',
 
@@ -23,4 +23,14 @@ return [
     'new_comment_content' => 'Content:',
     'new_comment_view_button' => 'View Comment in Admin',
     'new_comment_view_text' => 'You can view this comment in the admin panel.',
+    
+    // Comment approval notification
+    'approval_notification_subject' => 'Your Comment Has Been Approved',
+    'approval_notification_greeting' => 'Hello :name,',
+    'approval_notification_body_line1' => 'Great news! Your comment on ":commentable_title" has been approved and is now visible to other visitors.',
+    'approval_notification_your_comment' => 'Your Comment:',
+    'approval_notification_view_comment_text' => 'You can view your comment and any replies by visiting the post:',
+    'approval_notification_view_comment_button' => 'View Your Comment',
+    'approval_notification_approved_on' => 'Approved on: :approved_date',
+    'approval_notification_thanks_message' => 'Thank you for contributing to our community discussion!',
 ];

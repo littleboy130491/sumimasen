@@ -5,7 +5,6 @@ namespace Littleboy130491\Sumimasen\Observers;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Queue;
 use Littleboy130491\Sumimasen\Enums\CommentStatus;
 use Littleboy130491\Sumimasen\Mail\CommentApprovedNotification;
 use Littleboy130491\Sumimasen\Mail\CommentReplyNotification;
