@@ -30,7 +30,7 @@ class StaticPageController extends BaseContentController
         }
 
         // Try fallback content model if page not found
-        if (! $item) {
+        if (!$item) {
             $fallbackResult = $this->tryFallbackContentModel($lang, $page_slug, $request, $isPreview);
             if ($fallbackResult) {
                 return $fallbackResult;
@@ -39,7 +39,7 @@ class StaticPageController extends BaseContentController
             // check archive
             return app(ArchiveController::class)($lang, $page_slug);
 
-            abort(404, "Page not found for slug '{$page_slug}'");
+            // abort(404, "Page not found for slug '{$page_slug}'");
         }
 
         $this->incrementPageViewsIfSupported($item);
