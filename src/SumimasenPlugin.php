@@ -7,6 +7,7 @@ use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Littleboy130491\Sumimasen\Filament\Pages\ManageGeneralSettings;
 use Littleboy130491\Sumimasen\Filament\Pages\SystemUtilities;
+use Littleboy130491\Sumimasen\Filament\Resources\ActivityLogResource;
 use Littleboy130491\Sumimasen\Filament\Resources\ArchiveResource;
 use Littleboy130491\Sumimasen\Filament\Resources\CategoryResource;
 use Littleboy130491\Sumimasen\Filament\Resources\CommentResource;
@@ -37,6 +38,7 @@ class SumimasenPlugin implements Plugin
     public function register(Panel $panel): void
     {
         $defaultResources = [
+            'activity-log' => ActivityLogResource::class,
             'archive' => ArchiveResource::class,
             'category' => CategoryResource::class,
             'comment' => CommentResource::class,

@@ -9,11 +9,14 @@ use Illuminate\Database\Migrations\MigrationCreator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Illuminate\Auth\Events\Login;
 use Littleboy130491\Sumimasen\Listeners\SendAdminLoginNotification;
 use Littleboy130491\Sumimasen\Models\Comment;
+use Littleboy130491\Sumimasen\Observers\ActivityLogObserver;
 use Littleboy130491\Sumimasen\Observers\CommentObserver;
+use Littleboy130491\Sumimasen\Services\ActivityLogger;
 use SolutionForest\FilamentTranslateField\Facades\FilamentTranslateField;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -30,6 +33,9 @@ class SumimasenServiceProvider extends PackageServiceProvider
         $this->app->singleton(MigrationCreator::class, function ($app) {
             return new MigrationCreator($app['files'], null);
         });
+
+        // Register ActivityLogger service
+        $this->app->singleton(ActivityLogger::class);
     }
 
     public function packageBooted(): void
@@ -41,6 +47,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
         $this->bootBladeComponents();
         $this->bootScheduledTasks();
         $this->bootPolicies();
+        $this->bootActivityLogging();
 
         $this->app->booted(function () {
             // Boot Livewire components after everything else
@@ -140,6 +147,24 @@ class SumimasenServiceProvider extends PackageServiceProvider
     private function bootObservers(): void
     {
         Comment::observe(CommentObserver::class);
+        
+        // Register activity logging observer for all CMS models
+        $models = [
+            \Littleboy130491\Sumimasen\Models\Archive::class,
+            \Littleboy130491\Sumimasen\Models\Category::class,
+            \Littleboy130491\Sumimasen\Models\Comment::class,
+            \Littleboy130491\Sumimasen\Models\Component::class,
+            \Littleboy130491\Sumimasen\Models\Page::class,
+            \Littleboy130491\Sumimasen\Models\Post::class,
+            \Littleboy130491\Sumimasen\Models\Submission::class,
+            \Littleboy130491\Sumimasen\Models\Tag::class,
+        ];
+
+        foreach ($models as $model) {
+            if (class_exists($model)) {
+                $model::observe(ActivityLogObserver::class);
+            }
+        }
     }
 
     private function bootEventListeners(): void
@@ -333,5 +358,16 @@ class SumimasenServiceProvider extends PackageServiceProvider
             );
         }
 
+    }
+
+    private function bootActivityLogging(): void
+    {
+        // Configure custom log channel for activity logs
+        config(['logging.channels.activity' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/activity.log'),
+            'level' => 'info',
+            'days' => 30,
+        ]]);
     }
 }
