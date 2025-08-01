@@ -4,8 +4,7 @@ namespace Littleboy130491\Sumimasen\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
-// Added
-use Illuminate\Support\Facades\Schema; // Added
+use Illuminate\Support\Facades\Schema;
 use Littleboy130491\Sumimasen\Enums\ContentStatus;
 
 class PublishScheduledContent extends Command

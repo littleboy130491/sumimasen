@@ -231,7 +231,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
                 $schedule = $this->app->make(\Illuminate\Console\Scheduling\Schedule::class);
 
                 // Publish scheduled content every 30 minutes
-                $schedule->command('cms:publish-scheduled-content')
+                $schedule->command('cms:publish-scheduled')
                     ->everyThirtyMinutes()
                     ->withoutOverlapping();
 
