@@ -31,12 +31,6 @@ class SendAdminLoginNotification implements ShouldQueue
             // $adminEmail = config('cms.site_email'); // Uses the email from config/cms.php
             $adminUser = User::first();
 
-            if (!$adminUser) {
-                $this->error('No users found in the database to send a test notification for.');
-
-                return 1;
-            }
-
             $adminEmail = $adminUser->email;
 
             if ($adminEmail) {
