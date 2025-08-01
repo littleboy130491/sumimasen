@@ -35,7 +35,7 @@ class ActivityLogger
             $logData['subject_id'] = $subject->id ?? null;
         }
 
-        if (!empty($data)) {
+        if (! empty($data)) {
             $logData['additional_data'] = $data;
         }
 
@@ -77,65 +77,65 @@ class ActivityLogger
     protected function getDeviceType(): string
     {
         $userAgent = request()->userAgent();
-        
+
         if (preg_match('/mobile|android|iphone|ipad/i', $userAgent)) {
             return 'mobile';
         }
-        
+
         if (preg_match('/tablet|ipad/i', $userAgent)) {
             return 'tablet';
         }
-        
+
         return 'desktop';
     }
 
     protected function getPlatform(): string
     {
         $userAgent = request()->userAgent();
-        
+
         if (preg_match('/windows/i', $userAgent)) {
             return 'Windows';
         }
-        
+
         if (preg_match('/macintosh|mac os x/i', $userAgent)) {
             return 'macOS';
         }
-        
+
         if (preg_match('/linux/i', $userAgent)) {
             return 'Linux';
         }
-        
+
         if (preg_match('/android/i', $userAgent)) {
             return 'Android';
         }
-        
+
         if (preg_match('/iphone|ipad|ipod/i', $userAgent)) {
             return 'iOS';
         }
-        
+
         return 'Unknown';
     }
 
     protected function getBrowser(): string
     {
         $userAgent = request()->userAgent();
-        
+
         if (preg_match('/chrome/i', $userAgent)) {
             return 'Chrome';
         }
-        
+
         if (preg_match('/firefox/i', $userAgent)) {
             return 'Firefox';
         }
-        
+
         if (preg_match('/safari/i', $userAgent)) {
             return 'Safari';
         }
-        
+
         if (preg_match('/edge/i', $userAgent)) {
             return 'Edge';
         }
-        
+
         return 'Unknown';
     }
 }

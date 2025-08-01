@@ -25,7 +25,7 @@ return [
     'new_comment_content' => 'Konten:',
     'new_comment_view_button' => 'Lihat Komentar di Admin',
     'new_comment_view_text' => 'Anda dapat melihat komentar ini di panel admin.',
-    
+
     // Comment approval notification
     'approval_notification_subject' => 'Komentar Anda Telah Disetujui',
     'approval_notification_greeting' => 'Halo :name,',

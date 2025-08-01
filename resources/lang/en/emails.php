@@ -25,7 +25,7 @@ return [
     'new_comment_content' => 'Content:',
     'new_comment_view_button' => 'View Comment in Admin',
     'new_comment_view_text' => 'You can view this comment in the admin panel.',
-    
+
     // Comment approval notification
     'approval_notification_subject' => 'Your Comment Has Been Approved',
     'approval_notification_greeting' => 'Hello :name,',

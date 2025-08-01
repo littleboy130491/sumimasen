@@ -163,7 +163,7 @@ class CommentObserver
      */
     private function sendReplyNotification(Comment $comment): void
     {
-        if (!$comment->parent_id) {
+        if (! $comment->parent_id) {
             return;
         }
 
@@ -171,7 +171,7 @@ class CommentObserver
             // Load parent comment with eager loading to avoid N+1
             $parentComment = $comment->parent()->with('commentable')->first();
 
-            if (!$parentComment) {
+            if (! $parentComment) {
                 Log::warning('Parent comment not found for reply', [
                     'reply_id' => $comment->id,
                     'parent_id' => $comment->parent_id,
@@ -266,7 +266,7 @@ class CommentObserver
         try {
             $commentable = $comment->commentable;
 
-            if (!$commentable) {
+            if (! $commentable) {
                 return null;
             }
 
@@ -305,7 +305,7 @@ class CommentObserver
         // Find matching content type
         foreach ($contentModels as $key => $details) {
             if (isset($details['model']) && $details['model'] === $commentableClass) {
-                if (!isset($commentable->slug)) {
+                if (! isset($commentable->slug)) {
                     Log::warning('Commentable model has no slug property', [
                         'class' => $commentableClass,
                         'id' => $commentable->id ?? 'unknown',
@@ -342,7 +342,7 @@ class CommentObserver
     {
         try {
             // Only clear cache if ResponseCache is available
-            if (!class_exists(ResponseCache::class)) {
+            if (! class_exists(ResponseCache::class)) {
                 return;
             }
 
@@ -356,8 +356,8 @@ class CommentObserver
                     $languages = array_keys(config('cms.language_available', []));
                     foreach ($languages as $lang) {
                         $localizedUrl = str_replace(
-                            '/' . app()->getLocale() . '/',
-                            '/' . $lang . '/',
+                            '/'.app()->getLocale().'/',
+                            '/'.$lang.'/',
                             $url
                         );
                         ResponseCache::forget($localizedUrl);

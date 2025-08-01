@@ -55,10 +55,10 @@ class SubmissionExporter extends Exporter
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your Submission export has completed and ' . number_format($export->successful_rows) . ' ' . Str::plural('row', $export->successful_rows) . ' exported.';
+        $body = 'Your Submission export has completed and '.number_format($export->successful_rows).' '.Str::plural('row', $export->successful_rows).' exported.';
 
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . Str::plural('row', $failedRowsCount) . ' failed to export.';
+            $body .= ' '.number_format($failedRowsCount).' '.Str::plural('row', $failedRowsCount).' failed to export.';
         }
 
         return $body;

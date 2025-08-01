@@ -16,7 +16,9 @@ class AdminLoggedInNotification extends Mailable implements ShouldQueue
     use HasViewFallback, Queueable, SerializesModels;
 
     public User $user;
+
     public string $ipAddress;
+
     public string $siteUrl;
 
     /**
@@ -35,7 +37,7 @@ class AdminLoggedInNotification extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Admin User Logged In: ' . $this->user->name,
+            subject: 'Admin User Logged In: '.$this->user->name,
         );
     }
 

@@ -3,6 +3,7 @@
 namespace Littleboy130491\Sumimasen;
 
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Database\Migrations\MigrationCreator;
@@ -11,7 +12,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
-use Illuminate\Auth\Events\Login;
 use Littleboy130491\Sumimasen\Listeners\SendAdminLoginNotification;
 use Littleboy130491\Sumimasen\Models\Comment;
 use Littleboy130491\Sumimasen\Observers\ActivityLogObserver;
@@ -147,7 +147,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
     private function bootObservers(): void
     {
         Comment::observe(CommentObserver::class);
-        
+
         // Register activity logging observer for all CMS models
         $models = [
             \Littleboy130491\Sumimasen\Models\Archive::class,
@@ -177,7 +177,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
         $debugConfig = config('cms.debug_mode');
 
         // Only boot if debug mode is enabled and environment is allowed
-        if (!$debugConfig['enabled'] || !in_array(app()->environment(), $debugConfig['environments'])) {
+        if (! $debugConfig['enabled'] || ! in_array(app()->environment(), $debugConfig['environments'])) {
             return;
         }
 
@@ -223,28 +223,28 @@ class SumimasenServiceProvider extends PackageServiceProvider
 
     private function bootLivewireComponents(): void
     {
-        if (!class_exists(\Livewire\Livewire::class)) {
+        if (! class_exists(\Livewire\Livewire::class)) {
             return;
         }
 
         // Auto-register all Livewire components under this namespace
         $baseNamespace = 'Littleboy130491\\Sumimasen\\Livewire';
-        $basePath = __DIR__ . '/Livewire';
+        $basePath = __DIR__.'/Livewire';
 
-        if (!is_dir($basePath)) {
+        if (! is_dir($basePath)) {
             return;
         }
 
         foreach (scandir($basePath) as $file) {
-            if (in_array($file, ['.', '..']) || !str_ends_with($file, '.php')) {
+            if (in_array($file, ['.', '..']) || ! str_ends_with($file, '.php')) {
                 continue;
             }
 
-            $class = $baseNamespace . '\\' . pathinfo($file, PATHINFO_FILENAME);
+            $class = $baseNamespace.'\\'.pathinfo($file, PATHINFO_FILENAME);
 
             if (class_exists($class)) {
                 // Add package prefix to avoid conflicts
-                $alias = static::$name . '.' . \Illuminate\Support\Str::kebab(class_basename($class));
+                $alias = static::$name.'.'.\Illuminate\Support\Str::kebab(class_basename($class));
                 \Livewire\Livewire::component($alias, $class);
             }
         }
@@ -252,7 +252,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
 
     private function bootBladeComponents(): void
     {
-        Blade::anonymousComponentPath(__DIR__ . '/resources/views/components', static::$name);
+        Blade::anonymousComponentPath(__DIR__.'/resources/views/components', static::$name);
         // Register class-based components in this namespace
         Blade::componentNamespace('Littleboy130491\\Sumimasen\\View\\Components', static::$name);
     }

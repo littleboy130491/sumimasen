@@ -24,9 +24,9 @@ class PostExporter extends Exporter
             ExportColumn::make('author.name')
                 ->label('Author'),
             ExportColumn::make('status')
-                ->formatStateUsing(fn($state) => $state?->value ?? $state),
+                ->formatStateUsing(fn ($state) => $state?->value ?? $state),
             ExportColumn::make('featured')
-                ->formatStateUsing(fn($state) => $state ? 'Yes' : 'No'),
+                ->formatStateUsing(fn ($state) => $state ? 'Yes' : 'No'),
             ExportColumn::make('menu_order'),
             ExportColumn::make('published_at'),
             ExportColumn::make('created_at'),
@@ -41,8 +41,8 @@ class PostExporter extends Exporter
         foreach ($translatableFields as $field) {
             foreach ($languages as $langCode => $langName) {
                 $columns[] = ExportColumn::make("{$field}_{$langCode}")
-                    ->label(ucfirst($field) . " ({$langName})")
-                    ->formatStateUsing(fn($record) => $record->getTranslation($field, $langCode));
+                    ->label(ucfirst($field)." ({$langName})")
+                    ->formatStateUsing(fn ($record) => $record->getTranslation($field, $langCode));
             }
         }
 
@@ -56,10 +56,10 @@ class PostExporter extends Exporter
             // Relationships
             ExportColumn::make('categories.title')
                 ->label('Categories')
-                ->formatStateUsing(fn($record) => $record->categories->pluck('title')->join(', ')),
+                ->formatStateUsing(fn ($record) => $record->categories->pluck('title')->join(', ')),
             ExportColumn::make('tags.title')
                 ->label('Tags')
-                ->formatStateUsing(fn($record) => $record->tags->pluck('title')->join(', ')),
+                ->formatStateUsing(fn ($record) => $record->tags->pluck('title')->join(', ')),
 
             // Custom fields as JSON
             ExportColumn::make('custom_fields')
@@ -71,13 +71,13 @@ class PostExporter extends Exporter
                 ->getStateUsing(function ($record) {
                     $galleryIds = $record->gallery;
 
-                    if (!$galleryIds || !is_array($galleryIds)) {
+                    if (! $galleryIds || ! is_array($galleryIds)) {
                         return '';
                     }
 
                     $urls = \Awcodes\Curator\Models\Media::whereIn('id', $galleryIds)
                         ->get()
-                        ->map(fn($media) => $media->url)
+                        ->map(fn ($media) => $media->url)
                         ->filter()
                         ->toArray();
 
@@ -90,10 +90,10 @@ class PostExporter extends Exporter
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your post export has completed and ' . number_format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';
+        $body = 'Your post export has completed and '.number_format($export->successful_rows).' '.str('row')->plural($export->successful_rows).' exported.';
 
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to export.';
+            $body .= ' '.number_format($failedRowsCount).' '.str('row')->plural($failedRowsCount).' failed to export.';
         }
 
         return $body;

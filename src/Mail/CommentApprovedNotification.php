@@ -31,9 +31,9 @@ class CommentApprovedNotification extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your comment has been approved on "' . (
+            subject: 'Your comment has been approved on "'.(
                 optional($this->comment->commentable)->title ?? 'a post'
-            ) . '"',
+            ).'"',
         );
     }
 
@@ -64,9 +64,9 @@ class CommentApprovedNotification extends Mailable implements ShouldQueue
                         'lang' => app()->getLocale(),
                         'content_type_key' => $contentTypeKey,
                         'content_slug' => $commentable->slug,
-                    ]) . '#comment-' . $this->comment->id;
+                    ]).'#comment-'.$this->comment->id;
                 } catch (\Exception $e) {
-                    \Log::warning('Failed to generate commentable URL via route: ' . $e->getMessage());
+                    \Log::warning('Failed to generate commentable URL via route: '.$e->getMessage());
                 }
             }
         }
