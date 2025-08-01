@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
+use Illuminate\Auth\Events\Login;
+use Littleboy130491\Sumimasen\Listeners\SendAdminLoginNotification;
 use Littleboy130491\Sumimasen\Models\Comment;
 use Littleboy130491\Sumimasen\Observers\CommentObserver;
 use SolutionForest\FilamentTranslateField\Facades\FilamentTranslateField;
@@ -34,6 +36,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
     {
         $this->bootMultilanguageSupport();
         $this->bootObservers();
+        $this->bootEventListeners();
         $this->bootDebugMode();
         $this->bootBladeComponents();
         $this->bootScheduledTasks();
@@ -137,6 +140,11 @@ class SumimasenServiceProvider extends PackageServiceProvider
     private function bootObservers(): void
     {
         Comment::observe(CommentObserver::class);
+    }
+
+    private function bootEventListeners(): void
+    {
+        Event::listen(Login::class, SendAdminLoginNotification::class);
     }
 
     private function bootDebugMode(): void
