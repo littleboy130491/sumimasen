@@ -9,10 +9,18 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 use Littleboy130491\Sumimasen\Filament\Resources\ActivityLogResource\Pages;
+use Littleboy130491\Sumimasen\Models\ActivityLog;
 
 class ActivityLogResource extends Resource
 {
     protected static ?string $model = null;
+
+    public static function getModel(): string
+    {
+        return static::$model ??= class_exists(\App\Models\ActivityLog::class)
+            ? \App\Models\ActivityLog::class
+            : \Littleboy130491\Sumimasen\Models\ActivityLog::class;
+    }
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
