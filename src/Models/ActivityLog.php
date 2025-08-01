@@ -2,12 +2,13 @@
 
 namespace Littleboy130491\Sumimasen\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
+use Sushi\Sushi;
 
 class ActivityLog extends Model
 {
+    use Sushi;
+
     protected $fillable = [
         'timestamp',
         'activity',
@@ -29,22 +30,12 @@ class ActivityLog extends Model
         'timestamp' => 'datetime',
     ];
 
-    public function newQuery(): Builder
-    {
-        return parent::newQuery()->whereRaw('1=0'); // Always return empty query
-    }
-
-    public static function all($columns = ['*']): Collection
-    {
-        return static::getRows();
-    }
-
-    public static function getRows(): Collection
+    public function getRows(): array
     {
         $logPath = storage_path('logs/activity.log');
         
         if (!file_exists($logPath)) {
-            return collect();
+            return [];
         }
 
         $logContent = file_get_contents($logPath);
@@ -59,31 +50,19 @@ class ActivityLog extends Model
                     $message = $matches[2];
                     $context = json_decode($matches[3], true) ?: [];
 
-                    $attributes = array_merge([
+                    return array_merge([
                         'id' => md5($line),
                         'timestamp' => $timestamp,
                         'activity' => $message,
                         'raw_line' => $line,
                     ], $context);
-
-                    return new static($attributes);
                 }
 
                 return null;
             })
             ->filter()
             ->reverse()
-            ->values();
-    }
-
-    // Disable database operations
-    public function save(array $options = [])
-    {
-        return true;
-    }
-
-    public function delete()
-    {
-        return true;
+            ->values()
+            ->toArray();
     }
 }
