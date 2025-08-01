@@ -16,13 +16,17 @@ class AdminLoggedInNotification extends Mailable implements ShouldQueue
     use HasViewFallback, Queueable, SerializesModels;
 
     public User $user;
+    public string $ipAddress;
+    public string $siteUrl;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user)
+    public function __construct(User $user, string $ipAddress = '', string $siteUrl = '')
     {
         $this->user = $user;
+        $this->ipAddress = $ipAddress ?: request()->ip();
+        $this->siteUrl = $siteUrl ?: config('app.url');
     }
 
     /**
@@ -46,6 +50,8 @@ class AdminLoggedInNotification extends Mailable implements ShouldQueue
                 'userName' => $this->user->name,
                 'userEmail' => $this->user->email,
                 'loginTime' => now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                'ipAddress' => $this->ipAddress,
+                'siteUrl' => $this->siteUrl,
             ],
         );
     }

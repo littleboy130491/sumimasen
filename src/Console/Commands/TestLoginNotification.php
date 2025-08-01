@@ -45,7 +45,11 @@ class TestLoginNotification extends Command
         }
 
         try {
-            Mail::to($recipientEmail)->send(new AdminLoggedInNotification($testUser));
+            // Test with sample IP address and site URL
+            $testIpAddress = '127.0.0.1';
+            $testSiteUrl = config('app.url', 'http://localhost');
+            
+            Mail::to($recipientEmail)->send(new AdminLoggedInNotification($testUser, $testIpAddress, $testSiteUrl));
             $this->info("Test login notification sent to {$recipientEmail} for user: {$testUser->email}");
         } catch (\Exception $e) {
             $this->error('Failed to send test notification: ' . $e->getMessage());

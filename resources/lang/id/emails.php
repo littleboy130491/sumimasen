@@ -7,6 +7,8 @@ return [
     'admin_loggedin_name' => 'Nama:',
     'admin_loggedin_email' => 'Email:',
     'admin_loggedin_login_time' => 'Waktu Masuk:',
+    'admin_loggedin_ip_address' => 'Alamat IP:',
+    'admin_loggedin_site_url' => 'URL Situs:',
     'thanks' => 'Terima kasih,',
 
     'reply_notification_subject' => 'Hai :name,',

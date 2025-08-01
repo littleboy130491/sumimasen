@@ -7,6 +7,8 @@ return [
     'admin_loggedin_name' => 'Name:',
     'admin_loggedin_email' => 'Email:',
     'admin_loggedin_login_time' => 'Login Time:',
+    'admin_loggedin_ip_address' => 'IP Address:',
+    'admin_loggedin_site_url' => 'Site URL:',
     'thanks' => 'Thanks,',
 
     'reply_notification_subject' => 'Hi :name,',

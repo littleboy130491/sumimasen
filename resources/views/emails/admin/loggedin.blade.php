@@ -7,6 +7,8 @@
 - **{{ __('sumimasen-cms::emails.admin_loggedin_name') }}** {{ $userName }}
 - **{{ __('sumimasen-cms::emails.admin_loggedin_email') }}** {{ $userEmail }}
 - **{{ __('sumimasen-cms::emails.admin_loggedin_login_time') }}** {{ $loginTime }} GMT+7
+- **{{ __('sumimasen-cms::emails.admin_loggedin_ip_address') }}** {{ $ipAddress }}
+- **{{ __('sumimasen-cms::emails.admin_loggedin_site_url') }}** {{ $siteUrl }}
 
 {{ __('sumimasen-cms::emails.thanks') }}<br>
 {{ config('app.name') }}
