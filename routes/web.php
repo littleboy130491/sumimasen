@@ -3,7 +3,6 @@
 use Filament\Http\Middleware\Authenticate;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
-use Littleboy130491\Sumimasen\Http\Controllers\ArchiveController;
 use Littleboy130491\Sumimasen\Http\Controllers\HomeController;
 use Littleboy130491\Sumimasen\Http\Controllers\PreviewEmailController;
 use Littleboy130491\Sumimasen\Http\Controllers\SingleContentController;

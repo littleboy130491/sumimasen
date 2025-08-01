@@ -28,7 +28,16 @@ class SendAdminLoginNotification implements ShouldQueue
     {
         // Check if the login guard is 'filament' and the user is an instance of App\Models\User
         if ($event->guard === 'filament' && $event->user instanceof User) {
-            $adminEmail = config('cms.site_email'); // Uses the email from config/cms.php
+            // $adminEmail = config('cms.site_email'); // Uses the email from config/cms.php
+            $adminUser = User::first();
+
+            if (!$adminUser) {
+                $this->error('No users found in the database to send a test notification for.');
+
+                return 1;
+            }
+
+            $adminEmail = $adminUser->email;
 
             if ($adminEmail) {
                 Mail::to($adminEmail)->send(new AdminLoggedInNotification($event->user));
