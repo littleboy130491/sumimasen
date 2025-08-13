@@ -64,7 +64,7 @@ abstract class BaseEditRecord extends EditRecord
 
         // For static pages, use the static page route
         if ($type === 'content' && $configKey === config('cms.static_page_slug')) {
-            $url = route('cms.static.page', [app()->getLocale(), $slug]);
+            $url = route('cms.page', [app()->getLocale(), $slug]);
         }
 
         // Append preview=true if content has status and is not published
