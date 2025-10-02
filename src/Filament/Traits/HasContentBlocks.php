@@ -213,7 +213,7 @@ trait HasContentBlocks
             static::getVideoBlock(),
             static::getHotspotBlock(),
         ];
-        
+
         // Allow app to add custom blocks
         // To add custom blocks, create a service provider in your main app and listen for the RegisteringContentBlocks event
         if (class_exists('\App\Providers\ContentBlocksServiceProvider')) {
@@ -223,7 +223,7 @@ trait HasContentBlocks
                 $blocks = array_merge($blocks, $customBlocks);
             }
         }
-        
+
         return $blocks;
     }
 }
