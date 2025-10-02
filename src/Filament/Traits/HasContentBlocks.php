@@ -201,8 +201,8 @@ trait HasContentBlocks
 
     protected static function getContentBlocks(): array
     {
-        return [
-            // Only keep the specified blocks
+        $blocks = [
+            // Default blocks
             static::getSectionWithImageBlock(),
             static::getImageWithTextBlock(),
             static::getSimpleBlock(),
@@ -213,5 +213,15 @@ trait HasContentBlocks
             static::getVideoBlock(),
             static::getHotspotBlock(),
         ];
+        
+        // Allow app to add custom blocks
+        // To add custom blocks, create a file in your main app (e.g., app/Filament/Traits/HasContentBlocks.php)
+        // that extends this trait and implements the registerCustomContentBlocks() method
+        if (method_exists(static::class, 'registerCustomContentBlocks')) {
+            $customBlocks = static::registerCustomContentBlocks();
+            $blocks = array_merge($blocks, $customBlocks);
+        }
+        
+        return $blocks;
     }
 }
