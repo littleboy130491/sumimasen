@@ -41,6 +41,12 @@ class SyncCuratorMedia extends Command
 
         // IMPORT new files
         foreach ($files as $path) {
+            // Skip files that start with a dot (hidden files)
+            if (basename($path)[0] === '.') {
+                $this->line("[Skipped] {$path} (hidden file)");
+                continue;
+            }
+            
             if (Media::where('disk', $disk)->where('path', $path)->exists()) {
                 continue;
             }
