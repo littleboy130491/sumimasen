@@ -215,11 +215,13 @@ trait HasContentBlocks
         ];
         
         // Allow app to add custom blocks
-        // To add custom blocks, create a file in your main app (e.g., app/Filament/Traits/HasContentBlocks.php)
-        // that extends this trait and implements the registerCustomContentBlocks() method
-        if (method_exists(static::class, 'registerCustomContentBlocks')) {
-            $customBlocks = static::registerCustomContentBlocks();
-            $blocks = array_merge($blocks, $customBlocks);
+        // To add custom blocks, create a service provider in your main app and listen for the RegisteringContentBlocks event
+        if (class_exists('\App\Providers\ContentBlocksServiceProvider')) {
+            $provider = app('\App\Providers\ContentBlocksServiceProvider');
+            if (method_exists($provider, 'registerCustomContentBlocks')) {
+                $customBlocks = $provider->registerCustomContentBlocks();
+                $blocks = array_merge($blocks, $customBlocks);
+            }
         }
         
         return $blocks;

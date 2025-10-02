@@ -613,6 +613,150 @@ CMS_DEBUG_MODE_ENABLED=true
 APP_DEBUG=true
 ```
 
+# Extending Content Blocks in Your Main App
+
+This guide explains how to extend the content blocks from the sumimasen package in your main Laravel application without modifying the trait in your resources.
+
+## Step 1: Create a Content Blocks Service Provider
+
+Create a new service provider in your main app at `app/Providers/ContentBlocksServiceProvider.php`:
+
+```bash
+php artisan make:provider ContentBlocksServiceProvider
+```
+
+Then edit the file to add your custom content blocks:
+
+```php
+<?php
+
+namespace App\Providers;
+
+use Awcodes\Curator\Components\Forms\CuratorPicker;
+use Filament\Forms\Components\Builder as FormsBuilder;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use FilamentTiptapEditor\TiptapEditor;
+use Illuminate\Support\ServiceProvider;
+
+class ContentBlocksServiceProvider extends ServiceProvider
+{
+    /**
+     * Register services.
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap services.
+     */
+    public function boot(): void
+    {
+        //
+    }
+    
+    /**
+     * Register custom content blocks
+     * This method is called by the HasContentBlocks trait to add custom blocks
+     */
+    public function registerCustomContentBlocks(): array
+    {
+        return [
+            $this->getCustomTestimonialBlock(),
+            $this->getCustomPricingBlock(),
+            // Add more custom blocks here
+        ];
+    }
+    
+    /**
+     * Example: Custom Testimonial Block
+     */
+    private function getCustomTestimonialBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('testimonial')
+            ->label('Testimonial')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->helperText('Identifier for the block')
+                    ->columnSpanFull(),
+                TextInput::make('customer_name')
+                    ->label('Customer Name')
+                    ->required(),
+                TextInput::make('customer_title')
+                    ->label('Customer Title'),
+                TiptapEditor::make('testimonial')
+                    ->label('Testimonial Content')
+                    ->profile('simple')
+                    ->columnSpanFull(),
+                CuratorPicker::make('customer_image')
+                    ->label('Customer Image')
+                    ->acceptedFileTypes(['image/*'])
+                    ->preserveFilenames(),
+                TextInput::make('rating')
+                    ->label('Rating')
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(5)
+                    ->default(5),
+            ])
+            ->columns(2);
+    }
+    
+    /**
+     * Example: Custom Pricing Block
+     */
+    private function getCustomPricingBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('pricing')
+            ->label('Pricing Table')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->helperText('Identifier for the block')
+                    ->columnSpanFull(),
+                TextInput::make('title')
+                    ->label('Section Title')
+                    ->required(),
+                TiptapEditor::make('description')
+                    ->label('Section Description')
+                    ->profile('simple')
+                    ->columnSpanFull(),
+                // You can add repeaters for pricing plans here
+                TextInput::make('currency')
+                    ->label('Currency Symbol')
+                    ->default('$'),
+            ])
+            ->columns(2);
+    }
+}
+```
+
+## Step 2: Register the Service Provider
+
+In Laravel 11+, service providers are automatically registered in `bootstrap/providers.php` when you run the `make:provider` command. If you're using an older version or need to manually register it, add your service provider to the `providers` array in `config/app.php`:
+
+```php
+'providers' => [
+    // ... other providers
+    App\Providers\ContentBlocksServiceProvider::class,
+],
+```
+
+For Laravel 11+, your provider should already be registered in `bootstrap/providers.php`:
+
+```php
+<?php
+
+return [
+    // ... other providers
+    App\Providers\ContentBlocksServiceProvider::class,
+];
+```
+
+
 ## Contributing
 
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details on how to contribute to this project.
