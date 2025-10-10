@@ -232,7 +232,15 @@ trait HasContentBlocks
             static::getHotspotBlock(),
         ];
 
-        // Merge custom blocks from main application
-        return array_merge($blocks, static::$customBlocks);
+        // Merge custom blocks registered via registerContentBlocks()
+        $blocks = array_merge($blocks, static::$customBlocks);
+
+        // Automatically load custom blocks from ContentBlocksServiceProvider if it exists
+        if (class_exists('\App\Providers\ContentBlocksServiceProvider')) {
+            $customBlocks = \App\Providers\ContentBlocksServiceProvider::getCustomBlocks();
+            $blocks = array_merge($blocks, $customBlocks);
+        }
+
+        return $blocks;
     }
 }
