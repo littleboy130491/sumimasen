@@ -615,146 +615,95 @@ APP_DEBUG=true
 
 # Extending Content Blocks in Your Main App
 
-This guide explains how to extend the content blocks from the sumimasen package in your main Laravel application without modifying the trait in your resources.
+## Step 1: Create a Content Blocks Class
 
-## Step 1: Create a Content Blocks Service Provider
-
-Create a new service provider in your main app at `app/Providers/ContentBlocksServiceProvider.php`:
-
-```bash
-php artisan make:provider ContentBlocksServiceProvider
-```
-
+Create a CustomContentBlocks class in your main app at `app/Support/CustomContentBlocks.php`.
 Then edit the file to add your custom content blocks:
 
 ```php
 <?php
 
-namespace App\Providers;
+namespace App\Support;
 
-use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Filament\Forms\Components\Builder as FormsBuilder;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use FilamentTiptapEditor\TiptapEditor;
-use Illuminate\Support\ServiceProvider;
+use Filament\Forms\Components\Textarea;
+use Awcodes\Curator\Components\Forms\CuratorPicker;
 
-class ContentBlocksServiceProvider extends ServiceProvider
+class CustomContentBlocks
 {
     /**
-     * Register services.
+     * Get all custom blocks to be added to resources using HasContentBlocks trait
      */
-    public function register(): void
-    {
-        //
-    }
-
-    /**
-     * Bootstrap services.
-     */
-    public function boot(): void
-    {
-        //
-    }
-    
-    /**
-     * Register custom content blocks
-     * This method is called by the HasContentBlocks trait to add custom blocks
-     */
-    public function registerCustomContentBlocks(): array
+    public static function getCustomBlocks(): array
     {
         return [
-            $this->getCustomTestimonialBlock(),
-            $this->getCustomPricingBlock(),
+            static::getCustomBlock(),
+            static::getAnotherCustomBlock(),
+            static::getTestimonialBlock(),
             // Add more custom blocks here
         ];
     }
-    
-    /**
-     * Example: Custom Testimonial Block
-     */
-    private function getCustomTestimonialBlock(): FormsBuilder\Block
+
+    private static function getCustomBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('custom')
+            ->label('Custom Block')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->helperText('Identifier for the block')
+                    ->columnSpanFull(),
+                TextInput::make('custom_field')
+                    ->label('Custom Field'),
+                Textarea::make('custom_description')
+                    ->label('Custom Description')
+                    ->columnSpanFull(),
+            ])
+            ->columns(2);
+    }
+
+    private static function getAnotherCustomBlock(): FormsBuilder\Block
+    {
+        return FormsBuilder\Block::make('another_custom')
+            ->label('Another Custom Block')
+            ->schema([
+                TextInput::make('block_id')
+                    ->label('Block ID')
+                    ->columnSpanFull(),
+                TextInput::make('another_field')
+                    ->label('Another Field'),
+                TextInput::make('extra_field')
+                    ->label('Extra Field'),
+            ])
+            ->columns(2);
+    }
+
+    private static function getTestimonialBlock(): FormsBuilder\Block
     {
         return FormsBuilder\Block::make('testimonial')
             ->label('Testimonial')
             ->schema([
                 TextInput::make('block_id')
                     ->label('Block ID')
-                    ->helperText('Identifier for the block')
                     ->columnSpanFull(),
-                TextInput::make('customer_name')
-                    ->label('Customer Name')
-                    ->required(),
-                TextInput::make('customer_title')
-                    ->label('Customer Title'),
-                TiptapEditor::make('testimonial')
-                    ->label('Testimonial Content')
-                    ->profile('simple')
+                TextInput::make('author_name')
+                    ->label('Author Name'),
+                TextInput::make('author_title')
+                    ->label('Author Title'),
+                Textarea::make('quote')
+                    ->label('Testimonial Quote')
                     ->columnSpanFull(),
-                CuratorPicker::make('customer_image')
-                    ->label('Customer Image')
+                CuratorPicker::make('author_image')
+                    ->label('Author Photo')
                     ->acceptedFileTypes(['image/*'])
                     ->preserveFilenames(),
-                TextInput::make('rating')
-                    ->label('Rating')
-                    ->numeric()
-                    ->minValue(1)
-                    ->maxValue(5)
-                    ->default(5),
-            ])
-            ->columns(2);
-    }
-    
-    /**
-     * Example: Custom Pricing Block
-     */
-    private function getCustomPricingBlock(): FormsBuilder\Block
-    {
-        return FormsBuilder\Block::make('pricing')
-            ->label('Pricing Table')
-            ->schema([
-                TextInput::make('block_id')
-                    ->label('Block ID')
-                    ->helperText('Identifier for the block')
-                    ->columnSpanFull(),
-                TextInput::make('title')
-                    ->label('Section Title')
-                    ->required(),
-                TiptapEditor::make('description')
-                    ->label('Section Description')
-                    ->profile('simple')
-                    ->columnSpanFull(),
-                // You can add repeaters for pricing plans here
-                TextInput::make('currency')
-                    ->label('Currency Symbol')
-                    ->default('$'),
             ])
             ->columns(2);
     }
 }
 ```
 
-## Step 2: Register the Service Provider
-
-In Laravel 11+, service providers are automatically registered in `bootstrap/providers.php` when you run the `make:provider` command. If you're using an older version or need to manually register it, add your service provider to the `providers` array in `config/app.php`:
-
-```php
-'providers' => [
-    // ... other providers
-    App\Providers\ContentBlocksServiceProvider::class,
-],
-```
-
-For Laravel 11+, your provider should already be registered in `bootstrap/providers.php`:
-
-```php
-<?php
-
-return [
-    // ... other providers
-    App\Providers\ContentBlocksServiceProvider::class,
-];
-```
 
 
 ## Contributing

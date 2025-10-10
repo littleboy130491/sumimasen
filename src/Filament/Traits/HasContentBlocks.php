@@ -214,9 +214,9 @@ trait HasContentBlocks
             static::getHotspotBlock(),
         ];
 
-        // Automatically load custom blocks from ContentBlocksServiceProvider if it exists
-        if (class_exists('\App\Providers\ContentBlocksServiceProvider')) {
-            $customBlocks = \App\Providers\ContentBlocksServiceProvider::getCustomBlocks();
+        // Automatically load custom blocks from CustomContentBlocks (main app) if it exists
+        if (class_exists('\App\Support\CustomContentBlocks')) {
+            $customBlocks = \App\Support\CustomContentBlocks::getCustomBlocks();
             $blocks = array_merge($blocks, $customBlocks);
         }
 
