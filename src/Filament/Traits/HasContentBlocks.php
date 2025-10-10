@@ -10,6 +10,24 @@ use FilamentTiptapEditor\TiptapEditor;
 
 trait HasContentBlocks
 {
+    protected static array $customBlocks = [];
+
+    /**
+     * Register custom blocks from your application
+     */
+    public static function registerContentBlocks(array $blocks): void
+    {
+        static::$customBlocks = array_merge(static::$customBlocks, $blocks);
+    }
+
+    /**
+     * Override this method in your application to add custom blocks
+     */
+    protected static function getCustomContentBlocks(): array
+    {
+        return [];
+    }
+
     private static function getCompleteBlock(): FormsBuilder\Block
     {
         return FormsBuilder\Block::make('complete')
@@ -213,17 +231,8 @@ trait HasContentBlocks
             static::getVideoBlock(),
             static::getHotspotBlock(),
         ];
-        
-        // Allow app to add custom blocks
-        // To add custom blocks, create a service provider in your main app and listen for the RegisteringContentBlocks event
-        if (class_exists('\App\Providers\ContentBlocksServiceProvider')) {
-            $provider = app('\App\Providers\ContentBlocksServiceProvider');
-            if (method_exists($provider, 'registerCustomContentBlocks')) {
-                $customBlocks = $provider->registerCustomContentBlocks();
-                $blocks = array_merge($blocks, $customBlocks);
-            }
-        }
-        
-        return $blocks;
+
+        // Merge custom blocks from main application
+        return array_merge($blocks, static::$customBlocks);
     }
 }
