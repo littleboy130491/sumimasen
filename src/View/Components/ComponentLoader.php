@@ -12,7 +12,7 @@ use Littleboy130491\Sumimasen\Models\Component as ComponentModel;
  * using the provided name, and passes the data to another Blade component for rendering.
  *
  * Typical usage:
- * <x-component-loader name="slide" />
+ * <x-sumimasen-cms::component-loader name="slide" />
  *
  * This will:
  * - Query the 'components' table for a record with name 'slide'
