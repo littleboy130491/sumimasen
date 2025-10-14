@@ -6,6 +6,7 @@ use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Filament\Forms\Components\Builder as FormsBuilder;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use FilamentTiptapEditor\TiptapEditor;
 
 trait HasContentBlocks
@@ -37,6 +38,9 @@ trait HasContentBlocks
                     ->preserveFilenames()
                     ->acceptedFileTypes(['image/*'])
                     ->helperText('Accepted file types: image only'),
+                Toggle::make('hide')
+                    ->label('Hide Block')
+                    ->helperText('Hide this block from display'),
             ])
             ->columns(2);
     }
@@ -56,6 +60,9 @@ trait HasContentBlocks
                     ->label('Text Content')
                     ->profile('simple')
                     ->columnSpanFull(),
+                Toggle::make('hide')
+                    ->label('Hide Block')
+                    ->helperText('Hide this block from display'),
             ])
             ->columns(2);
     }
@@ -76,6 +83,9 @@ trait HasContentBlocks
                 CuratorPicker::make('image')
                     ->acceptedFileTypes(['image/*'])
                     ->preserveFilenames(),
+                Toggle::make('hide')
+                    ->label('Hide Block')
+                    ->helperText('Hide this block from display'),
             ])
             ->columns(2);
     }
@@ -95,6 +105,9 @@ trait HasContentBlocks
                     ->columnSpanFull(),
                 TextInput::make('url'),
                 TextInput::make('button_label'),
+                Toggle::make('hide')
+                    ->label('Hide Block')
+                    ->helperText('Hide this block from display'),
             ])
             ->columns(2);
     }
@@ -112,6 +125,9 @@ trait HasContentBlocks
                 TextInput::make('subtitle'),
                 Textarea::make('description')
                     ->columnSpanFull(),
+                Toggle::make('hide')
+                    ->label('Hide Block')
+                    ->helperText('Hide this block from display'),
             ])
             ->columns(2);
     }
@@ -131,6 +147,9 @@ trait HasContentBlocks
                 TextInput::make('suffix'),
                 Textarea::make('description')
                     ->columnSpanFull(),
+                Toggle::make('hide')
+                    ->label('Hide Block')
+                    ->helperText('Hide this block from display'),
             ])
             ->columns(2);
     }
@@ -152,6 +171,9 @@ trait HasContentBlocks
                     ->acceptedFileTypes(['image/*'])
                     ->multiple()
                     ->preserveFilenames(),
+                Toggle::make('hide')
+                    ->label('Hide Block')
+                    ->helperText('Hide this block from display'),
             ])
             ->columns(2);
     }
@@ -173,6 +195,9 @@ trait HasContentBlocks
                 CuratorPicker::make('image')
                     ->acceptedFileTypes(['image/*'])
                     ->preserveFilenames(),
+                Toggle::make('hide')
+                    ->label('Hide Block')
+                    ->helperText('Hide this block from display'),
             ])
             ->columns(2);
     }
@@ -195,6 +220,9 @@ trait HasContentBlocks
                 TextInput::make('top')
                     ->numeric(),
                 TextInput::make('pointer'),
+                Toggle::make('hide')
+                    ->label('Hide Block')
+                    ->helperText('Hide this block from display'),
             ])
             ->columns(2);
     }
