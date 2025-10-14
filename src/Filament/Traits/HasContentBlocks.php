@@ -40,7 +40,8 @@ trait HasContentBlocks
                     ->helperText('Accepted file types: image only'),
                 Toggle::make('hide')
                     ->label('Hide Block')
-                    ->helperText('Hide this block from display'),
+                    ->helperText('Hide this block from display')
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -62,7 +63,8 @@ trait HasContentBlocks
                     ->columnSpanFull(),
                 Toggle::make('hide')
                     ->label('Hide Block')
-                    ->helperText('Hide this block from display'),
+                    ->helperText('Hide this block from display')
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -85,7 +87,8 @@ trait HasContentBlocks
                     ->preserveFilenames(),
                 Toggle::make('hide')
                     ->label('Hide Block')
-                    ->helperText('Hide this block from display'),
+                    ->helperText('Hide this block from display')
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -107,7 +110,8 @@ trait HasContentBlocks
                 TextInput::make('button_label'),
                 Toggle::make('hide')
                     ->label('Hide Block')
-                    ->helperText('Hide this block from display'),
+                    ->helperText('Hide this block from display')
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -127,7 +131,8 @@ trait HasContentBlocks
                     ->columnSpanFull(),
                 Toggle::make('hide')
                     ->label('Hide Block')
-                    ->helperText('Hide this block from display'),
+                    ->helperText('Hide this block from display')
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -149,7 +154,8 @@ trait HasContentBlocks
                     ->columnSpanFull(),
                 Toggle::make('hide')
                     ->label('Hide Block')
-                    ->helperText('Hide this block from display'),
+                    ->helperText('Hide this block from display')
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -173,7 +179,8 @@ trait HasContentBlocks
                     ->preserveFilenames(),
                 Toggle::make('hide')
                     ->label('Hide Block')
-                    ->helperText('Hide this block from display'),
+                    ->helperText('Hide this block from display')
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -197,7 +204,8 @@ trait HasContentBlocks
                     ->preserveFilenames(),
                 Toggle::make('hide')
                     ->label('Hide Block')
-                    ->helperText('Hide this block from display'),
+                    ->helperText('Hide this block from display')
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -222,7 +230,8 @@ trait HasContentBlocks
                 TextInput::make('pointer'),
                 Toggle::make('hide')
                     ->label('Hide Block')
-                    ->helperText('Hide this block from display'),
+                    ->helperText('Hide this block from display')
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
