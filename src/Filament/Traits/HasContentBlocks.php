@@ -173,7 +173,7 @@ trait HasContentBlocks
                 TextInput::make('subtitle'),
                 Textarea::make('description')
                     ->columnSpanFull(),
-                CuratorPicker::make('image')
+                CuratorPicker::make('gallery')
                     ->acceptedFileTypes(['image/*'])
                     ->multiple()
                     ->preserveFilenames(),

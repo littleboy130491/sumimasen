@@ -25,12 +25,12 @@ trait HasSections
             // Try default language
             $defaultLocale = config('cms.default_language', config('app.fallback_locale'));
 
-            if (isset($translations[$defaultLocale]) && ! empty($translations[$defaultLocale])) {
+            if (isset($translations[$defaultLocale]) && !empty($translations[$defaultLocale])) {
                 $currentValue = $translations[$defaultLocale];
             } else {
                 // Return first non-empty translation
                 foreach ($translations as $locale => $localeValue) {
-                    if (! empty($localeValue)) {
+                    if (!empty($localeValue)) {
                         $currentValue = $localeValue;
                         break;
                     }
@@ -40,9 +40,29 @@ trait HasSections
 
         // Inject media URLs into blocks
         return collect($currentValue)->map(function (array $block) {
+            // Handle single image
             if (isset($block['data']['image'])) {
                 $media = Media::find($block['data']['image']);
                 $block['data']['media_url'] = $media?->url;
+            }
+
+            // Handle single media
+            if (isset($block['data']['media'])) {
+                $media = Media::find($block['data']['media']);
+                $block['data']['media_url'] = $media?->url;
+            }
+
+            // Handle multiple images (gallery)
+            if (isset($block['data']['gallery']) && is_array($block['data']['gallery'])) {
+                $mediaIds = $block['data']['gallery'];
+                $mediaItems = Media::whereIn('id', $mediaIds)->get()->keyBy('id');
+
+                // Map gallery IDs to their URLs, preserving order
+                $block['data']['gallery_urls'] = collect($mediaIds)
+                    ->map(fn($id) => $mediaItems->get($id)?->url)
+                    ->filter() // Remove null values
+                    ->values()
+                    ->all();
             }
 
             return $block;
