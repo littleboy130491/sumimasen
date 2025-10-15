@@ -3,7 +3,7 @@
     $componentName = $filePathName . '.' . $name;
 @endphp
 @if ($componentData)
-    <x-dynamic-component :component="$componentName" :componentData="$componentData" :attributes="$attributes"/>
+    <x-dynamic-component :component="$componentName" :componentData="$componentData" {{ $attributes }}/>
 @else
     <!-- Component {{ $componentName }} not found-->
 @endif
