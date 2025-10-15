@@ -57,7 +57,7 @@ class UserResource extends Resource
                     )
                     ->preload()
                     ->searchable()
-                    ->visible(auth()->user()->hasRole('admin')),
+                    ->visible(auth()->user()->hasRole(['super_admin', 'admin'])),
             ]);
     }
 
