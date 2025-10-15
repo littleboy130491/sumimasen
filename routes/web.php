@@ -125,7 +125,7 @@ Route::prefix('{lang}')
         $contentSingleKeysRegex = ! empty($contentSingleKeys) ? implode('|', array_map('preg_quote', $contentSingleKeys)) : '^\b$'; // Matches nothing if empty
         $taxonomyArchiveKeysRegex = ! empty($taxonomyArchiveKeys) ? implode('|', array_map('preg_quote', $taxonomyArchiveKeys)) : '^\b$'; // Matches nothing if empty
 
-        // General slug regex
+        // General slug regex - matches the form validation regex
         $slugRegex = '[a-zA-Z0-9-_]+';
 
         Route::get('/', HomeController::class)->name('cms.home');

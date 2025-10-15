@@ -203,7 +203,7 @@ abstract class BaseResource extends Resource
                     return [
                         UTR::for($tableName, 'slug')
                             ->ignore($get('id')),
-                        'alpha_dash',
+                        'regex:/^[a-z0-9-_]+$/i', // Only allows ASCII letters, numbers, dashes, and underscores
                     ];
                 })
                 ->required($locale === $defaultLocale)
