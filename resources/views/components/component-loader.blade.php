@@ -5,8 +5,9 @@
 @if ($componentData)
     <x-dynamic-component 
         :component="$componentName" 
-        :componentData="$componentData"  
-        {{ $attributes }}
+        :componentData="$componentData"
+        :class="$attributes->get('class')"
+        {{ $attributes->except('class') }}
     />
 @else
     <!-- Component {{ $componentName }} not found-->
