@@ -198,6 +198,9 @@ abstract class BaseResource extends Resource
             TextInput::make('slug')
                 ->columnSpanFull()
                 ->maxLength(255)
+                ->helperText(function () use ($locale, $defaultLocale): ?string {
+                    return $locale !== $defaultLocale ? 'If empty, the slug from the default language will be used.' : null;
+                })
                 ->rules(function (Get $get) use ($tableName): array {
 
                     return [
