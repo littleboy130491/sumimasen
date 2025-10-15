@@ -94,7 +94,7 @@ class SystemUtilities extends Page
         $this->generatingSitemap = true;
 
         try {
-            Artisan::call('sitemap:generate');
+            Artisan::call('cms:generate-sitemap');
             Notification::make()
                 ->title('Sitemap generated successfully')
                 ->body('Sitemap has been created at public/sitemap.xml')
