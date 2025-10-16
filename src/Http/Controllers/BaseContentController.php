@@ -271,6 +271,13 @@ abstract class BaseContentController extends Controller
             ->whereJsonContainsLocale('slug', $lang, $slug)
             ->first();
 
+        if (! $item && $slug === $frontPageSlug) {
+            // No localized slug; fall back to the default language slug for comparison
+            $item = $this->buildQueryWithStatusFilter($modelClass)
+                ->whereJsonContainsLocale('slug', $this->defaultLanguage, $frontPageSlug)
+                ->first();
+        }
+
         if ($item) {
             $defaultLangSlug = $item->getTranslation('slug', $this->defaultLanguage, false);
             if ($defaultLangSlug && $defaultLangSlug === $frontPageSlug) {
