@@ -508,9 +508,7 @@ abstract class BaseResource extends Resource
             ->reorderable('menu_order')
             ->defaultSort(function (Builder $query): Builder {
                 return $query
-                    // Put items with menu_order > 0 first, then order by menu_order descending
-                    ->orderByRaw('(menu_order = 0) ASC, menu_order DESC')
-                    // After that, fallback to newest first
+                    ->orderBy('menu_order', 'asc')
                     ->orderBy('created_at', 'desc');
             });
     }
@@ -761,6 +759,18 @@ abstract class BaseResource extends Resource
     protected static function modelHasColumn(string $column): bool
     {
         $modelClass = app(static::$model);
+
+        if ($modelClass->usesTimestamps()) {
+            if (in_array($column, [$modelClass->getCreatedAtColumn(), $modelClass->getUpdatedAtColumn()], true)) {
+                return true;
+            }
+        }
+
+        if (in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($modelClass), true)) {
+            if ($column === $modelClass->getDeletedAtColumn()) {
+                return true;
+            }
+        }
 
         return in_array($column, $modelClass->getFillable()) ||
             array_key_exists($column, $modelClass->getCasts()) ||
