@@ -506,8 +506,13 @@ abstract class BaseResource extends Resource
                 ]
             )
             ->reorderable('menu_order')
-            ->defaultSort('created_at', 'desc');
-
+            ->defaultSort(function (Builder $query): Builder {
+                return $query
+                    // Put items with menu_order > 0 first, then order by menu_order descending
+                    ->orderByRaw('(menu_order = 0) ASC, menu_order DESC')
+                    // After that, fallback to newest first
+                    ->orderBy('created_at', 'desc');
+            });
     }
 
     protected static function tableColumns(): array
