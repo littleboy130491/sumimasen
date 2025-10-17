@@ -230,7 +230,7 @@ abstract class BaseResource extends Resource
 
         if (static::modelHasColumn('content') && ! static::isFieldHidden('content')) {
             $fields[] = TiptapEditor::make('content')
-                ->profile('simple')
+                ->profile('default')
                 ->nullable()
                 ->extraInputAttributes(['style' => 'min-height: 12rem;'])
                 ->columnSpanFull();
