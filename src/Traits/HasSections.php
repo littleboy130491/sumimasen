@@ -25,12 +25,12 @@ trait HasSections
             // Try default language
             $defaultLocale = config('cms.default_language', config('app.fallback_locale'));
 
-            if (isset($translations[$defaultLocale]) && !empty($translations[$defaultLocale])) {
+            if (isset($translations[$defaultLocale]) && ! empty($translations[$defaultLocale])) {
                 $currentValue = $translations[$defaultLocale];
             } else {
                 // Return first non-empty translation
                 foreach ($translations as $locale => $localeValue) {
-                    if (!empty($localeValue)) {
+                    if (! empty($localeValue)) {
                         $currentValue = $localeValue;
                         break;
                     }
@@ -60,10 +60,10 @@ trait HasSections
 
             // Handle gallery with embedded media objects (from CuratorPicker with multiple())
             // This comes as an object with UUID keys containing full media data
-            if (isset($block['data']['image']) && is_array($block['data']['image']) && !empty($block['data']['image'])) {
+            if (isset($block['data']['image']) && is_array($block['data']['image']) && ! empty($block['data']['image'])) {
                 // Check if it's an associative array with UUID keys (gallery format)
                 $firstKey = array_key_first($block['data']['image']);
-                if ($firstKey && !is_numeric($firstKey)) {
+                if ($firstKey && ! is_numeric($firstKey)) {
                     // Extract URLs from embedded media objects
                     $block['data']['gallery_urls'] = collect($block['data']['image'])
                         ->pluck('url')
@@ -80,7 +80,7 @@ trait HasSections
 
                 // Map gallery IDs to their URLs, preserving order
                 $galleryUrls = collect($mediaIds)
-                    ->map(fn($id) => $mediaItems->get($id)?->url)
+                    ->map(fn ($id) => $mediaItems->get($id)?->url)
                     ->filter() // Remove null values
                     ->values()
                     ->toArray();
