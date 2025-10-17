@@ -23,7 +23,7 @@ trait HasContentBlocks
                 TextInput::make('title'),
                 TextInput::make('subtitle'),
                 TiptapEditor::make('description')
-                    ->profile('simple')
+                    ->profile('default')
                     ->columnSpan('full')
                     ->extraInputAttributes(['style' => 'min-height: 12rem;']),
                 TextInput::make('url'),
@@ -59,7 +59,7 @@ trait HasContentBlocks
                 TextInput::make('heading'),
                 TiptapEditor::make('description')
                     ->label('Text Content')
-                    ->profile('simple')
+                    ->profile('default')
                     ->columnSpanFull(),
                 Toggle::make('hide')
                     ->label('Hide Block')
