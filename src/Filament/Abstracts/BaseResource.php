@@ -42,6 +42,13 @@ abstract class BaseResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
+    /**
+     * Cache of schema column lookups keyed by "table:column".
+     *
+     * @var array<string, bool>
+     */
+    protected static array $columnPresenceCache = [];
+
     protected static function isTranslatable(): bool
     {
         return config('cms.multilanguage_enabled', false);
@@ -487,7 +494,7 @@ abstract class BaseResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        $table = $table
             ->columns([
                 ...static::tableColumns(),
             ])
@@ -504,13 +511,23 @@ abstract class BaseResource extends Resource
                 [
                     ...static::tableHeaderActions(),
                 ]
-            )
-            ->reorderable('menu_order')
-            ->defaultSort(function (Builder $query): Builder {
-                return $query
-                    ->orderBy('menu_order', 'asc')
-                    ->orderBy('created_at', 'desc');
-            });
+            );
+
+        if (static::modelHasColumn('menu_order')) {
+            $table = $table->reorderable('menu_order');
+        }
+
+        return $table->defaultSort(function (Builder $query): Builder {
+            if (static::modelHasColumn('menu_order')) {
+                $query->orderBy('menu_order', 'asc');
+            }
+
+            if (static::modelHasColumn('created_at')) {
+                $query->orderBy('created_at', 'desc');
+            }
+
+            return $query;
+        });
     }
 
     protected static function tableColumns(): array
@@ -774,7 +791,23 @@ abstract class BaseResource extends Resource
 
         return in_array($column, $modelClass->getFillable()) ||
             array_key_exists($column, $modelClass->getCasts()) ||
-            $modelClass->hasAttribute($column);
+            $modelClass->hasAttribute($column) ||
+            static::schemaHasColumn($modelClass->getTable(), $column);
+    }
+
+    protected static function schemaHasColumn(string $table, string $column): bool
+    {
+        $cacheKey = "{$table}:{$column}";
+
+        if (! array_key_exists($cacheKey, static::$columnPresenceCache)) {
+            try {
+                static::$columnPresenceCache[$cacheKey] = Schema::hasColumn($table, $column);
+            } catch (\Throwable $e) {
+                static::$columnPresenceCache[$cacheKey] = false;
+            }
+        }
+
+        return static::$columnPresenceCache[$cacheKey];
     }
 
     // Check if the model has a specific relationship
