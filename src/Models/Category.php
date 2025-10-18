@@ -11,10 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Littleboy130491\SeoSuite\Models\Traits\InteractsWithSeoSuite;
 use Spatie\Translatable\HasTranslations;
+use Littleboy130491\Sumimasen\Traits\HasSections;
 
 class Category extends Model
 {
-    use HasFactory, HasTranslations, InteractsWithSeoSuite, SoftDeletes;
+    use HasSections, HasFactory, HasTranslations, InteractsWithSeoSuite, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
