@@ -29,6 +29,7 @@ class Category extends Model
         'slug',
         'template',
         'title',
+        'section',
     ];
 
     /**
@@ -50,6 +51,7 @@ class Category extends Model
         'content',
         'slug',
         'title',
+        'section',
     ];
 
     // --------------------------------------------------------------------------
