@@ -40,7 +40,7 @@ class SyncCuratorMedia extends Command
         // If test mode is enabled, limit the number of files
         if ($testLimit) {
             $files = array_slice($files, 0, (int) $testLimit);
-            $this->info("Test mode: Processing only " . count($files) . " files");
+            $this->info('Test mode: Processing only '.count($files).' files');
         }
 
         $imported = 0;
@@ -111,7 +111,7 @@ class SyncCuratorMedia extends Command
                     foreach ($records as $media) {
                         $path = $media->path;
 
-                        if (!Storage::disk($disk)->exists($path)) {
+                        if (! Storage::disk($disk)->exists($path)) {
                             continue;
                         }
 
@@ -155,7 +155,7 @@ class SyncCuratorMedia extends Command
                 ->where('directory', $directory)
                 ->chunk(100, function ($records) use ($disk, &$pruned) {
                     foreach ($records as $media) {
-                        if (!Storage::disk($disk)->exists($media->path)) {
+                        if (! Storage::disk($disk)->exists($media->path)) {
                             $media->delete();
                             $pruned++;
                             $this->line("[Pruned] {$media->path}");
