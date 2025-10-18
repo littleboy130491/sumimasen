@@ -17,7 +17,8 @@ class SyncCuratorMedia extends Command
                             {--disk=public   : Which filesystem disk to scan}
                             {--dir=media     : Directory within that disk}
                             {--update       : Update metadata for existing records}
-                            {--prune        : Prune DB rows whose files no longer exist}';
+                            {--prune        : Prune DB rows whose files no longer exist}
+                            {--test=        : Number of files to process for testing}';
 
     /**
      * The console command description.
@@ -30,10 +31,17 @@ class SyncCuratorMedia extends Command
     {
         $disk = $this->option('disk');
         $directory = rtrim($this->option('dir'), '/');
+        $testLimit = $this->option('test');
 
         $this->info("Starting sync on disk '{$disk}' in '{$directory}'...");
 
         $files = Storage::disk($disk)->allFiles($directory);
+
+        // If test mode is enabled, limit the number of files
+        if ($testLimit) {
+            $files = array_slice($files, 0, (int) $testLimit);
+            $this->info("Test mode: Processing only " . count($files) . " files");
+        }
 
         $imported = 0;
         $updated = 0;
@@ -103,7 +111,7 @@ class SyncCuratorMedia extends Command
                     foreach ($records as $media) {
                         $path = $media->path;
 
-                        if (! Storage::disk($disk)->exists($path)) {
+                        if (!Storage::disk($disk)->exists($path)) {
                             continue;
                         }
 
@@ -147,7 +155,7 @@ class SyncCuratorMedia extends Command
                 ->where('directory', $directory)
                 ->chunk(100, function ($records) use ($disk, &$pruned) {
                     foreach ($records as $media) {
-                        if (! Storage::disk($disk)->exists($media->path)) {
+                        if (!Storage::disk($disk)->exists($media->path)) {
                             $media->delete();
                             $pruned++;
                             $this->line("[Pruned] {$media->path}");
