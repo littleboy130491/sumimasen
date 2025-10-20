@@ -7,18 +7,6 @@ use Awcodes\Curator\Models\Media;
 trait HasSections
 {
     /**
-     * Generate URL from media path for portability across domains
-     */
-    private function generateMediaUrl(?string $path): ?string
-    {
-        if (empty($path)) {
-            return null;
-        }
-        
-        return url($path);
-    }
-
-    /**
      * Get sections with fallback and media URLs for frontend
      */
     public function getSectionsForFrontend(): array
@@ -55,28 +43,19 @@ trait HasSections
             // Handle single image (integer ID from CuratorPicker)
             if (isset($block['data']['image']) && is_int($block['data']['image'])) {
                 $media = Media::find($block['data']['image']);
-                $block['data']['media_url'] = $this->generateMediaUrl($media?->path);
-            } else {
-                // Clear media_url if image field is deleted or not an integer
-                unset($block['data']['media_url']);
+                $block['data']['media_url'] = $media?->url;
             }
 
             // Handle single media field
             if (isset($block['data']['media']) && is_int($block['data']['media'])) {
                 $media = Media::find($block['data']['media']);
-                $block['data']['media_url'] = $this->generateMediaUrl($media?->path);
-            } else {
-                // Clear media_url if media field is deleted or not an integer
-                unset($block['data']['media_url']);
+                $block['data']['media_url'] = $media?->url;
             }
 
             // Handle logo field (for tab blocks)
             if (isset($block['data']['logo']) && is_int($block['data']['logo'])) {
                 $logoMedia = Media::find($block['data']['logo']);
-                $block['data']['logo_url'] = $this->generateMediaUrl($logoMedia?->path);
-            } else {
-                // Clear logo_url if logo field is deleted or not an integer
-                unset($block['data']['logo_url']);
+                $block['data']['logo_url'] = $logoMedia?->url;
             }
 
             // Handle gallery with embedded media objects (from CuratorPicker with multiple())
@@ -85,16 +64,13 @@ trait HasSections
                 // Check if it's an associative array with UUID keys (gallery format)
                 $firstKey = array_key_first($block['data']['image']);
                 if ($firstKey && !is_numeric($firstKey)) {
-                    // Extract URLs from embedded media objects using path
+                    // Extract URLs from embedded media objects
                     $block['data']['gallery_urls'] = collect($block['data']['image'])
-                        ->map(fn($media) => $this->generateMediaUrl($media['path'] ?? null))
+                        ->pluck('url')
                         ->filter()
                         ->values()
                         ->toArray();
                 }
-            } else {
-                // Clear gallery_urls if image field is deleted, empty, or not an array
-                unset($block['data']['gallery_urls']);
             }
 
             // Handle multiple images using gallery array (array of IDs)
@@ -102,16 +78,17 @@ trait HasSections
                 $mediaIds = $block['data']['gallery'];
                 $mediaItems = Media::whereIn('id', $mediaIds)->get()->keyBy('id');
 
-                // Map gallery IDs to their URLs using path, preserving order
+                // Map gallery IDs to their URLs, preserving order
                 $galleryUrls = collect($mediaIds)
-                    ->map(fn($id) => $this->generateMediaUrl($mediaItems->get($id)?->path))
+                    ->map(fn($id) => $mediaItems->get($id)?->url)
                     ->filter() // Remove null values
                     ->values()
                     ->toArray();
 
-                // Always update gallery_urls to match the current gallery state
-                // This ensures that if gallery is emptied, gallery_urls is also emptied
-                $block['data']['gallery_urls'] = $galleryUrls;
+                // Only override if we don't already have gallery_urls from image field
+                if (empty($block['data']['gallery_urls'])) {
+                    $block['data']['gallery_urls'] = $galleryUrls;
+                }
             }
 
             return $block;
