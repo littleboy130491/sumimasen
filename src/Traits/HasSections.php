@@ -43,19 +43,19 @@ trait HasSections
             // Handle single image (integer ID from CuratorPicker)
             if (isset($block['data']['image']) && is_int($block['data']['image'])) {
                 $media = Media::find($block['data']['image']);
-                $block['data']['media_url'] = $media?->path;
+                $block['data']['media_url'] = '/' . $media?->path;
             }
 
             // Handle single media field
             if (isset($block['data']['media']) && is_int($block['data']['media'])) {
                 $media = Media::find($block['data']['media']);
-                $block['data']['media_url'] = $media?->path;
+                $block['data']['media_url'] = '/' . $media?->path;
             }
 
             // Handle logo field (for tab blocks)
             if (isset($block['data']['logo']) && is_int($block['data']['logo'])) {
                 $logoMedia = Media::find($block['data']['logo']);
-                $block['data']['logo_url'] = $logoMedia?->path;
+                $block['data']['logo_url'] = '/' . $logoMedia?->path;
             }
 
             // Handle gallery with embedded media objects (from CuratorPicker with multiple())
@@ -80,7 +80,7 @@ trait HasSections
 
                 // Map gallery IDs to their URLs, preserving order
                 $galleryUrls = collect($mediaIds)
-                    ->map(fn($id) => $mediaItems->get($id)?->path)
+                    ->map(fn($id) => '/' . $mediaItems->get($id)?->path)
                     ->filter() // Remove null values
                     ->values()
                     ->toArray();
