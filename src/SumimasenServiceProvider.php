@@ -252,7 +252,7 @@ class SumimasenServiceProvider extends PackageServiceProvider
 
     private function bootBladeComponents(): void
     {
-        Blade::anonymousComponentPath(__DIR__.'/resources/views/components', static::$name);
+        Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', static::$name);
         // Register class-based components in this namespace
         Blade::componentNamespace('Littleboy130491\\Sumimasen\\View\\Components', static::$name);
     }
