@@ -43,7 +43,7 @@ trait HasSections
             // Handle single image (integer ID from CuratorPicker)
             if (isset($block['data']['image']) && is_int($block['data']['image'])) {
                 $media = Media::find($block['data']['image']);
-                $block['data']['media_url'] = $media?->url;
+                $block['data']['image_url'] = $media?->url;
             }
 
             // Handle single media field
@@ -67,7 +67,7 @@ trait HasSections
                 $firstKey = array_key_first($block['data']['image']);
                 if ($firstKey && !is_numeric($firstKey)) {
                     // Extract URLs from embedded media objects
-                    $block['data']['gallery_urls'] = collect($block['data']['image'])
+                    $block['data']['image_urls'] = collect($block['data']['image'])
                         ->pluck('url')
                         ->filter()
                         ->values()
