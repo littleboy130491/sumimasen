@@ -4,7 +4,6 @@ namespace Littleboy130491\Sumimasen\Traits;
 
 use Awcodes\Curator\Models\Media;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 
 trait HasSections
 {
@@ -20,11 +19,11 @@ trait HasSections
 
         if (empty($currentValue)) {
             $defaultLocale = config('cms.default_language', config('app.fallback_locale'));
-            if (!empty($translations[$defaultLocale] ?? [])) {
+            if (! empty($translations[$defaultLocale] ?? [])) {
                 $currentValue = $translations[$defaultLocale];
             } else {
                 foreach ($translations as $locale => $localeValue) {
-                    if (!empty($localeValue)) {
+                    if (! empty($localeValue)) {
                         $currentValue = $localeValue;
                         break;
                     }
@@ -36,20 +35,20 @@ trait HasSections
         $blocks = collect($currentValue);
 
         $singleIds = $blocks
-            ->map(fn($b) => Arr::get($b, 'data.image'))
-            ->filter(fn($v) => is_int($v));
+            ->map(fn ($b) => Arr::get($b, 'data.image'))
+            ->filter(fn ($v) => is_int($v));
 
         $mediaIds = $blocks
-            ->flatMap(fn($b) => (array) Arr::get($b, 'data.gallery', []))
-            ->filter(fn($v) => is_int($v));
+            ->flatMap(fn ($b) => (array) Arr::get($b, 'data.gallery', []))
+            ->filter(fn ($v) => is_int($v));
 
         $logoIds = $blocks
-            ->map(fn($b) => Arr::get($b, 'data.logo'))
-            ->filter(fn($v) => is_int($v));
+            ->map(fn ($b) => Arr::get($b, 'data.logo'))
+            ->filter(fn ($v) => is_int($v));
 
         $otherSingle = $blocks
-            ->map(fn($b) => Arr::get($b, 'data.media'))
-            ->filter(fn($v) => is_int($v));
+            ->map(fn ($b) => Arr::get($b, 'data.media'))
+            ->filter(fn ($v) => is_int($v));
 
         $allIds = $singleIds
             ->merge($mediaIds)
@@ -88,9 +87,9 @@ trait HasSections
             }
 
             // image field already contains embedded curator objects (uuid keys)
-            if (isset($block['data']['image']) && is_array($block['data']['image']) && !empty($block['data']['image'])) {
+            if (isset($block['data']['image']) && is_array($block['data']['image']) && ! empty($block['data']['image'])) {
                 $firstKey = array_key_first($block['data']['image']);
-                if ($firstKey && !is_numeric($firstKey)) {
+                if ($firstKey && ! is_numeric($firstKey)) {
                     $block['data']['image_urls'] = collect($block['data']['image'])
                         ->pluck('url')
                         ->filter()
@@ -103,7 +102,7 @@ trait HasSections
             if (isset($block['data']['gallery']) && is_array($block['data']['gallery'])) {
                 $ids = $block['data']['gallery'];
                 $galleryUrls = collect($ids)
-                    ->map(fn($id) => $mediaMap->get($id)?->url)
+                    ->map(fn ($id) => $mediaMap->get($id)?->url)
                     ->filter()
                     ->values()
                     ->toArray();

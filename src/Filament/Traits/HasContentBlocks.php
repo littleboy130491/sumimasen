@@ -133,7 +133,7 @@ trait HasContentBlocks
                 //     ->label('Hide Block')
                 //     ->helperText('Hide this block from display')
                 //     ->columnSpanFull(),
-                
+
             ])
             ->columns(2);
     }
