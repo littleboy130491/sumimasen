@@ -38,10 +38,10 @@ trait HasContentBlocks
                     ->preserveFilenames()
                     ->acceptedFileTypes(['image/*'])
                     ->helperText('Accepted file types: image only'),
-                Toggle::make('hide')
-                    ->label('Hide Block')
-                    ->helperText('Hide this block from display')
-                    ->columnSpanFull(),
+                // Toggle::make('hide')
+                //     ->label('Hide Block')
+                //     ->helperText('Hide this block from display')
+                //     ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -61,10 +61,10 @@ trait HasContentBlocks
                     ->label('Text Content')
                     ->profile('default')
                     ->columnSpanFull(),
-                Toggle::make('hide')
-                    ->label('Hide Block')
-                    ->helperText('Hide this block from display')
-                    ->columnSpanFull(),
+                // Toggle::make('hide')
+                //     ->label('Hide Block')
+                //     ->helperText('Hide this block from display')
+                //     ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -85,10 +85,10 @@ trait HasContentBlocks
                 CuratorPicker::make('image')
                     ->acceptedFileTypes(['image/*'])
                     ->preserveFilenames(),
-                Toggle::make('hide')
-                    ->label('Hide Block')
-                    ->helperText('Hide this block from display')
-                    ->columnSpanFull(),
+                // Toggle::make('hide')
+                //     ->label('Hide Block')
+                //     ->helperText('Hide this block from display')
+                //     ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -108,10 +108,10 @@ trait HasContentBlocks
                     ->columnSpanFull(),
                 TextInput::make('url'),
                 TextInput::make('button_label'),
-                Toggle::make('hide')
-                    ->label('Hide Block')
-                    ->helperText('Hide this block from display')
-                    ->columnSpanFull(),
+                // Toggle::make('hide')
+                //     ->label('Hide Block')
+                //     ->helperText('Hide this block from display')
+                //     ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -129,10 +129,10 @@ trait HasContentBlocks
                 TextInput::make('subtitle'),
                 Textarea::make('description')
                     ->columnSpanFull(),
-                Toggle::make('hide')
-                    ->label('Hide Block')
-                    ->helperText('Hide this block from display')
-                    ->columnSpanFull(),
+                // Toggle::make('hide')
+                //     ->label('Hide Block')
+                //     ->helperText('Hide this block from display')
+                //     ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -152,10 +152,10 @@ trait HasContentBlocks
                 TextInput::make('suffix'),
                 Textarea::make('description')
                     ->columnSpanFull(),
-                Toggle::make('hide')
-                    ->label('Hide Block')
-                    ->helperText('Hide this block from display')
-                    ->columnSpanFull(),
+                // Toggle::make('hide')
+                //     ->label('Hide Block')
+                //     ->helperText('Hide this block from display')
+                //     ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -177,10 +177,10 @@ trait HasContentBlocks
                     ->acceptedFileTypes(['image/*'])
                     ->multiple()
                     ->preserveFilenames(),
-                Toggle::make('hide')
-                    ->label('Hide Block')
-                    ->helperText('Hide this block from display')
-                    ->columnSpanFull(),
+                // Toggle::make('hide')
+                //     ->label('Hide Block')
+                //     ->helperText('Hide this block from display')
+                //     ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -202,10 +202,10 @@ trait HasContentBlocks
                 CuratorPicker::make('image')
                     ->acceptedFileTypes(['image/*'])
                     ->preserveFilenames(),
-                Toggle::make('hide')
-                    ->label('Hide Block')
-                    ->helperText('Hide this block from display')
-                    ->columnSpanFull(),
+                // Toggle::make('hide')
+                //     ->label('Hide Block')
+                //     ->helperText('Hide this block from display')
+                //     ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -228,10 +228,10 @@ trait HasContentBlocks
                 TextInput::make('top')
                     ->numeric(),
                 TextInput::make('pointer'),
-                Toggle::make('hide')
-                    ->label('Hide Block')
-                    ->helperText('Hide this block from display')
-                    ->columnSpanFull(),
+                // Toggle::make('hide')
+                //     ->label('Hide Block')
+                //     ->helperText('Hide this block from display')
+                //     ->columnSpanFull(),
             ])
             ->columns(2);
     }
