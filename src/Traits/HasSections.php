@@ -3,32 +3,26 @@
 namespace Littleboy130491\Sumimasen\Traits;
 
 use Awcodes\Curator\Models\Media;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 trait HasSections
 {
     /**
-     * Get sections with fallback and media URLs for frontend
+     * Get sections with fallback and media URLs for frontend (batched)
      */
     public function getSectionsForFrontend(): array
     {
-        // Get all translations for the section field
+        // 1) resolve translation with your same fallback rules
         $translations = $this->getTranslations('section');
-
-        // Get current locale
         $currentLocale = app()->getLocale();
-
-        // Get current locale's value
         $currentValue = $translations[$currentLocale] ?? [];
 
-        // If current locale is empty, use fallback
         if (empty($currentValue)) {
-            // Try default language
             $defaultLocale = config('cms.default_language', config('app.fallback_locale'));
-
-            if (isset($translations[$defaultLocale]) && !empty($translations[$defaultLocale])) {
+            if (!empty($translations[$defaultLocale] ?? [])) {
                 $currentValue = $translations[$defaultLocale];
             } else {
-                // Return first non-empty translation
                 foreach ($translations as $locale => $localeValue) {
                     if (!empty($localeValue)) {
                         $currentValue = $localeValue;
@@ -38,35 +32,65 @@ trait HasSections
             }
         }
 
-        // Inject media URLs into blocks
-        return collect($currentValue)->map(function (array $block) {
-            // Handle single image (integer ID from CuratorPicker)
+        // 2) collect ALL media ids once
+        $blocks = collect($currentValue);
+
+        $singleIds = $blocks
+            ->map(fn($b) => Arr::get($b, 'data.image'))
+            ->filter(fn($v) => is_int($v));
+
+        $mediaIds = $blocks
+            ->flatMap(fn($b) => (array) Arr::get($b, 'data.gallery', []))
+            ->filter(fn($v) => is_int($v));
+
+        $logoIds = $blocks
+            ->map(fn($b) => Arr::get($b, 'data.logo'))
+            ->filter(fn($v) => is_int($v));
+
+        $otherSingle = $blocks
+            ->map(fn($b) => Arr::get($b, 'data.media'))
+            ->filter(fn($v) => is_int($v));
+
+        $allIds = $singleIds
+            ->merge($mediaIds)
+            ->merge($logoIds)
+            ->merge($otherSingle)
+            ->unique()
+            ->values();
+
+        // 3) one query; keep it light
+        $mediaMap = $allIds->isEmpty()
+            ? collect()
+            : Media::query()
+                ->whereIn('id', $allIds)
+                ->select(['id', 'disk', 'path']) // url accessor can build from these
+                ->get()
+                ->keyBy('id');
+
+        // 4) map URLs back into blocks
+        return $blocks->map(function (array $block) use ($mediaMap) {
+            // single image
             if (isset($block['data']['image']) && is_int($block['data']['image'])) {
-                $media = Media::find($block['data']['image']);
-                $block['data']['image_url'] = $media?->url;
+                $m = $mediaMap->get($block['data']['image']);
+                $block['data']['image_url'] = $m?->url;
             }
 
-            // Handle single media field
+            // single media
             if (isset($block['data']['media']) && is_int($block['data']['media'])) {
-                $media = Media::find($block['data']['media']);
-                $block['data']['media_url'] = $media?->url;
+                $m = $mediaMap->get($block['data']['media']);
+                $block['data']['media_url'] = $m?->url;
             }
-            
 
-            // Handle logo field (for tab blocks)
+            // logo (bug fix: use $logoMedia instead of $media)
             if (isset($block['data']['logo']) && is_int($block['data']['logo'])) {
-                $logoMedia = Media::find($block['data']['logo']);
+                $logoMedia = $mediaMap->get($block['data']['logo']);
                 $block['data']['logo_url'] = $logoMedia?->url;
             }
-            
 
-            // Handle gallery with embedded media objects (from CuratorPicker with multiple())
-            // This comes as an object with UUID keys containing full media data
+            // image field already contains embedded curator objects (uuid keys)
             if (isset($block['data']['image']) && is_array($block['data']['image']) && !empty($block['data']['image'])) {
-                // Check if it's an associative array with UUID keys (gallery format)
                 $firstKey = array_key_first($block['data']['image']);
                 if ($firstKey && !is_numeric($firstKey)) {
-                    // Extract URLs from embedded media objects
                     $block['data']['image_urls'] = collect($block['data']['image'])
                         ->pluck('url')
                         ->filter()
@@ -75,19 +99,15 @@ trait HasSections
                 }
             }
 
-            // Handle multiple images using gallery array (array of IDs)
+            // gallery = array of IDs → map in original order
             if (isset($block['data']['gallery']) && is_array($block['data']['gallery'])) {
-                $mediaIds = $block['data']['gallery'];
-                $mediaItems = Media::whereIn('id', $mediaIds)->get()->keyBy('id');
-
-                // Map gallery IDs to their URLs, preserving order
-                $galleryUrls = collect($mediaIds)
-                    ->map(fn($id) => $mediaItems->get($id)?->url)
-                    ->filter() // Remove null values
+                $ids = $block['data']['gallery'];
+                $galleryUrls = collect($ids)
+                    ->map(fn($id) => $mediaMap->get($id)?->url)
+                    ->filter()
                     ->values()
                     ->toArray();
 
-                // Only override if we don't already have gallery_urls from image field
                 if (empty($block['data']['gallery_urls'])) {
                     $block['data']['gallery_urls'] = $galleryUrls;
                 }
@@ -97,9 +117,6 @@ trait HasSections
         })->toArray();
     }
 
-    /**
-     * Alias for frontend sections as 'block'
-     */
     public function getBlockAttribute(): array
     {
         return $this->getSectionsForFrontend();
