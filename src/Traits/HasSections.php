@@ -56,7 +56,7 @@ trait HasSections
             // Handle logo field (for tab blocks)
             if (isset($block['data']['logo']) && is_int($block['data']['logo'])) {
                 $logoMedia = Media::find($block['data']['logo']);
-                $block['data']['logo_url'] = $media?->url;
+                $block['data']['logo_url'] = $logoMedia?->url;
             }
             
 
