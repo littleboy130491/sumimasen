@@ -102,6 +102,18 @@ class ManageGeneralSettings extends SettingsPage
                             ->maxLength(255),
                     ])->columns(2),
 
+                Forms\Components\Section::make('Custom Code')
+                    ->schema([
+                        Forms\Components\Textarea::make('custom_code_head')
+                            ->label('Custom Code Head')
+                            ->rows(10)
+                            ->columnSpan('full'),
+                        Forms\Components\Textarea::make('custom_code_body')
+                            ->label('Custom Code Body')
+                            ->rows(10)
+                            ->columnSpan('full'),
+                    ])->columns(2),
+
             ]);
     }
 }

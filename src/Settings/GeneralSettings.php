@@ -36,7 +36,10 @@ class GeneralSettings extends Settings
 
     public ?string $youtube;
 
-    // You can add more properties as needed (e.g. for maintenance, etc.)
+    public ?string $custom_code_head;
+
+    public ?string $custom_code_body;
+
 
     public static function group(): string
     {
