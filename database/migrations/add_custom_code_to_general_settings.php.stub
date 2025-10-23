@@ -6,8 +6,8 @@ return new class extends SettingsMigration
 {
     public function up(): void
     {
-        $this->migrator->add('general.custom_code_head');
-        $this->migrator->add('general.custom_code_body');
+        $this->migrator->add('general.custom_code_head', null);
+        $this->migrator->add('general.custom_code_body', null);
     
     }
 

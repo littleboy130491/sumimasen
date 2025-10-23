@@ -6,39 +6,24 @@ use Spatie\LaravelSettings\Settings;
 
 class GeneralSettings extends Settings
 {
-    public ?string $site_name;
+    public ?string $site_name = null;
+    public ?string $site_description = null;
+    public ?string $site_logo = null;
+    public ?string $site_favicon = null;
+    public ?string $email = null;
+    public ?string $phone_1 = null;
+    public ?string $phone_2 = null;
+    public ?string $whatsapp_1 = null;
+    public ?string $whatsapp_2 = null;
+    public ?string $address = null;
+    public ?string $facebook = null;
+    public ?string $twitter = null;
+    public ?string $instagram = null;
+    public ?string $linkedin = null;
+    public ?string $youtube = null;
 
-    public ?string $site_description;
-
-    public ?string $site_logo;
-
-    public ?string $site_favicon;
-
-    public ?string $email;
-
-    public ?string $phone_1;
-
-    public ?string $phone_2;
-
-    public ?string $whatsapp_1;
-
-    public ?string $whatsapp_2;
-
-    public ?string $address;
-
-    public ?string $facebook;
-
-    public ?string $twitter;
-
-    public ?string $instagram;
-
-    public ?string $linkedin;
-
-    public ?string $youtube;
-
-    public ?string $custom_code_head;
-
-    public ?string $custom_code_body;
+    public ?string $custom_code_head = null;
+    public ?string $custom_code_body = null;
 
     public static function group(): string
     {
