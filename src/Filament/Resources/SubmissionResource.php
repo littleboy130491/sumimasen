@@ -67,7 +67,8 @@ class SubmissionResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\ExportAction::make()
-                    ->exporter(SubmissionExporter::class),
+                    ->exporter(SubmissionExporter::class)
+                    ->fileDisk('local'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
