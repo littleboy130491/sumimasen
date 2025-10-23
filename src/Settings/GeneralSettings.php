@@ -40,7 +40,6 @@ class GeneralSettings extends Settings
 
     // public ?string $custom_code_body;
 
-
     public static function group(): string
     {
         return 'general';
