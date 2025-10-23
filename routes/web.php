@@ -33,7 +33,7 @@ Route::prefix('/{lang}/preview')
         Route::get('/submission-form', function () {
             return view('sumimasen-cms::submission-form-test');
         });
-    });
+    }); 
 
 // Redirect root to default language
 Route::get('/', function () {
@@ -66,7 +66,7 @@ Route::get('/{path}', function (Illuminate\Http\Request $request, $path) {
     return redirect()->to($redirectUrl);
 })
     ->middleware(['setLocale', 'web'])
-    ->where('path', '^(?!(?:'.implode('|', array_keys(Config::get('cms.language_available', ['en' => 'English']))).')(?:/|$)).*');
+    ->where('path', '^(?!(?:admin|filament|filament-impersonate|storage|up|' . implode('|', array_keys(Config::get('cms.language_available', ['en' => 'English']))) . ')(?:/|$)).*');
 
 Route::prefix('{lang}')
     ->whereIn('lang', array_keys(Config::get('cms.language_available', ['en' => 'English'])))
