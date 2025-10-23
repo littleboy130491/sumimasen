@@ -66,7 +66,7 @@ Route::get('/{path}', function (Illuminate\Http\Request $request, $path) {
     return redirect()->to($redirectUrl);
 })
     ->middleware(['setLocale', 'web'])
-    ->where('path', '^(?!(?:admin|filament|filament-impersonate|storage|up|' . implode('|', array_keys(Config::get('cms.language_available', ['en' => 'English']))) . ')(?:/|$)).*');
+    ->where('path', '^(?!(?:admin|filament|filament-impersonate|up|' . implode('|', array_keys(Config::get('cms.language_available', ['en' => 'English']))) . ')(?:/|$)).*');
 
 Route::prefix('{lang}')
     ->whereIn('lang', array_keys(Config::get('cms.language_available', ['en' => 'English'])))
