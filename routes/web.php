@@ -8,6 +8,8 @@ use Littleboy130491\Sumimasen\Http\Controllers\PreviewEmailController;
 use Littleboy130491\Sumimasen\Http\Controllers\SingleContentController;
 use Littleboy130491\Sumimasen\Http\Controllers\StaticPageController;
 use Littleboy130491\Sumimasen\Http\Controllers\TaxonomyController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 // Routes for previewing emails and components
 Route::prefix('/{lang}/preview')
@@ -42,31 +44,44 @@ Route::get('/', function () {
     return redirect()->to($defaultLang);
 })->middleware(['setLocale', 'web']);
 
-// Redirect routes without language prefix to current language
-Route::get('/{path}', function (Illuminate\Http\Request $request, $path) {
+Route::fallback(function (Request $request) {
+    // If a route got here, nothing else matched.
     $availableLanguages = array_keys(Config::get('cms.language_available', ['en' => 'English']));
-    // Get language from referer's second path segment
-    $referer = $request->headers->get('referer');
-    $currentLang = config('cms.default_language', 'en'); // default
 
-    if ($referer) {
-        $refererPath = parse_url($referer, PHP_URL_PATH);
-        $refererSegments = explode('/', trim($refererPath, '/'));
+    // Do not touch requests that already start with a known language
+    $path = trim($request->path(), '/');            // e.g. "blog/post"
+    $firstSegment = $path === '' ? '' : Str::before($path, '/');
+    if (in_array($firstSegment, $availableLanguages, true)) {
+        abort(404); // keep standard 404 for unknown lang paths
+    }
 
-        if (isset($refererSegments[0]) && in_array($refererSegments[0], $availableLanguages)) {
-            $currentLang = $refererSegments[0];
+    // Respect known “reserved” prefixes (admin, filament, up, etc.)
+    $reserved = array_merge(
+        ['admin', 'filament', 'filament-impersonate', 'up'],
+        $availableLanguages
+    );
+    if ($firstSegment !== '' && in_array($firstSegment, $reserved, true)) {
+        abort(404);
+    }
+
+    // Infer current language from referer, else use default
+    $currentLang = Config::get('cms.default_language', 'en');
+    if ($ref = $request->headers->get('referer')) {
+        $refPath = parse_url($ref, PHP_URL_PATH) ?: '';
+        $refSeg0 = trim($refPath, '/') === '' ? '' : Str::before(trim($refPath, '/'), '/');
+        if (in_array($refSeg0, $availableLanguages, true)) {
+            $currentLang = $refSeg0;
         }
     }
-    $queryString = $request->getQueryString();
-    $redirectUrl = "/{$currentLang}/{$path}";
-    if ($queryString) {
-        $redirectUrl .= "?{$queryString}";
+
+    $qs = $request->getQueryString();
+    $redirectTo = '/' . $currentLang . ($path ? "/$path" : '');
+    if ($qs) {
+        $redirectTo .= "?$qs";
     }
 
-    return redirect()->to($redirectUrl);
-})
-    ->middleware(['setLocale', 'web'])
-    ->where('path', '^(?!(?:admin|filament|filament-impersonate|up|'.implode('|', array_keys(Config::get('cms.language_available', ['en' => 'English']))).')(?:/|$)).*');
+    return redirect()->to($redirectTo);
+})->middleware(['setLocale', 'web']);
 
 Route::prefix('{lang}')
     ->whereIn('lang', array_keys(Config::get('cms.language_available', ['en' => 'English'])))
@@ -121,10 +136,10 @@ Route::prefix('{lang}')
 
         // Regex for matching valid keys from your config.
         // preg_quote is important for special characters in keys.
-        $contentArchiveKeysRegex = ! empty($contentArchiveKeys) ? implode('|', array_map('preg_quote', $contentArchiveKeys)) : '^\b$'; // Matches nothing if empty
-        $contentSingleKeysRegex = ! empty($contentSingleKeys) ? implode('|', array_map('preg_quote', $contentSingleKeys)) : '^\b$'; // Matches nothing if empty
-        $taxonomyArchiveKeysRegex = ! empty($taxonomyArchiveKeys) ? implode('|', array_map('preg_quote', $taxonomyArchiveKeys)) : '^\b$'; // Matches nothing if empty
-
+        $contentArchiveKeysRegex = !empty($contentArchiveKeys) ? implode('|', array_map('preg_quote', $contentArchiveKeys)) : '^\b$'; // Matches nothing if empty
+        $contentSingleKeysRegex = !empty($contentSingleKeys) ? implode('|', array_map('preg_quote', $contentSingleKeys)) : '^\b$'; // Matches nothing if empty
+        $taxonomyArchiveKeysRegex = !empty($taxonomyArchiveKeys) ? implode('|', array_map('preg_quote', $taxonomyArchiveKeys)) : '^\b$'; // Matches nothing if empty
+    
         // General slug regex - matches the form validation regex
         $slugRegex = '[a-zA-Z0-9-_]+';
 
