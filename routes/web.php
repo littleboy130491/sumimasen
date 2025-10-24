@@ -1,15 +1,15 @@
 <?php
 
 use Filament\Http\Middleware\Authenticate;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Littleboy130491\Sumimasen\Http\Controllers\HomeController;
 use Littleboy130491\Sumimasen\Http\Controllers\PreviewEmailController;
 use Littleboy130491\Sumimasen\Http\Controllers\SingleContentController;
 use Littleboy130491\Sumimasen\Http\Controllers\StaticPageController;
 use Littleboy130491\Sumimasen\Http\Controllers\TaxonomyController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 // Routes for previewing emails and components
 Route::prefix('/{lang}/preview')
@@ -75,7 +75,7 @@ Route::fallback(function (Request $request) {
     }
 
     $qs = $request->getQueryString();
-    $redirectTo = '/' . $currentLang . ($path ? "/$path" : '');
+    $redirectTo = '/'.$currentLang.($path ? "/$path" : '');
     if ($qs) {
         $redirectTo .= "?$qs";
     }
@@ -136,10 +136,10 @@ Route::prefix('{lang}')
 
         // Regex for matching valid keys from your config.
         // preg_quote is important for special characters in keys.
-        $contentArchiveKeysRegex = !empty($contentArchiveKeys) ? implode('|', array_map('preg_quote', $contentArchiveKeys)) : '^\b$'; // Matches nothing if empty
-        $contentSingleKeysRegex = !empty($contentSingleKeys) ? implode('|', array_map('preg_quote', $contentSingleKeys)) : '^\b$'; // Matches nothing if empty
-        $taxonomyArchiveKeysRegex = !empty($taxonomyArchiveKeys) ? implode('|', array_map('preg_quote', $taxonomyArchiveKeys)) : '^\b$'; // Matches nothing if empty
-    
+        $contentArchiveKeysRegex = ! empty($contentArchiveKeys) ? implode('|', array_map('preg_quote', $contentArchiveKeys)) : '^\b$'; // Matches nothing if empty
+        $contentSingleKeysRegex = ! empty($contentSingleKeys) ? implode('|', array_map('preg_quote', $contentSingleKeys)) : '^\b$'; // Matches nothing if empty
+        $taxonomyArchiveKeysRegex = ! empty($taxonomyArchiveKeys) ? implode('|', array_map('preg_quote', $taxonomyArchiveKeys)) : '^\b$'; // Matches nothing if empty
+
         // General slug regex - matches the form validation regex
         $slugRegex = '[a-zA-Z0-9-_]+';
 
