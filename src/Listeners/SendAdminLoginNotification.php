@@ -38,9 +38,7 @@ class SendAdminLoginNotification implements ShouldQueue
         $isAdminLogin = ($event->guard === 'web') && $event->user instanceof User;
 
         if ($isAdminLogin) {
-            // Get the first admin user as the recipient (or use config)
-            $adminUser = User::first();
-            $adminEmail = $adminUser ? $adminUser->email : config('cms.site_email');
+            $adminEmail = config('cms.site_email') ?? '';
 
             if ($adminEmail) {
                 // Get IP address and site URL for the notification
