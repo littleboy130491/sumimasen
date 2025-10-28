@@ -4,19 +4,18 @@ A powerful, multilingual Laravel CMS package built with Filament v3. Features hi
 
 ## Features
 
-🌐 **Multilingual Content** - Full translation support with smart fallback and URL redirection  
-📝 **Content Management** - Pages, posts, categories, tags, and comments with hierarchical structure  
-🔐 **Role-Based Access** - Comprehensive permission system with predefined roles  
-🧩 **Dynamic Components** - Flexible component system for reusable content blocks  
-📊 **SEO Optimized** - Built-in SEO suite integration and sitemap generation  
-📱 **Responsive Admin** - Beautiful Filament-powered admin interface  
-🎨 **Template System** - WordPress-like template hierarchy with custom slug support  
-📧 **Form System** - Built-in contact forms with email notifications and reCAPTCHA  
-📈 **Analytics** - Page views and likes tracking with real-time updates  
-🔄 **Scheduled Publishing** - Automatic content publishing with cron integration  
-📷 **Media Management** - Advanced media handling with Curator integration  
-🎯 **Performance** - Optimized queries, caching, and route resolution  
-💬 **Comments System** - Hierarchical comments with moderation and approval workflow
+- Multilingual content with smart fallback, localized slugs, and automatic redirection
+- Rich content management for pages, posts, categories, tags, menus, and comments
+- Role-based access control powered by Filament Shield
+- Dynamic components and flexible content blocks for reusable layouts
+- Built-in SEO suite integration with sitemap generation and Open Graph tags
+- Responsive, Filament-powered admin interface
+- WordPress-like template hierarchy with custom slug overrides
+- Form system with email notifications, throttling, and optional bot protection
+- Page view and like tracking with Livewire-powered widgets
+- Scheduled publishing and queue-friendly operations
+- Media management through Curator and optimized image handling
+- Advanced caching layers for routes, configuration, and templates
 
 ## Requirements
 
@@ -111,7 +110,7 @@ The CMS supports multiple content types with custom slug support defined in `con
         'has_single' => true,
     ],
     'posts' => [
-        'model' => \App\Models\Post::class,
+        'model' => \Littleboy130491\Sumimasen\Models\Post::class,
         'name' => 'Posts',
         'type' => 'content',
         'has_archive' => true,
@@ -128,32 +127,38 @@ The CMS supports multiple content types with custom slug support defined in `con
         'has_single' => false,
         'display_content_from' => 'posts',
     ],
-    'facilities' => [
-        'model' => \App\Models\Facility::class,
-        'name' => 'Facilities',
-        'type' => 'content',
-        'slug' => 'fasilitas', // Custom slug override
-        'has_archive' => true,
-        'has_single' => true,
-    ],
-    'commercials' => [
-        'model' => \App\Models\Commercial::class,
-        'name' => 'Commercials',
-        'type' => 'content',
-        'slug' => 'area-komersil', // Custom slug override
-        'has_archive' => false,
-        'has_single' => true,
-    ],
     // Add your custom content types here
 ],
 ```
+
+#### Adding Custom Content Types
+
+Extend this array in your application to register additional models or override the defaults. For example, to expose a `Facility` model with a localized slug:
+
+```php
+'facilities' => [
+    'model' => \App\Models\Facility::class,
+    'name' => 'Facilities',
+    'type' => 'content',
+    'slug' => 'fasilitas', // Localized slug shown in URLs
+    'has_archive' => true,
+    'has_single' => true,
+],
+```
+
+Key defaults to note:
+
+- `fallback_content_type` defaults to `posts`, so unresolved static slugs fall back to the posts model.
+- `static_page_model` defaults to `Littleboy130491\Sumimasen\Models\Page`.
+- `static_page_slug` (`pages`) and `front_page_slug` (`beranda`) control static page lookups and the home page redirect.
+- `template_base` (`templates`) and `package_namespace` (`sumimasen-cms`) define where templates are resolved.
 
 #### Custom Slug Support
 
 The CMS supports custom URL slugs different from the configuration key:
 
-- **Without custom slug**: `/facilities` (uses the config key)
-- **With custom slug**: `/fasilitas` (uses the custom slug value)
+- **Without custom slug**: `/{lang}/facilities` (uses the config key)
+- **With custom slug**: `/{lang}/fasilitas` (uses the custom slug value)
 
 This allows you to have:
 - Clean, localized URLs
@@ -168,12 +173,14 @@ Configure supported languages:
 'multilanguage_enabled' => true,
 'default_language' => 'en',
 'language_available' => [
-    'en' => 'English',
     'id' => 'Indonesian',
-    'zh' => 'Chinese',
+    'en' => 'English',
+    'zh-cn' => 'Chinese',
     'ko' => 'Korean',
 ],
 ```
+
+The first segment of every public URL must match one of these keys. The package falls back to `cms.default_language` (default: `en`) and ships with a front page slug of `beranda`, both of which can be overridden in your configuration.
 
 ### Comments System Configuration
 
@@ -196,6 +203,19 @@ Comments support:
 - **Admin Management**: Full CRUD operations in Filament admin
 - **Frontend Integration**: Ready-to-use comment components
 
+## Frontend Routing
+
+All public-facing routes include the language segment defined in `cms.language_available`:
+
+- `/` -> redirects to `/{default_language}` based on `cms.default_language`
+- `/{lang}` -> home page handled by `HomeController`
+- `/{lang}/{slug}` -> static pages resolved by `StaticPageController`, with archive fallback when a matching content type has `has_archive = true`
+- `/{lang}/{content_type_key}/{content_slug}` -> single content handled by `SingleContentController`
+- `/{lang}/{taxonomy_key}/{taxonomy_slug}` -> taxonomy archives handled by `TaxonomyController`
+- `/{lang}/preview/...` -> authenticated preview routes for emails, components, and submission forms
+
+The fallback route automatically prepends the default language when a request omits it (unless the URI targets reserved prefixes like `admin`, `filament`, or an existing language). This keeps links consistent even when users share language-less URLs.
+
 ## Template System
 
 The CMS uses a sophisticated template hierarchy system with WordPress-like template resolution and custom slug support.
@@ -206,7 +226,7 @@ Templates are resolved in order of specificity, checking both your application v
 
 #### 1. Home Page Templates
 
-For the home page (`/`):
+For the home page (`/{lang}` after the root redirect):
 
 ```
 1. user defined template from CMS
@@ -220,7 +240,7 @@ For the home page (`/`):
 
 #### 2. Static Page Templates
 
-For static pages (e.g., `/about`):
+For static pages (e.g., `/en/about`):
 
 ```
 1. user defined template from CMS
@@ -234,7 +254,7 @@ For static pages (e.g., `/about`):
 
 #### 3. Single Content Templates
 
-For single content items with custom slug support (e.g., `/fasilitas/pool-area`):
+For single content items with custom slug support (e.g., `/en/fasilitas/pool-area` when registering the `facilities` example above):
 
 ```
 1. user defined template from CMS
@@ -251,7 +271,7 @@ For single content items with custom slug support (e.g., `/fasilitas/pool-area`)
 
 #### 4. Archive Templates
 
-For content archives (e.g., `/fasilitas`):
+For content archives (e.g., `/en/posts` or `/en/fasilitas` for the custom example):
 
 ```
 1. templates/archives/archive-fasilitas.blade.php     (specific archive by slug)
@@ -262,7 +282,7 @@ For content archives (e.g., `/fasilitas`):
 
 #### 5. Taxonomy Templates
 
-For taxonomy archives (e.g., `/categories/technology`):
+For taxonomy archives (e.g., `/en/categories/technology`):
 
 ```
 1. user defined template from CMS
@@ -280,27 +300,27 @@ Create your templates in `resources/views/templates/`:
 
 ```
 templates/
-├── default.blade.php                          # Global fallback
-├── home.blade.php                             # Home page
-├── page.blade.php                             # All static pages
-├── custom-hero-layout.blade.php               # User-defined template
-├── custom-about-layout.blade.php              # User-defined template
-├── about.blade.php                            # Content slug template
-├── contact.blade.php                          # Content slug template
-├── singles/
-│   ├── default.blade.php                     # Default single template
-│   ├── page.blade.php                        # All static pages
-│   ├── page-about.blade.php                  # Specific page
-│   ├── post.blade.php                        # All posts
-│   ├── post-featured.blade.php               # Specific post
-│   ├── fasilitas.blade.php                   # Custom slug content type
-│   └── facility.blade.php                    # Fallback for original key
-├───archives/
-    ├─── archive.blade.php                     # Default archive
-    ├─── archive-posts.blade.php               # Posts archive
-    ├─── archive-fasilitas.blade.php           # Custom slug archive
-    ├─── categories.blade.php                  # Category taxonomy
-    └─── categories-technology.blade.php       # Specific category
+|- default.blade.php                      # Global fallback
+|- home.blade.php                         # Home page
+|- page.blade.php                         # All static pages
+|- custom-hero-layout.blade.php           # User-defined template
+|- custom-about-layout.blade.php          # User-defined template
+|- about.blade.php                        # Content slug template
+|- contact.blade.php                      # Content slug template
+|- singles/
+|  |- default.blade.php                   # Default single template
+|  |- page.blade.php                      # All static pages
+|  |- page-about.blade.php                # Specific page
+|  |- post.blade.php                      # All posts
+|  |- post-featured.blade.php             # Specific post
+|  |- fasilitas.blade.php                 # Custom slug content type
+|  |- facility.blade.php                  # Fallback for original key
+|- archives/
+   |- archive.blade.php                   # Default archive
+   |- archive-posts.blade.php             # Posts archive
+   |- archive-fasilitas.blade.php         # Custom slug archive
+   |- categories.blade.php                # Category taxonomy
+   |- categories-technology.blade.php     # Specific category
 ```
 
 ### Template Context
@@ -724,10 +744,10 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 
 ## Support
 
-- 📖 [Documentation](https://github.com/littleboy130491/cms/wiki)
-- 🐛 [Issue Tracker](https://github.com/littleboy130491/cms/issues)
-- 💬 [Discussions](https://github.com/littleboy130491/cms/discussions)
+- [Documentation](https://github.com/littleboy130491/cms/wiki)
+- [Issue Tracker](https://github.com/littleboy130491/cms/issues)
+- [Discussions](https://github.com/littleboy130491/cms/discussions)
 
 ---
 
-Built with ❤️ using Laravel, Filament, and modern PHP practices.
+Built with <3 using Laravel, Filament, and modern PHP practices.
