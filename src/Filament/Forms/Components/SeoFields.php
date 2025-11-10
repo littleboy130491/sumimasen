@@ -31,12 +31,14 @@ class SeoFields extends SeoSuite
                                     ->label('seo-suite::seo-suite.general.meta_title_label')
                                     ->hint(__('seo-suite::seo-suite.general.meta_title_hint'))
                                     ->helperText(__('seo-suite::seo-suite.general.meta_title_helper'))
+                                    ->maxLength(255)
                                     ->visible(fn (): bool => config('seo-suite.features.general.fields.title')),
                                 Textarea::make('description')
                                     ->translateLabel()
                                     ->label('seo-suite::seo-suite.general.meta_description_label')
                                     ->hint(__('seo-suite::seo-suite.general.meta_description_hint'))
                                     ->helperText(__('seo-suite::seo-suite.general.meta_description_helper'))
+                                    ->maxLength(255)
                                     ->visible(fn (): bool => config('seo-suite.features.general.fields.description')),
                             ]),
                         Tabs\Tab::make('seo-suite::seo-suite.advanced.tab_label')->translateLabel()
