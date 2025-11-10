@@ -15,7 +15,7 @@ class ActivityLogger
     public function log(string $activity, array $data = [], $subject = null): void
     {
         $request = request();
-        
+
         $logData = [
             'timestamp' => now()->toISOString(),
             'activity' => $activity,

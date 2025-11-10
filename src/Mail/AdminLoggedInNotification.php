@@ -27,7 +27,7 @@ class AdminLoggedInNotification extends Mailable implements ShouldQueue
     public function __construct(User $user, string $ipAddress, string $siteUrl)
     {
         // Validate required parameters
-        if (!$user || !$user->exists) {
+        if (! $user || ! $user->exists) {
             throw new \InvalidArgumentException('Valid user instance is required');
         }
 
