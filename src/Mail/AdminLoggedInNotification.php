@@ -24,11 +24,24 @@ class AdminLoggedInNotification extends Mailable implements ShouldQueue
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user, string $ipAddress = '', string $siteUrl = '')
+    public function __construct(User $user, string $ipAddress, string $siteUrl)
     {
+        // Validate required parameters
+        if (!$user || !$user->exists) {
+            throw new \InvalidArgumentException('Valid user instance is required');
+        }
+
+        if (empty($ipAddress)) {
+            throw new \InvalidArgumentException('IP address is required');
+        }
+
+        if (empty($siteUrl)) {
+            throw new \InvalidArgumentException('Site URL is required');
+        }
+
         $this->user = $user;
-        $this->ipAddress = $ipAddress ?: request()->ip();
-        $this->siteUrl = $siteUrl ?: config('app.url');
+        $this->ipAddress = $ipAddress;
+        $this->siteUrl = $siteUrl;
     }
 
     /**

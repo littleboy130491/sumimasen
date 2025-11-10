@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Request;
 use Littleboy130491\Sumimasen\Mail\AdminLoggedInNotification;
@@ -30,23 +31,68 @@ class SendAdminLoginNotification implements ShouldQueue
      */
     public function handle(Login $event): void
     {
-        // Log all login activities
-        $this->activityLogger->logLogin();
+        try {
+            // Log all login activities
+            $this->activityLogger->logLogin();
 
-        // Check if the user is an instance of App\Models\User and this is an admin login
-        // Filament uses the 'web' guard,
-        $isAdminLogin = ($event->guard === 'web') && $event->user instanceof User;
+            // Check if the user is an instance of App\Models\User and this is an admin login
+            // Filament uses the 'web' guard,
+            $isAdminLogin = ($event->guard === 'web') &&
+                           $event->user instanceof User &&
+                           $event->user->hasRole(['admin', 'super_admin', 'super-admin']);
 
-        if ($isAdminLogin) {
-            $adminEmail = config('cms.site_email') ?? '';
+            if ($isAdminLogin) {
+                // Capture IP address and site URL before queueing to ensure reliability
+                $ipAddress = Request::ip() ?? 'Unknown';
+                $siteUrl = config('app.url', '');
 
-            if ($adminEmail) {
-                // Get IP address and site URL for the notification
-                $ipAddress = Request::ip();
-                $siteUrl = config('app.url');
+                $adminEmails = $this->getAdminEmails();
 
-                Mail::to($adminEmail)->send(new AdminLoggedInNotification($event->user, $ipAddress, $siteUrl));
+                if (! empty($adminEmails)) {
+                    foreach ($adminEmails as $recipient) {
+                        try {
+                            Mail::to($recipient)->send(new AdminLoggedInNotification($event->user, $ipAddress, $siteUrl));
+                        } catch (\Exception $e) {
+                            Log::error('Failed to send admin login notification', [
+                                'error' => $e->getMessage(),
+                                'recipient' => $recipient,
+                                'user_id' => $event->user->id,
+                            ]);
+                        }
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in SendAdminLoginNotification handler', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+    }
+
+    /**
+     * Get admin email addresses with fallback
+     */
+    protected function getAdminEmails(): array
+    {
+        $adminEmails = User::query()
+            ->whereHas('roles', function ($query) {
+                $query->whereIn('name', ['admin', 'super_admin', 'super-admin']);
+            })
+            ->pluck('email')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($adminEmails)) {
+            $fallback = config('cms.site_email') ?? '';
+
+            if ($fallback) {
+                $adminEmails = [$fallback];
             }
         }
+
+        return $adminEmails;
     }
 }

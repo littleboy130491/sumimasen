@@ -14,20 +14,22 @@ class ActivityLogger
 
     public function log(string $activity, array $data = [], $subject = null): void
     {
+        $request = request();
+        
         $logData = [
             'timestamp' => now()->toISOString(),
             'activity' => $activity,
             'user_id' => Auth::id(),
             'user_name' => Auth::user()?->name ?? 'Guest',
             'user_email' => Auth::user()?->email ?? 'N/A',
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'device_type' => $this->getDeviceType(),
-            'platform' => $this->getPlatform(),
-            'browser' => $this->getBrowser(),
-            'session_id' => session()->getId(),
-            'url' => request()->fullUrl(),
-            'method' => request()->method(),
+            'ip_address' => $request?->ip() ?? 'Unknown',
+            'user_agent' => $request?->userAgent() ?? 'Unknown',
+            'device_type' => $this->getDeviceType($request),
+            'platform' => $this->getPlatform($request),
+            'browser' => $this->getBrowser($request),
+            'session_id' => session()?->getId() ?? 'None',
+            'url' => $request?->fullUrl() ?? 'Unknown',
+            'method' => $request?->method() ?? 'Unknown',
         ];
 
         if ($subject) {
