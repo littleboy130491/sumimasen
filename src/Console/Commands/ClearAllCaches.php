@@ -50,27 +50,6 @@ class ClearAllCaches extends Command
             $this->warn('Response cache clearing failed: '.$e->getMessage());
         }
 
-        // Clear CMS specific caches
-        $this->info('Clearing CMS route cache...');
-        Cache::forget('cms.route_slugs');
-        Cache::forget('cms.slug_to_key_map');
-        Cache::forget('cms.key_to_config_map');
-
-        // Clear any other common cache keys that might be used
-        $this->info('Clearing additional CMS caches...');
-        $cmsKeys = [
-            'cms.settings',
-            'cms.navigation',
-            'cms.menu',
-            'cms.sitemap',
-            'cms.pages',
-            'cms.posts',
-        ];
-
-        foreach ($cmsKeys as $key) {
-            Cache::forget($key);
-        }
-
         $this->info('All caches cleared successfully!');
 
         return Command::SUCCESS;
