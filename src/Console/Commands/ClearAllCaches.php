@@ -27,7 +27,7 @@ class ClearAllCaches extends Command
      */
     public function handle()
     {
-        
+
         $this->info('Starting cache clearing process...');
 
         // Clear Laravel caches
